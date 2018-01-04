@@ -1,0 +1,72 @@
+extends layout
+
+block content
+  h1= "wow this is the title"
+  a(href="/convert")
+   button(type="button") convert
+  br
+  a(href="/stop")
+    button(type="button") Stop
+  br
+  button(type="button" onclick="share()") share
+  br
+  button(type="button" onclick="status()") status
+  br
+  button(type="button" onclick="myFacebookLogin()") Login with Facebook 
+  br
+  button(type="button" onclick="post()") post 
+  br
+  button(type="button" onclick="stream()") stream 
+
+  script.
+    window.fbAsyncInit  = function()  {
+    FB.init({
+      appId             : '202133753681543',
+      autoLogAppEvents  : true,
+      xfbml             : true,
+      version           : 'v2.11'
+      });
+      };
+    function share() {FB.ui(
+      {
+        method: 'share',
+        href: 'https://developers.facebook.com/docs/'
+      }, function(response){})
+    };
+    function status() {
+      FB.getLoginStatus(function(response) {
+      if (response.status === 'connected') {
+        console.log('Logged in.');
+      }
+      else {
+        FB.login();
+      }
+      });
+    }
+    function myFacebookLogin() {
+      FB.login(function(){}, {scope: 'manage_pages'});
+    }
+    function post(){
+      FB.login(function(){
+      // Note: The call will only work if you accept the permission request
+      FB.api('/913878858767085/feed', 'post', {message: 'moo!'});
+      }, {scope: 'publish_pages'});
+    }
+    function stream(){
+      FB.api(
+        '/913878858767085/live_videos',
+        'POST',
+        {access_token: "EAAC31u6V1ocBAOsPcfWLFMeoSZAcghkQFfGIbExDYosnImdNh96cRMLZAWP8SvfYfOBZCyaqU2oQFj25tlCKwR0XGnBvPbOLSESzhK2bFQybxy2yKV0TvznOl96FCihGJIIwmwXMlLdcSZCzlc1feWZCuqrhqgLxCBfVv34RTlD9UPJhaOPeLbDWAmjXlLQfWxZArySOurpwZDZD"},
+        function(response) {
+            console.log(response.stream_url)
+        }
+      );
+    }  
+  script.
+    (function(d, s, id){
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {return;}
+      js = d.createElement(s); js.id = id;
+      js.src = "https://connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
