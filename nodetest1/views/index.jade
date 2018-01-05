@@ -7,18 +7,18 @@ block content
   br
   a(href="/stop")
     button(type="button") Stop
-  //- br
-  //- button(type="button" onclick="share()") share
+  br
+  button(type="button" onclick="share()") share
   br
   button(type="button" onclick="status()") status
   br
   button(type="button" onclick="myFacebookLogin()") Login with Facebook 
   br
-  button(type="button" onclick="post()") post 
+  button(type="button" onclick="post()") post on facebook
   br
-  form(action='/data', method='post', id='form-id')
+  form(action='/fbstream', method='post', id='form-id')
     input(type='hidden', value='', name='data', id='input')
-    button(type="button", onclick="getRTMP()", id="btn") get RTMP url
+    button(type="button", onclick="streamFB()", id="btn") stream to Facebook
 
   script.
     window.fbAsyncInit  = function()  {
@@ -29,16 +29,22 @@ block content
       version           : 'v2.11'
       });
       };
+
+    //shares facebook post
+
     function share() {FB.ui(
       {
         method: 'share',
         href: 'https://developers.facebook.com/docs/'
       }, function(response){})
     };
+
+    //checks login status
+
     function status() {
       FB.getLoginStatus(function(response) {
       if (response.status === 'connected') {
-        console.log('Logged in.');
+        "logged in";
       }
       else {
         FB.login();
@@ -46,23 +52,29 @@ block content
       });
     }
     function myFacebookLogin() {
-      FB.login(function(){}, {scope: 'manage_pages'});
+      FB.login(function(response){console.log(response)}, {scope: 'publish_actions, manage_pages, pages_show_list, publish_pages, public_profile'});
     }
+
+    // make posts on feed 
+
     function post(){
       FB.login(function(){
       // Note: The call will only work if you accept the permission request
       FB.api('/913878858767085/feed', 'post', {message: 'moo!'});
       }, {scope: 'publish_pages'});
     }
-    let rtmp = null
-    function getRTMP(){
+
+    // stream to FB page directly
+
+    function streamFB(){
       FB.api(
         '/913878858767085/live_videos',
         'POST',
-        {access_token: "EAAC31u6V1ocBAPAqrHtOzNPZCxQncld5Q883L4svlQqkbZB42u4Xdu4j0El77U0eQ5sohDSBw2Q8XQM6n1Nk3cBKPo0ZCUUqqGh0EXQ2cOOdxLn5ZAqOOBq59ZAelStyDJesBsbhirodIHOpOMNkQ5ZBW5W9Nd6Rla65q1ZCsiZBUpdbhPh8aok8STlDVV4bVQKLQjCwr4ATzwZDZD"},
+        {access_token: "EAAC31u6V1ocBANKZAMreCkjL3UjJoNpRI5HoKfvsXQ95QZBCJfyjKcjzPrYvcK0ZBNsDQH039C471FcoUhpT0SgxKkOP5UKZAquPtlDZB8I7ZCFas0syDtHhxpHywpSx5eU2ZAaZBFvqq9vLxRE5jjmEE2zsWqy929QpRjFqe25IDQZDZD"},
         function(response) {
-            rtmp = response.stream_url
+            let rtmp = response.stream_url
             console.log(rtmp)
+            console.log(response)
             document.getElementById("input").value = rtmp;
             var form = document.getElementById("form-id");
             form.submit();
