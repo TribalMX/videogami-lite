@@ -25,4 +25,8 @@ router.get('/stop', function (req, res, next) {
   res.render('index', stop())
 })
 
+router.post('/data', function (req, res, next) {
+  res.render('trial', {title: req.body.data})
+})
+
 module.exports = router

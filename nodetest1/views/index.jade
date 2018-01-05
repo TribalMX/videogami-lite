@@ -7,8 +7,8 @@ block content
   br
   a(href="/stop")
     button(type="button") Stop
-  br
-  button(type="button" onclick="share()") share
+  //- br
+  //- button(type="button" onclick="share()") share
   br
   button(type="button" onclick="status()") status
   br
@@ -16,7 +16,9 @@ block content
   br
   button(type="button" onclick="post()") post 
   br
-  button(type="button" onclick="stream()") stream 
+  form(action='/data', method='post', id='form-id')
+    input(type='hidden', value='', name='data', id='input')
+    button(type="button", onclick="getRTMP()", id="btn") get RTMP url
 
   script.
     window.fbAsyncInit  = function()  {
@@ -52,16 +54,22 @@ block content
       FB.api('/913878858767085/feed', 'post', {message: 'moo!'});
       }, {scope: 'publish_pages'});
     }
-    function stream(){
+    let rtmp = null
+    function getRTMP(){
       FB.api(
         '/913878858767085/live_videos',
         'POST',
-        {access_token: "EAAC31u6V1ocBAOsPcfWLFMeoSZAcghkQFfGIbExDYosnImdNh96cRMLZAWP8SvfYfOBZCyaqU2oQFj25tlCKwR0XGnBvPbOLSESzhK2bFQybxy2yKV0TvznOl96FCihGJIIwmwXMlLdcSZCzlc1feWZCuqrhqgLxCBfVv34RTlD9UPJhaOPeLbDWAmjXlLQfWxZArySOurpwZDZD"},
+        {access_token: "EAAC31u6V1ocBAPAqrHtOzNPZCxQncld5Q883L4svlQqkbZB42u4Xdu4j0El77U0eQ5sohDSBw2Q8XQM6n1Nk3cBKPo0ZCUUqqGh0EXQ2cOOdxLn5ZAqOOBq59ZAelStyDJesBsbhirodIHOpOMNkQ5ZBW5W9Nd6Rla65q1ZCsiZBUpdbhPh8aok8STlDVV4bVQKLQjCwr4ATzwZDZD"},
         function(response) {
-            console.log(response.stream_url)
+            rtmp = response.stream_url
+            console.log(rtmp)
+            document.getElementById("input").value = rtmp;
+            var form = document.getElementById("form-id");
+            form.submit();
         }
       );
-    }  
+    }
+ 
   script.
     (function(d, s, id){
       var js, fjs = d.getElementsByTagName(s)[0];
