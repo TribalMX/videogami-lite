@@ -1,13 +1,59 @@
 extends layout
 
 block content
-  h1= "wow this is the title"
-  a(href="/convert")
-   button(type="button") convert
-  br
+  h1 VideoGami Lite
+
   a(href="/stop")
     button(type="button") Stop
   br
+
+  h2 JoiCaster
+
+  form(action='/JCRtmpKey', method='post', id='JCRtmpKey')
+    label(for='JCRtmpKey') Enter your RTMP Key 
+    input(type='text', value='', name='JCRtmpKey', id='JCRtmpKey')
+    button(type="submit") submit
+  br
+
+  form(action='/JCInput', method='post', id='JCInput')
+    label(for='JCInput ') Enter your HLS or RTMP input 
+    input(type='text', value='', name='JCInput', id='JCInput')
+    button(type="submit") submit
+  br
+
+  a(href="/streamJC")
+   button(type="button") stream to JoiCaster now
+  br
+  br
+
+  form(action='/streamJCScheduled', method='post', id='JCScheduledForm-id')
+    label(for='JCMonth ') Month (1-12)
+    input(type='text', value='', name='Month', id='JCMonth')
+    br
+    label(for='JCDay ') Day (1-31)
+    input(type='text', value='', name='day', id='JCDay')
+    br
+    label(for='JCHour ') Hour (1-23)
+    input(type='text', value='', name='hour', id='JCHour')
+    br
+    label(for='JCMonth ') minute (1-59)
+    input(type='text', value='', name='minute', id='JCminute')
+    br
+    button(type="submit") schedule stream for Joicaster
+  br
+
+  form(action='/CancelstreamJCScheduled', method='post', id='CancelJCScheduledForm-id')
+    button(type="submit") Cancel scheduled stream for Joicaster
+  br
+
+  h2 Facebook
+
+  form(action='/FBInput', method='post', id='FBInput')
+    label(for='FBInput ') Enter your HLS or RTMP input 
+    input(type='text', value='', name='FBInput', id='FBInput')
+    button(type="submit") submit
+  br
+
   button(type="button" onclick="share()") share
   br
   button(type="button" onclick="status()") status
@@ -16,9 +62,71 @@ block content
   br
   button(type="button" onclick="post()") post on facebook
   br
-  form(action='/fbstream', method='post', id='form-id')
-    input(type='hidden', value='', name='data', id='input')
-    button(type="button", onclick="streamFB()", id="btn") stream to Facebook
+  br
+
+  form(action='/fbstream', method='post', id='FBform-id')
+    input(type='hidden', value='', name='rtmplink', id='FBNowInput')
+    button(type="button", onclick="streamFB()", id="FBSubmit") stream to Facebook now
+    br
+    br
+
+  form(action='/streamFBScheduled', method='post', id='FBScheduledForm-id')
+    input(type='hidden', value='', name='rtmplink', id='FBScheduledInput')
+    label(for='FBMonth ') Month (1-12)
+    input(type='text', value='', name='Month', id='FBMonth')
+    br
+    label(for='FBDay ') Day (1-31)
+    input(type='text', value='', name='day', id='FBDay')
+    br
+    label(for='FBHour ') Hour (1-23)
+    input(type='text', value='', name='hour', id='FBHour')
+    br
+    label(for='FBMonth ') minute (1-59)
+    input(type='text', value='', name='minute', id='FBminute')
+    br
+    button(type="button", onclick="streamFBScheduled()", id="FBScheduledSubmit") schedule stream for Facebook
+  br
+
+  form(action='/CancelstreamFBScheduled', method='post', id='CancelFBScheduledForm-id')
+    button(type="submit") Cancel scheduled stream for Facebook
+  br
+
+  h2 Youtube
+
+  form(action='/YTRtmpKey', method='post', id='YTRtmpKey')
+    label(for='YTRtmpKey') Enter your RTMP Key 
+    input(type='text', value='', name='YTRtmpKey', id='YTRtmpKey')
+    button(type="submit") submit
+  br
+
+  form(action='/YTInput', method='post', id='YTInput')
+    label(for='YTInput ') Enter your HLS or RTMP input 
+    input(type='text', value='', name='YTInput', id='YTInput')
+    button(type="submit") submit
+  br
+
+  a(href="/streamYT")
+    button(type="button") Stream to Youtube Now
+  br
+  br
+  form(action='/streamYTScheduled', method='post', id='YTScheduledForm-id')
+    label(for='YTMonth ') Month (1-12)
+    input(type='text', value='', name='Month', id='YTMonth')
+    br
+    label(for='YTDay ') Day (1-31)
+    input(type='text', value='', name='day', id='YTDay')
+    br
+    label(for='YTHour ') Hour (1-23)
+    input(type='text', value='', name='hour', id='YTHour')
+    br
+    label(for='YTMonth ') minute (1-59)
+    input(type='text', value='', name='minute', id='YTminute')
+    br
+    button(type="submit") schedule stream for Youtube
+  br
+
+  form(action='/CancelstreamYTScheduled', method='post', id='CancelYTScheduledForm-id')
+    button(type="submit") Cancel scheduled stream for Youtube
 
   script.
     window.fbAsyncInit  = function()  {
@@ -75,13 +183,28 @@ block content
             let rtmp = response.stream_url
             console.log(rtmp)
             console.log(response)
-            document.getElementById("input").value = rtmp;
-            var form = document.getElementById("form-id");
+            document.getElementById("FBNowInput").value = rtmp;
+            var form = document.getElementById("FBform-id");
             form.submit();
         }
       );
     }
 
+    function streamFBScheduled(){
+      FB.api(
+        '/913878858767085/live_videos',
+        'POST',
+        {access_token: "EAAC31u6V1ocBANKZAMreCkjL3UjJoNpRI5HoKfvsXQ95QZBCJfyjKcjzPrYvcK0ZBNsDQH039C471FcoUhpT0SgxKkOP5UKZAquPtlDZB8I7ZCFas0syDtHhxpHywpSx5eU2ZAaZBFvqq9vLxRE5jjmEE2zsWqy929QpRjFqe25IDQZDZD"},
+        function(response) {
+            let rtmp = response.stream_url
+            console.log(rtmp)
+            console.log(response)
+            document.getElementById("FBScheduledInput").value = rtmp;
+            var form = document.getElementById("FBScheduledForm-id");
+            form.submit();
+        }
+      );
+    }
     //fb api needs this bottom script DO NOT DELETE
  
   script.
@@ -92,3 +215,4 @@ block content
       js.src = "https://connect.facebook.net/en_US/sdk.js";
       fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
+
