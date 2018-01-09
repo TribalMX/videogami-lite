@@ -9,15 +9,18 @@ let JCInputURL = 'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8'
 let FBInputURL = 'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8'
 let YTInputURL = 'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8'
 let FBrtmp = null
+let logoHeight = 10
+let logoHorizontal = 580
+let imgScale = '40:40'
 
 // this is for joicaster
-let streamJC = () => { cmd.run('ffmpeg -re -i ' + JCInputURL + ' -i ACE.png -i logo2.jpg -filter_complex "[1]scale=40:40[ovrl1], [0:v][ovrl1] overlay=580:10:enable=\'between(t,1,5)\'[v1];[2]scale=40:40[ovrl2], [v1][ovrl2] overlay=580:10:enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile=fontfile=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://ingest-us-east.a.switchboard.zone/live/' + JCrtmpKey + '"') }
+let streamJC = () => { cmd.run('ffmpeg -re -i ' + JCInputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile=fontfile=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://ingest-us-east.a.switchboard.zone/live/' + JCrtmpKey + '"') }
 
 // this is for faebook only
-let streamFB = () => { cmd.run('ffmpeg -re -i ' + FBInputURL + ' -i ACE.png -i logo2.jpg -filter_complex "[1]scale=40:40[ovrl1], [0:v][ovrl1] overlay=580:10:enable=\'between(t,1,5)\'[v1];[2]scale=40:40[ovrl2], [v1][ovrl2] overlay=580:10:enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile=fontfile=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"' + FBrtmp + '"') }
+let streamFB = () => { cmd.run('ffmpeg -re -i ' + FBInputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=580:10:enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile=fontfile=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"' + FBrtmp + '"') }
 
 // this is for Youtube only
-let streamYT = () => { cmd.run('ffmpeg -re -i ' + YTInputURL + ' -i ACE.png -i logo2.jpg -filter_complex "[1]scale=40:40[ovrl1], [0:v][ovrl1] overlay=580:10:enable=\'between(t,1,5)\'[v1];[2]scale=40:40[ovrl2], [v1][ovrl2] overlay=580:10:enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile=fontfile=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey + '"') }
+let streamYT = () => { cmd.run('ffmpeg -re -i ' + YTInputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile=fontfile=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey + '"') }
 
 // this is to stop all ffmpeg activity
 
@@ -26,6 +29,21 @@ let stop = () => { cmd.run('killall ffmpeg') }
 /* GET home page. */
 router.get('/', function (req, res, next) {
   res.render('index', { title: 'title' })
+})
+
+// logo size 
+
+router.post('/imgScale', function (req, res, next) {
+  imgScale = req.body.logoSize
+  res.redirect('/')
+})
+
+// logo placements 
+
+router.post('/logoInput', function (req, res, next) {
+  logoHeight = req.body.logoHei
+  logoHorizontal = req.body.logoHor
+  res.redirect('/')
 })
 
 // JC User rtmp key 
@@ -58,7 +76,7 @@ router.post('/streamJCScheduled', function (req, res, next) {
   let day = req.body.day
   let hour = req.body.hour
   let minute = req.body.minute
-  let date = new Date(2018, 0, 7, 22, minute)
+  let date = new Date(2018, month, day, hour, minute)
   console.log('schedule on ' + req.body.minute)
   scheduleJC = schedule.scheduleJob(date, function () {
     console.log('stream started')
@@ -107,7 +125,7 @@ router.post('/streamFBScheduled', function (req, res, next) {
   let day = req.body.day
   let hour = req.body.hour
   let minute = req.body.minute
-  let date = new Date(2018, 0, 7, 22, minute)
+  let date = new Date(2018, month, day, hour, minute)
   console.log('schedule on ' + req.body.minute)
   scheduleFB = schedule.scheduleJob(date, function () {
     console.log('stream started.')
@@ -156,7 +174,7 @@ router.post('/streamYTScheduled', function (req, res, next) {
   let day = req.body.day
   let hour = req.body.hour
   let minute = req.body.minute
-  let date = new Date(2018, 0, 7, 22, minute)
+  let date = new Date(2018, month, day, hour, minute)
   console.log('schedule on ' + req.body.minute)
   scheduleYT = schedule.scheduleJob(date, function () {
     console.log('stream started.')
