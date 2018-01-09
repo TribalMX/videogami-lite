@@ -11,6 +11,7 @@
     "debug": "~2.6.9",
     "express": "~4.15.5",
     "jade": "~1.11.0",
+    "mongodb": "^3.0.1",
     "morgan": "~1.9.0",
     "node-cmd": "^3.0.0",
     "node-schedule": "^1.2.5",
