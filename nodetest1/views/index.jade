@@ -7,6 +7,12 @@ block content
     button(type="button") Stop
   br
 
+  h2 get duration
+  form(action='/duration', method='post', id='duration')
+    button(type="submit") start timer
+  form(action='/returnDuration', method='post', id='duration')
+    button(type="submit") end timer
+
   h2 Logo size
   form(action='/imgScale', method='post', id='imgScaleForm')
     label(for='logoSize') Adust size (higher - the larger) 
@@ -25,17 +31,50 @@ block content
     br
     button(type="submit") submit
 
+  h2 Input source 
+  form(action='/input', method='post', id='input')
+    label(for='input ') Enter your HLS input 
+    input(type='text', value='', name='input', id='input')
+    button(type="submit") submit
+
+  h2 Stream settings
+  h3 choose your streaming destinations
+  form(action='/streamsettings', method='post', id='streamSettings')
+    label(for='youtube') Youtube 
+    input(type='checkbox', value='true', name='youtube', id='youtube') 
+    br
+    label(for='Facebook') Facebook  
+    input(type='hidden', value='', name='rtmplink', id='FBNowInputBox')
+    input(type='checkbox', onchange="streamFBbox()", value='true', name='facebook', id='facebook') 
+    br
+    label(for='joicaster') Joicaster 
+    input(type='checkbox', value='true', name='joicaster', id='joicaster') 
+    br
+    br
+    button(type="submit") Stream now
+    br
+    br 
+    label(for='Month ') Month (1-12)
+    input(type='text', value='', name='month', id='Month')
+    br
+    label(for='Day ') Day (1-31)
+    input(type='text', value='', name='day', id='Day')
+    br
+    label(for='Hour ') Hour (1-23)
+    input(type='text', value='', name='hour', id='Hour')
+    br
+    label(for='Month ') minute (1-59)
+    input(type='text', value='', name='minute', id='minute')
+    br
+    button(type="submit") schedule stream 
+    br
+
+
   h2 JoiCaster
 
   form(action='/JCRtmpKey', method='post', id='JCRtmpKey')
     label(for='JCRtmpKey') Enter your RTMP Key 
     input(type='text', value='', name='JCRtmpKey', id='JCRtmpKey')
-    button(type="submit") submit
-  br
-
-  form(action='/JCInput', method='post', id='JCInput')
-    label(for='JCInput ') Enter your HLS or RTMP input 
-    input(type='text', value='', name='JCInput', id='JCInput')
     button(type="submit") submit
   br
 
@@ -46,7 +85,7 @@ block content
 
   form(action='/streamJCScheduled', method='post', id='JCScheduledForm-id')
     label(for='JCMonth ') Month (1-12)
-    input(type='text', value='', name='Month', id='JCMonth')
+    input(type='text', value='', name='month', id='JCMonth')
     br
     label(for='JCDay ') Day (1-31)
     input(type='text', value='', name='day', id='JCDay')
@@ -65,12 +104,6 @@ block content
   br
 
   h2 Facebook
-
-  form(action='/FBInput', method='post', id='FBInput')
-    label(for='FBInput ') Enter your HLS or RTMP input 
-    input(type='text', value='', name='FBInput', id='FBInput')
-    button(type="submit") submit
-  br
 
   button(type="button" onclick="share()") share
   br
@@ -91,7 +124,7 @@ block content
   form(action='/streamFBScheduled', method='post', id='FBScheduledForm-id')
     input(type='hidden', value='', name='rtmplink', id='FBScheduledInput')
     label(for='FBMonth ') Month (1-12)
-    input(type='text', value='', name='Month', id='FBMonth')
+    input(type='text', value='', name='month', id='FBMonth')
     br
     label(for='FBDay ') Day (1-31)
     input(type='text', value='', name='day', id='FBDay')
@@ -117,19 +150,13 @@ block content
     button(type="submit") submit
   br
 
-  form(action='/YTInput', method='post', id='YTInput')
-    label(for='YTInput ') Enter your HLS or RTMP input 
-    input(type='text', value='', name='YTInput', id='YTInput')
-    button(type="submit") submit
-  br
-
   a(href="/streamYT")
     button(type="button") Stream to Youtube Now
   br
   br
   form(action='/streamYTScheduled', method='post', id='YTScheduledForm-id')
     label(for='YTMonth ') Month (1-12)
-    input(type='text', value='', name='Month', id='YTMonth')
+    input(type='text', value='', name='month', id='YTMonth')
     br
     label(for='YTDay ') Day (1-31)
     input(type='text', value='', name='day', id='YTDay')
@@ -188,6 +215,22 @@ block content
       // Note: The call will only work if you accept the permission request
       FB.api('/913878858767085/feed', 'post', {message: 'moo!'});
       }, {scope: 'publish_pages'});
+    }
+
+    //fb settings
+
+        function streamFBbox(){
+      FB.api(
+        '/913878858767085/live_videos',
+        'POST',
+        {access_token: "EAAC31u6V1ocBANKZAMreCkjL3UjJoNpRI5HoKfvsXQ95QZBCJfyjKcjzPrYvcK0ZBNsDQH039C471FcoUhpT0SgxKkOP5UKZAquPtlDZB8I7ZCFas0syDtHhxpHywpSx5eU2ZAaZBFvqq9vLxRE5jjmEE2zsWqy929QpRjFqe25IDQZDZD"},
+        function(response) {
+            let rtmp = response.stream_url
+            console.log(rtmp)
+            console.log(response)
+            document.getElementById("FBNowInputBox").value = rtmp;
+        }
+      );
     }
 
     // stream to FB page directly
