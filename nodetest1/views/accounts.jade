@@ -1,0 +1,26 @@
+extends layout
+
+block content
+
+  h2 JoiCaster
+
+  form(action='/JCRtmpKey', method='post', id='JCRtmpKey')
+    label(for='JCRtmpKey') Enter your RTMP Key 
+    input(type='text', value='', name='JCRtmpKey', id='JCRtmpKey')
+    button(type="submit") submit
+  br
+
+  h2 Facebook
+
+  p To set up facebook, you will need to change the access tokin on the main index page and app id
+
+  br
+
+  h2 Youtube
+
+  form(action='/YTRtmpKey', method='post', id='YTRtmpKey')
+    label(for='YTRtmpKey') Enter your RTMP Key 
+    input(type='text', value='', name='YTRtmpKey', id='YTRtmpKey')
+    button(type="submit") submit
+  br
+
