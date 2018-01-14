@@ -12,6 +12,7 @@ let logoHeight = 10
 let logoHorizontal = 580
 let imgScale = '40:40'
 let stopwatch = new Stopwatch()
+let outputName = 'stream'
 
 // this is for joicaster
 let streamJC = () => { console.log('Now streaming to Joicaster'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile=fontfile=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://ingest-us-east.a.switchboard.zone/live/' + JCrtmpKey + '"') }
@@ -23,7 +24,7 @@ let streamFB = () => { console.log('Now streaming to Facebook'); cmd.run('ffmpeg
 let streamYT = () => { console.log('Now streaming to Youtube'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile=fontfile=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey + '"') }
 
 // this is for output mp4
-let outputMp4 = () => { cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile=fontfile=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 ' + './output/trying.mp4') }
+let outputMp4 = () => { cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile=fontfile=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 ' + './output/' + outputName + '.mp4') }
 
 // this is to stop all ffmpeg activity
 
@@ -39,6 +40,10 @@ let scheduleStream = null
 
 router.post('/streamsettings', function (req, res, next) {
   console.log(req.body)
+  if (req.body.youtube || req.body.facebook || req.body.joicaster) {
+    stopwatch.start()
+    outputMp4()
+  }
   if (req.body.youtube === 'true' && !req.body.month) {
     streamYT()
   }
@@ -70,8 +75,9 @@ router.post('/streamsettings', function (req, res, next) {
       }
       scheduleStream.cancel()
     })
+    res.redirect('/')
   }
-  res.redirect('/')
+  res.render('labeling', {name: outputName})
 })
 
 // cancel scheduled task
@@ -128,6 +134,7 @@ router.post('/input', function (req, res, next) {
 
 router.get('/stop', function (req, res, next) {
   stop()
+  stopwatch.stop()
   res.redirect('/')
 })
 
@@ -142,4 +149,12 @@ router.get('/setup_accounts', function (req, res, next) {
   res.render('accounts')
 })
 
+router.get('/logo_setup', function (req, res, next) {
+  res.render('logo')
+})
+
+router.post('/output_name', function (req, res, next) {
+  outputName = req.body.name
+  res.redirect('/')
+})
 module.exports = router

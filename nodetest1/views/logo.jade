@@ -1,0 +1,21 @@
+extends layout
+
+block content
+
+  h2 Logo size
+  form(action='/imgScale', method='post', id='imgScaleForm')
+    label(for='logoSize') Adust size (higher - the larger) 
+    input(type='text', value='', name='logoSize', id='logoSize', placeholder='40:40')
+    br
+    button(type="submit") submit
+
+  
+  h2 Logo placements
+  form(action='/logoInput', method='post', id='logoForm')
+    label(for='logoHor') Adust horizontal (higher - left, lower right) 
+    input(type='text', value='', name='logoHor', id='logoHor', placeholder='580')
+    br
+    label(for='logoHei') Adust height (higher - lower down, lower-higher up) 
+    input(type='text', value='', name='logoHei', id='logoHei', placeholder='10')
+    br
+    button(type="submit") submit

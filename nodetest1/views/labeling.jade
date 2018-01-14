@@ -1,0 +1,17 @@
+extends layout
+
+block content
+
+  h1 Now streaming #{name}
+    
+  iframe(width="560" height="349" src="https://www.youtube.com/embed/live_stream?channel=UCXwXlD9sodFJ59ghod7FIzg" frameborder="0" allowfullscreen)
+
+   h2 Add a label 
+  form(action='/input', method='post', id='input')
+    label(for='input ') Enter your HLS input 
+    input(type='text', value='', name='input', id='input')
+    button(type="submit") submit
+
+  a(href="/stop")
+    button(type="button") Stop Streaming
+  br

@@ -8,34 +8,26 @@ block content
     button(type="button") Go to account setup
   br
 
+  a(href="/logo_setup")
+    button(type="button") Go to logo setup
+  br
+
   h2 Get duration
   form(action='/duration', method='post', id='duration')
     button(type="submit") start timer
   form(action='/returnDuration', method='post', id='duration')
     button(type="submit") end timer
 
-  h2 Logo size
-  form(action='/imgScale', method='post', id='imgScaleForm')
-    label(for='logoSize') Adust size (higher - the larger) 
-    input(type='text', value='', name='logoSize', id='logoSize', placeholder='40:40')
-    br
-    button(type="submit") submit
-
-  
-  h2 Logo placements
-  form(action='/logoInput', method='post', id='logoForm')
-    label(for='logoHor') Adust horizontal (higher - left, lower right) 
-    input(type='text', value='', name='logoHor', id='logoHor', placeholder='580')
-    br
-    label(for='logoHei') Adust height (higher - lower down, lower-higher up) 
-    input(type='text', value='', name='logoHei', id='logoHei', placeholder='10')
-    br
-    button(type="submit") submit
-
   h2 Input source 
   form(action='/input', method='post', id='input')
     label(for='input ') Enter your HLS input 
     input(type='text', value='', name='input', id='input')
+    button(type="submit") submit
+
+  h2 Stream Name
+  form(action='/output_name', method='post', id='streamName')
+    label(for='input ') Enter your Stream Name
+    input(type='text', value='', name='name', id='streamName')
     button(type="submit") submit
 
   h2 Stream settings
