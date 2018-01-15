@@ -3,15 +3,26 @@ const router = express.Router()
 const cmd = require('node-cmd')
 const schedule = require('node-schedule')
 const Stopwatch = require('timer-stopwatch')
+const db = require('./db/labels.js')
 
+// rtmp stream keys
 let YTrtmpKey = 'xz4t-2x3s-rwd2-497b'
 let JCrtmpKey = 'rickysychan-7hup2-mqxsa-b6kmd-gj2gq'
-let inputURL = 'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8'
 let FBrtmp = null
+
+// input urls
+let inputURL = 'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8'
+
+// logo settings
+
 let logoHeight = 10
 let logoHorizontal = 580
 let imgScale = '40:40'
+
+// stopwatch
 let stopwatch = new Stopwatch()
+
+// stream name
 let outputName = 'stream'
 
 // this is for joicaster
@@ -25,6 +36,14 @@ let streamYT = () => { console.log('Now streaming to Youtube'); cmd.run('ffmpeg 
 
 // this is for output mp4
 let outputMp4 = () => { cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile=fontfile=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 ' + './output/' + outputName + '.mp4') }
+
+// this is for trimming the video with start and end time
+
+let startTime = null
+let endTime = null
+let trimName = null
+
+let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -i ./output/sample.mp4 -to ' + endTime + ' -c copy ./cut-videos/' + trimName + '.mp4') }
 
 // this is to stop all ffmpeg activity
 
@@ -43,6 +62,7 @@ router.post('/streamsettings', function (req, res, next) {
   if (req.body.youtube || req.body.facebook || req.body.joicaster) {
     stopwatch.start()
     outputMp4()
+
   }
   if (req.body.youtube === 'true' && !req.body.month) {
     streamYT()
@@ -156,5 +176,22 @@ router.get('/logo_setup', function (req, res, next) {
 router.post('/output_name', function (req, res, next) {
   outputName = req.body.name
   res.redirect('/')
+})
+
+router.get('/editing', function (req, res, next) {
+  stop()
+  res.render('editing')
+})
+
+router.post('/trim', function (req, res, next) {
+  startTime = req.body.startTime
+  endTime = req.body.endTime
+  trimName = req.body.cutName
+  edit()
+  res.render('editing')
+})
+
+router.get('/download', function (req, res, next) {
+  res.render('editing')
 })
 module.exports = router

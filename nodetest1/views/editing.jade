@@ -1,0 +1,20 @@
+extends layout
+
+block content
+
+    h1 Edit your video
+
+    iframe(width="560" height="349" src="https://www.youtube.com/embed/live_stream?channel=UCXwXlD9sodFJ59ghod7FIzg" frameborder="0" allowfullscreen)
+
+    h2 Trim your video
+    form(action='/trim', method='post', id='input')
+        label(for='startTime') start time
+        input(type='text', value='', name='startTime', id='startTime', placeholder="00:01:00")
+        label(for='endTime') end time
+        input(type='text', value='', name='endTime', id='endTime', placeholder="00:02:15")
+        label(for='endTime') cut name
+        input(type='text', value='', name='cutName', id='cutName', placeholder="cut1")
+        button(type="submit") submit
+
+    h2 download your edited file
+    a(href='/download') Download Me!
