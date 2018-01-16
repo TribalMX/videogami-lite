@@ -59,8 +59,8 @@ let scheduleStream = null
 
 router.post('/streamsettings', function (req, res, next) {
   console.log(req.body)
+  stopwatch.start()
   db.insertDoc(outputName)
-  db.findLabels()
   if (req.body.youtube || req.body.facebook || req.body.joicaster) {
     stopwatch.start()
     outputMp4()
@@ -98,7 +98,13 @@ router.post('/streamsettings', function (req, res, next) {
     })
     res.render('labeling', {name: outputName, labels: db.label})
   }
-  res.render('labeling', {name: outputName, labels: db.label})    
+    db.findLabels((err, labels) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      console.log("*******" + labels)
+      res.render('labeling', {name: outputName, label: JSON.stringify(labels)})
+    })  
 })
 
 // cancel scheduled task
@@ -170,6 +176,7 @@ router.post('/output_name', function (req, res, next) {
 
 router.get('/editing', function (req, res, next) {
   stop()
+  stopwatch.stop()
   res.render('editing')
 })
 
@@ -187,15 +194,34 @@ router.get('/download', function (req, res, next) {
 })
 
 router.post('/labeling/add', function (req, res, next) {
+  // let time = stopwatch.elapsed.hours + ":" + stopwatch.elapsed.minutes + ":" + stopwatch.elapsed.seconds
+  let time = stopwatch.ms/1000
+  let minutes = Math.floor(time / 60);
+  let seconds = Math.floor(time - minutes * 60);
+  let hours = Math.floor(time / 3600);
+  if(seconds < 10){
+      seconds = "0" + seconds
+    }
+  if(minutes < 10){
+    minutes = "0" + minutes
+  }
+  if(hours < 10){
+    hours = "0" + hours
+  }
+  console.log("the elapsed time: " + hours + ":" + minutes + ":" + seconds)
+  let overallTime = hours + ":" + minutes + ":" + seconds
   labelName = req.body.label
-  db.insertLabel(labelName)
+  db.insertLabel(labelName, overallTime)
   res.render('labeling')
 })
 
 router.get('/labeling/refresh', function (req, res, next) {
-  db.findLabels()
-  console.log(">>>>" + db.label)
-  res.render('labeling', {labels: db.label})
+  db.findLabels((err, labels) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
+    res.render('labeling', {name: outputName, label: JSON.stringify(labels)})
+  }) 
 })
 
 router.get('/moo1', function (req, res, next) {

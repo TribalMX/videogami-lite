@@ -10,6 +10,7 @@ const dbName = 'videogami'
 
 let documentName = null
 let labelName = null
+let time = null
 
 const insertDocument = function (db, callback) {
   // Get the documents collection
@@ -27,11 +28,16 @@ const insertDocument = function (db, callback) {
 }
 
 const insertLabel = function (db, callback) {
+
+  var key = labelName;
+  var labelObj = {};
+  labelObj[key] = time;
   // Get the documents collection
   const collection = db.collection(documentName)
   // Insert some documents
   collection.insertOne(
-    {label: labelName},
+
+    labelObj,
     function (err, result) {
       assert.equal(err, null)
       assert.equal(1, result.result.n)
@@ -41,19 +47,23 @@ const insertLabel = function (db, callback) {
     })
 }
 
-let labelsResult = null
-
-const findLabels = function(db, callback) {
+const findLabels = (db, cb) => {
   // Get the documents collection
   const collection = db.collection(documentName);
+
   // Find some documents
-  collection.find({}).toArray(function(err, docs) {
+  collection.find({}).toArray((err, docs) => {
+    // An error occurred we need to return that to the given 
+    // callback function
+    if (err) {
+      return cb(err);
+    }
+
     assert.equal(err, null);
     console.log("Found the following records");
-    // console.log(docs)
-    labelsResult = docs
-    console.log(labelsResult)
-    callback(docs);
+    console.log(docs)
+
+    return cb(null, docs);
   });
 }
 
@@ -70,8 +80,9 @@ module.exports = {
       client.close()
     })
   }),
-  insertLabel: (labelName_) => MongoClient.connect(url, function (err, client) {
+  insertLabel: (labelName_, time_) => MongoClient.connect(url, function (err, client) {
     labelName = labelName_
+    time = time_
     assert.equal(null, err)
     console.log('Connected successfully to server')
 
@@ -81,15 +92,23 @@ module.exports = {
       client.close()
     })
   }),
-  findLabels: () => MongoClient.connect(url, function (err, client) {
-    assert.equal(null, err)
-    console.log('Connected successfully to server')
+  findLabels: cb => {
+    MongoClient.connect(url, (err, client) => {
+      if (err) {
+        return cb(err)
+      }
+      console.log('Connected successfully to server')
 
-    const db = client.db(dbName)
+      const db = client.db(dbName)
 
-    findLabels(db, function () {
-      client.close()
+      findLabels(db, (err, docs) => {
+        if (err) {
+          return cb(err)
+        }
+
+        // return your documents back to the given callback
+        return cb(null, docs)
+      })
     })
-  }),
-  label: labelsResult
+  },
 }
