@@ -43,7 +43,7 @@ let startTime = null
 let endTime = null
 let trimName = null
 
-let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -i ./output/sample.mp4 -to ' + endTime + ' -c copy ./cut-videos/' + trimName + '.mp4') }
+let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -i ./output/' + outputName + '.mp4 -to ' + endTime + ' -c copy ./routes/cut-videos/' + trimName + '.mp4') }
 
 // this is to stop all ffmpeg activity
 
@@ -59,10 +59,11 @@ let scheduleStream = null
 
 router.post('/streamsettings', function (req, res, next) {
   console.log(req.body)
+  db.insertDoc(outputName)
+  db.findLabels()
   if (req.body.youtube || req.body.facebook || req.body.joicaster) {
     stopwatch.start()
     outputMp4()
-
   }
   if (req.body.youtube === 'true' && !req.body.month) {
     streamYT()
@@ -95,9 +96,9 @@ router.post('/streamsettings', function (req, res, next) {
       }
       scheduleStream.cancel()
     })
-    res.redirect('/')
+    res.render('labeling', {name: outputName, labels: db.label})
   }
-  res.render('labeling', {name: outputName})
+  res.render('labeling', {name: outputName, labels: db.label})    
 })
 
 // cancel scheduled task
@@ -105,19 +106,6 @@ router.post('/streamsettings', function (req, res, next) {
 router.post('/cancelstream', function (req, res, next) {
   console.log('canceled')
   scheduleStream.cancel()
-  res.redirect('/')
-})
-
-// get video duration
-
-router.post('/duration', function (req, res, next) {
-  stopwatch.start()
-  res.redirect('/')
-})
-
-router.post('/returnDuration', function (req, res, next) {
-  stopwatch.stop()
-  console.log(stopwatch.ms / 1000)
   res.redirect('/')
 })
 
@@ -174,7 +162,9 @@ router.get('/logo_setup', function (req, res, next) {
 })
 
 router.post('/output_name', function (req, res, next) {
-  outputName = req.body.name
+  name = req.body.name
+  outputName = name.toString()
+  console.log(outputName)
   res.redirect('/')
 })
 
@@ -192,6 +182,27 @@ router.post('/trim', function (req, res, next) {
 })
 
 router.get('/download', function (req, res, next) {
+  var file = __dirname + '/cut-videos/' + trimName + '.mp4';
+  res.download(file); // Set disposition and send it.
+})
+
+router.post('/labeling/add', function (req, res, next) {
+  labelName = req.body.label
+  db.insertLabel(labelName)
+  res.render('labeling')
+})
+
+router.get('/labeling/refresh', function (req, res, next) {
+  db.findLabels()
+  console.log(">>>>" + db.label)
+  res.render('labeling', {labels: db.label})
+})
+
+router.get('/moo1', function (req, res, next) {
+  res.render('labeling')
+})
+
+router.get('/moo2', function (req, res, next) {
   res.render('editing')
 })
 module.exports = router

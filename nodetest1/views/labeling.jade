@@ -5,13 +5,18 @@ block content
   h1 Now streaming #{name}
     
   iframe(width="560" height="349" src="https://www.youtube.com/embed/live_stream?channel=UCXwXlD9sodFJ59ghod7FIzg" frameborder="0" allowfullscreen)
-
-   h2 Add a label 
-  form(action='/input', method='post', id='input')
-    label(for='input ') label
-    input(type='text', value='', name='input', id='input')
+  br
+  br
+  h2 Labels #{labels}
+  a(href="/labeling/refresh")
+    button(type="button") refresh labels
+  br
+  h2 Add a label 
+  form(action='/labeling/add', method='post', id='insertLabel')
+    label(for='insertLabel ') Add label
+    input(type='text', value='', name='label', id='insertLabel')
     button(type="submit") submit
-
+  br
   a(href="/editing")
     button(type="button") Stop Streaming
   br

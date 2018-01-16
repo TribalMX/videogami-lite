@@ -12,12 +12,6 @@ block content
     button(type="button") Go to logo setup
   br
 
-  h2 Get duration
-  form(action='/duration', method='post', id='duration')
-    button(type="submit") start timer
-  form(action='/returnDuration', method='post', id='duration')
-    button(type="submit") end timer
-
   h2 Input source 
   form(action='/input', method='post', id='input')
     label(for='input ') Enter your HLS input 
@@ -68,6 +62,15 @@ block content
 
   a(href="/stop")
     button(type="button") Stop Streaming
+  br
+  br
+  br
+  a(href="/moo1")
+    button(type="button") labeling page
+  br
+
+  a(href="/moo2")
+    button(type="button") editing page
   br
   
   
