@@ -8,7 +8,8 @@ block content
   br
   br
   h2 Labels
-  p #{label}
+    each labelName in label
+      h4 #{(JSON.stringify(labelName)).substr(1).slice(0, -1).replace(/['"]+/g, '')}
   a(href="/labeling/refresh")
     button(type="button") refresh labels
   br

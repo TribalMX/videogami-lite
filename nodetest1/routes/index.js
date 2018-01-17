@@ -102,7 +102,7 @@ router.post('/streamsettings', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('labeling', {name: outputName, label: JSON.stringify(labels)})
+      res.render('labeling', {name: outputName, label: labels})
     })  
 })
 
@@ -180,7 +180,7 @@ router.get('/editing', function (req, res, next) {
     if (err) {
       return res.sendStatus(500)
     }
-    res.render('editing', {name: outputName, label: JSON.stringify(labels[1])})
+    res.render('editing', {name: outputName, label: labels})
   })  
 })
 
@@ -221,7 +221,12 @@ router.post('/labeling/add', function (req, res, next) {
   let overallTime = hours + ":" + minutes + ":" + seconds
   labelName = req.body.label
   db.insertLabel(labelName, overallTime)
-  res.render('labeling')
+  db.findLabels((err, labels) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
+    res.render('labeling', {name: outputName, label: labels})
+  }) 
 })
 
 router.get('/labeling/refresh', function (req, res, next) {
@@ -229,7 +234,7 @@ router.get('/labeling/refresh', function (req, res, next) {
     if (err) {
       return res.sendStatus(500)
     }
-    res.render('labeling', {name: outputName, label: JSON.stringify(labels)})
+    res.render('labeling', {name: outputName, label: labels})
   }) 
 })
 

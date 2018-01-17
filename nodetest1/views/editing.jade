@@ -6,7 +6,8 @@ block content
 
     iframe(width="560" height="349" src="https://www.youtube.com/embed/live_stream?channel=UCXwXlD9sodFJ59ghod7FIzg" frameborder="0" allowfullscreen)
     h2 Labels
-    p  #{label}
+        each labelName in label
+            h4 #{(JSON.stringify(labelName)).substr(1).slice(0, -1).replace(/['"]+/g, '')}
     h2 Trim your video
     form(action='/trim', method='post', id='input')
         label(for='startTime') start time

@@ -52,7 +52,7 @@ const findLabels = (db, cb) => {
   const collection = db.collection(documentName);
 
   // Find some documents
-  collection.find({}).toArray((err, docs) => {
+  collection.find({}, {projection:{ _id: 0, name: 0 }}).toArray((err, docs) => {
     // An error occurred we need to return that to the given 
     // callback function
     if (err) {
