@@ -35,7 +35,7 @@ let streamFB = () => { console.log('Now streaming to Facebook'); cmd.run('ffmpeg
 let streamYT = () => { console.log('Now streaming to Youtube'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile=fontfile=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey + '"') }
 
 // this is for output mp4
-let outputMp4 = () => { cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile=fontfile=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 ' + './output/' + outputName + '.mp4') }
+let outputMp4 = () => { cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile=fontfile=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 ' + './routes/output/' + outputName + '.mp4') }
 
 // this is for trimming the video with start and end time
 
@@ -43,7 +43,7 @@ let startTime = null
 let endTime = null
 let trimName = null
 
-let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -i ./output/' + outputName + '.mp4 -to ' + endTime + ' -c copy ./routes/cut-videos/' + trimName + '.mp4') }
+let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -i ./routes/output/' + outputName + '.mp4 -to ' + endTime + ' -c copy ./routes/cut-videos/' + trimName + '.mp4') }
 
 // this is to stop all ffmpeg activity
 
@@ -102,7 +102,6 @@ router.post('/streamsettings', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      console.log("*******" + labels)
       res.render('labeling', {name: outputName, label: JSON.stringify(labels)})
     })  
 })
@@ -177,7 +176,12 @@ router.post('/output_name', function (req, res, next) {
 router.get('/editing', function (req, res, next) {
   stop()
   stopwatch.stop()
-  res.render('editing')
+  db.findLabels((err, labels) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
+    res.render('editing', {name: outputName, label: JSON.stringify(labels[1])})
+  })  
 })
 
 router.post('/trim', function (req, res, next) {
@@ -190,6 +194,11 @@ router.post('/trim', function (req, res, next) {
 
 router.get('/download', function (req, res, next) {
   var file = __dirname + '/cut-videos/' + trimName + '.mp4';
+  res.download(file); // Set disposition and send it.
+})
+
+router.get('/downloadWhole', function (req, res, next) {
+  var file = __dirname + '/output/' + outputName + '.mp4';
   res.download(file); // Set disposition and send it.
 })
 

@@ -2,10 +2,11 @@ extends layout
 
 block content
 
-    h1 Edit your video
+    h1 Edit your video: #{name}
 
     iframe(width="560" height="349" src="https://www.youtube.com/embed/live_stream?channel=UCXwXlD9sodFJ59ghod7FIzg" frameborder="0" allowfullscreen)
-
+    h2 Labels
+    p  #{label}
     h2 Trim your video
     form(action='/trim', method='post', id='input')
         label(for='startTime') start time
@@ -17,7 +18,10 @@ block content
         button(type="submit") submit
 
     h2 download your edited file
-    a(href='/download') Download Me!
+    a(href='/download') Download trim
+    br
+    br
+    a(href='/downloadWhole') Download whole Stream
     br
     br
     a(href="/")
