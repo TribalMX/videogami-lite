@@ -31,7 +31,7 @@ const insertLabel = function (db, callback) {
 
   var key = labelName;
   var labelObj = {};
-  labelObj[key] = time;
+  labelObj[key] = " " + time;
   // Get the documents collection
   const collection = db.collection(documentName)
   // Insert some documents

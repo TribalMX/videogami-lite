@@ -1,6 +1,18 @@
 extends layout
 
 block content
+  h2 Current logos
+    each logos in logo_
+      h4 #{(JSON.stringify(logos)).substr(1).slice(0, -1).replace(/['"]+/g, '')}
+      form(action='/delete_logo', method='delete', id='deleteLogoForm')
+        input(type="hidden", name='logoName', value=logos ,id='logoDeleteInput')
+        button(type="submit") delete
+
+  h2 Upload Logo
+  form(id='uploadForm', action='http://localhost:3000/upload', method='post', encType="multipart/form-data")
+    input(type='file', value='', name='logoUpload', id='logoUpform')
+    br
+    button(type="submit") submit
 
   h2 Logo size
   form(action='/imgScale', method='post', id='imgScaleForm')
