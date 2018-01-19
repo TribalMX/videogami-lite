@@ -18,28 +18,27 @@ block content
     input(type='text', value='', name='input', id='input')
     button(type="submit") submit
 
-  h2 Stream Name
-  form(action='/output_name', method='post', id='streamName')
-    label(for='input ') Enter your Stream Name
-    input(type='text', value='', name='name', id='streamName')
-    button(type="submit") submit
-
-  h2 Stream settings
-  h3 choose your streaming destinations
+  h2 Step 2: Stream settings
   form(action='/streamsettings', method='post', id='streamSettings')
+    label(for='input ') Enter your Stream Name
+    br
+    input(type='text', value='', name='name', id='streamName')
+    br
+    h3 choose your streaming destinations
     label(for='youtube') Youtube 
-    input(type='checkbox', value='true', name='youtube', id='youtube') 
+    input(type='checkbox', onchange="enableBtnYT()", value='true', name='youtube', id='youtube') 
     br
     label(for='Facebook') Facebook  
     input(type='hidden', value='', name='rtmplink', id='FBNowInputBox')
     input(type='checkbox', onchange="streamFB()", value='true', name='facebook', id='facebook') 
     br
     label(for='joicaster') Joicaster 
-    input(type='checkbox', value='true', name='joicaster', id='joicaster') 
+    input(type='checkbox', value='true', onchange="enableBtnJC()", name='joicaster', id='joicaster') 
     br
     br
-    button(type="submit") Stream now
+    button(type="submit", disabled="disabled" id="streaNowBtn") Stream now
     br
+    h3 OR Schedule a stream
     br 
     label(for='Month ') Month (1-12)
     input(type='text', value='', name='month', id='Month')
@@ -66,7 +65,65 @@ block content
   br
   
   
-  
+  script.
+    let accr = 0
+    let checkerYT = false
+    let checkerJC = false
+    let checkerFB = false
+    function enableBtnYT(){
+      let streamName = document.getElementById("streamName").value
+      if (checkerYT === false){
+        checkerYT = true
+        accr ++ 
+        console.log(streamName)
+          if (accr > 0 && streamName){
+            document.getElementById("streaNowBtn").disabled = false;
+          } 
+        } else {
+          accr --
+          console.log(streamName)
+          checkerYT = false
+          if (accr === 0){
+            document.getElementById("streaNowBtn").disabled = true
+          }
+        }
+      }
+    function enableBtnFB(){
+      let streamName = document.getElementById("streamName").value
+      if (checkerFB === false){
+        checkerFB = true
+        accr ++ 
+        console.log(accr)
+          if (accr > 0 && streamName){
+            document.getElementById("streaNowBtn").disabled = false;
+          } 
+        } else {
+          accr --
+          console.log(accr)
+          checkerFB = false
+          if (accr === 0){
+            document.getElementById("streaNowBtn").disabled = true
+          }
+        }
+      }
+    function enableBtnJC(){
+      let streamName = document.getElementById("streamName").value
+      if (checkerJC === false){
+        checkerJC = true
+        accr ++ 
+        console.log(accr)
+          if (accr > 0 && streamName){
+            document.getElementById("streaNowBtn").disabled = false;
+          } 
+        } else {
+          accr --
+          console.log(accr)
+          checkerJC = false
+          if (accr === 0){
+            document.getElementById("streaNowBtn").disabled = true
+          }
+        }
+      }
 
   script.
     window.fbAsyncInit  = function()  {

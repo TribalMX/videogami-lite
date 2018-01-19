@@ -46,10 +46,10 @@ let outputMp4 = () => { cmd.run('ffmpeg -i ' + inputURL + ' -i ./routes/uploads/
 // this is for trimming the video with start and end time
 
 let startTime = null
-let endTime = null
+let duration = null
 let trimName = null
 
-let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -i ./routes/output/' + outputName + '.mp4 -to ' + endTime + ' -c copy ./routes/cut-videos/' + trimName + '.mp4') }
+let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./routes/output/' + outputName + '.mp4 -c copy ./routes/cut-videos/' + trimName + '.mp4') }
 
 // this is to stop all ffmpeg activity
 
@@ -64,6 +64,8 @@ router.get('/', function (req, res, next) {
 let scheduleStream = null
 
 router.post('/streamsettings', function (req, res, next) {
+  name = req.body.name
+  outputName = name.toString()
   console.log(req.body)
   stopwatch.start()
   db_label.insertDoc(outputName)
@@ -154,6 +156,7 @@ router.post('/input', function (req, res, next) {
 router.get('/stop', function (req, res, next) {
   stop()
   stopwatch.stop()
+  stopwatch.reset()
   res.redirect('/')
 })
 
@@ -170,18 +173,12 @@ router.get('/setup_accounts', function (req, res, next) {
   res.render('accounts')
 })
 
-router.post('/output_name', function (req, res, next) {
-  name = req.body.name
-  outputName = name.toString()
-  console.log(outputName)
-  res.redirect('/')
-})
-
 // editing process
 
 router.get('/editing', function (req, res, next) {
   stop()
   stopwatch.stop()
+  stopwatch.reset()
   db_label.findLabels((err, labels) => {
     if (err) {
       return res.sendStatus(500)
@@ -192,7 +189,7 @@ router.get('/editing', function (req, res, next) {
 
 router.post('/trim', function (req, res, next) {
   startTime = req.body.startTime
-  endTime = req.body.endTime
+  duration = req.body.endTime
   trimName = req.body.cutName
   edit()
   db_label.findLabels((err, labels) => {
