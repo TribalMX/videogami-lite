@@ -22,7 +22,7 @@ block content
   form(action='/streamsettings', method='post', id='streamSettings')
     label(for='input ') Enter your Stream Name
     br
-    input(type='text', value='', name='name', id='streamName')
+    input(type='text', value='', onchange="checkNameChange()", name='name', id='streamName')
     br
     h3 choose your streaming destinations
     label(for='youtube') Youtube 
@@ -30,29 +30,29 @@ block content
     br
     label(for='Facebook') Facebook  
     input(type='hidden', value='', name='rtmplink', id='FBNowInputBox')
-    input(type='checkbox', onchange="streamFB()", value='true', name='facebook', id='facebook') 
+    input(type='checkbox', onchange="streamFB()", onclick="enableBtnFB()", value='true', name='facebook', id='facebook') 
     br
     label(for='joicaster') Joicaster 
     input(type='checkbox', value='true', onchange="enableBtnJC()", name='joicaster', id='joicaster') 
     br
     br
-    button(type="submit", disabled="disabled" id="streaNowBtn") Stream now
+    button(type="submit", disabled="disabled", id="streamNowBtn") Stream now
     br
     h3 OR Schedule a stream
     br 
     label(for='Month ') Month (1-12)
-    input(type='text', value='', name='month', id='Month')
+    input(type='text', value='', name='month', id='Month', placeholder="1")
     br
     label(for='Day ') Day (1-31)
-    input(type='text', value='', name='day', id='Day')
+    input(type='text', value='', name='day', id='Day', placeholder="7")
     br
     label(for='Hour ') Hour (1-23)
-    input(type='text', value='', name='hour', id='Hour')
+    input(type='text', value='', name='hour', id='Hour', placeholder="15")
     br
     label(for='Month ') minute (1-59)
-    input(type='text', value='', name='minute', id='minute')
+    input(type='text', value='', name='minute', id='minute', placeholder="3")
     br
-    button(type="submit") schedule stream 
+    button(type="submit", disabled="disabled", id="scheduleStreamBtn") schedule stream 
     br
 
   form(action='/cancelstream', method='post', id='CancelStream')
@@ -70,6 +70,15 @@ block content
     let checkerYT = false
     let checkerJC = false
     let checkerFB = false
+    function checkNameChange(){
+      let streamName = document.getElementById("streamName").value
+      if(streamName){
+        if (accr > 0){
+            document.getElementById("streamNowBtn").disabled = false;
+            document.getElementById("scheduleStreamBtn").disabled = false;
+          } 
+      }
+    }
     function enableBtnYT(){
       let streamName = document.getElementById("streamName").value
       if (checkerYT === false){
@@ -77,14 +86,16 @@ block content
         accr ++ 
         console.log(streamName)
           if (accr > 0 && streamName){
-            document.getElementById("streaNowBtn").disabled = false;
+            document.getElementById("streamNowBtn").disabled = false;
+            document.getElementById("scheduleStreamBtn").disabled = false;
           } 
         } else {
           accr --
           console.log(streamName)
           checkerYT = false
           if (accr === 0){
-            document.getElementById("streaNowBtn").disabled = true
+            document.getElementById("streamNowBtn").disabled = true
+            document.getElementById("scheduleStreamBtn").disabled = true
           }
         }
       }
@@ -95,14 +106,23 @@ block content
         accr ++ 
         console.log(accr)
           if (accr > 0 && streamName){
-            document.getElementById("streaNowBtn").disabled = false;
+            document.getElementById("streamNowBtn").value = "processing..."
+            setTimeout(function(){ 
+              let FBrtmp = document.getElementById("FBNowInputBox").value
+              if(FBrtmp){
+              document.getElementById("streamNowBtn").disabled = false;
+              document.getElementById("scheduleStreamBtn").disabled = false;
+              }
+             }, 3000);
+             document.getElementById("streamNowBtn").value = "Stream Now"
           } 
         } else {
           accr --
           console.log(accr)
           checkerFB = false
           if (accr === 0){
-            document.getElementById("streaNowBtn").disabled = true
+            document.getElementById("streamNowBtn").disabled = true
+            document.getElementById("scheduleStreamBtn").disabled = true;
           }
         }
       }
@@ -113,14 +133,16 @@ block content
         accr ++ 
         console.log(accr)
           if (accr > 0 && streamName){
-            document.getElementById("streaNowBtn").disabled = false;
+            document.getElementById("streamNowBtn").disabled = false;
+            document.getElementById("scheduleStreamBtn").disabled = false;
           } 
         } else {
           accr --
           console.log(accr)
           checkerJC = false
           if (accr === 0){
-            document.getElementById("streaNowBtn").disabled = true
+            document.getElementById("streamNowBtn").disabled = true
+            document.getElementById("scheduleStreamBtn").disabled = true;
           }
         }
       }

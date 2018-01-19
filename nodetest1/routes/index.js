@@ -67,31 +67,45 @@ router.post('/streamsettings', function (req, res, next) {
   name = req.body.name
   outputName = name.toString()
   console.log(req.body)
-  stopwatch.start()
   db_label.insertDoc(outputName)
-  if (req.body.youtube || req.body.facebook || req.body.joicaster) {
+
+  let month = req.body.month
+  let day = req.body.day
+  let hour = req.body.hour
+  let minute = req.body.minute
+
+  let scheduled = false
+
+  if(month || day || hour || minute){
+    scheduled = true
+  }
+
+  if ((req.body.youtube || req.body.facebook || req.body.joicaster) && !scheduled) {
     stopwatch.start()
     outputMp4()
   }
-  if (req.body.youtube === 'true' && !req.body.month) {
+  if (req.body.youtube === 'true' && !scheduled) {
     streamYT()
   }
-  if (req.body.facebook === 'true' && !req.body.month) {
+  if (req.body.facebook === 'true' && !scheduled) {
     FBrtmp = req.body.rtmplink
     streamFB()
   }
-  if (req.body.joicaster === 'true' && !req.body.month) {
+  if (req.body.joicaster === 'true' && !scheduled) {
     streamJC()
   }
-  if (req.body.month) {
-    let month = req.body.month - 1
-    let day = req.body.day
-    let hour = req.body.hour
-    let minute = req.body.minute
-    let date = new Date(2018, month, day, hour, minute, 0)
+  if (scheduled) {
+    let date = new Date(2018, month - 1, day, hour, minute, 0)
     console.log('schedule on ' + req.body.hour + ':' + req.body.minute)
-    scheduleStream = schedule.scheduleJob(date, function () {
+
+    scheduleStream = schedule.scheduleJob(date, function (err) {
+      stopwatch.start()
+      outputMp4()
+      if(err){
+        console.log(err)
+      }
       console.log('stream started')
+      outputMp4()
       if (req.body.youtube === 'true') {
         streamYT()
       }
@@ -104,14 +118,21 @@ router.post('/streamsettings', function (req, res, next) {
       }
       scheduleStream.cancel()
     })
-    res.render('labeling', {name: outputName, labels: labels})
-  }
     db_label.findLabels((err, labels) => {
       if (err) {
         return res.sendStatus(500)
       }
       res.render('labeling', {name: outputName, label: labels})
     })  
+  }
+  if(!scheduled){
+    db_label.findLabels((err, labels) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      res.render('labeling', {name: outputName, label: labels})
+    })
+  }  
 })
 
 // cancel scheduled task
@@ -196,7 +217,7 @@ router.post('/trim', function (req, res, next) {
     if (err) {
       return res.sendStatus(500)
     }
-    res.render('editing', {name: outputName, label: labels})
+    res.render('editing', {name: outputName, label: labels, trim: trimName})
   })  
 })
 
@@ -213,7 +234,6 @@ router.get('/downloadWhole', function (req, res, next) {
 // label stuff
 
 router.post('/labeling/add', function (req, res, next) {
-  // let time = stopwatch.elapsed.hours + ":" + stopwatch.elapsed.minutes + ":" + stopwatch.elapsed.seconds
   let time = stopwatch.ms/1000
   let minutes = Math.floor(time / 60);
   let seconds = Math.floor(time - minutes * 60);
