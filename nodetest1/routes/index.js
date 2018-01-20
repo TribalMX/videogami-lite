@@ -30,6 +30,7 @@ let stopwatch = new Stopwatch()
 
 // stream name
 let outputName = 'stream'
+let displayName = 'displayName'
 
 // this is for joicaster
 let streamJC = () => { console.log('Now streaming to Joicaster'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./routes/uploads/ACE.png -i ./routes/uploads/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile=fontfile=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://ingest-us-east.a.switchboard.zone/live/' + JCrtmpKey + '"') }
@@ -64,8 +65,8 @@ router.get('/', function (req, res, next) {
 let scheduleStream = null
 
 router.post('/streamsettings', function (req, res, next) {
-  name = req.body.name
-  outputName = name.toString()
+  displayName = req.body.name
+  outputName = displayName.toString().replace(/\s+/g, '-').toLowerCase()
   console.log(req.body)
   db_label.insertDoc(outputName)
 
@@ -92,8 +93,6 @@ router.post('/streamsettings', function (req, res, next) {
   if(minute < 9 ){
     prettyMinute = "0" + minute
   }
-
-  console.log("at: " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute)
 
   if(month && day && hour && minute){
     scheduled = true
@@ -141,7 +140,7 @@ router.post('/streamsettings', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('labeling', {name: outputName, label: labels, date: "at " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute })
+      res.render('labeling', {name: displayName, label: labels, date: " " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute })
     })  
   }
   if(!scheduled){
@@ -149,7 +148,7 @@ router.post('/streamsettings', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('labeling', {name: outputName, label: labels, date: "Now"})
+      res.render('labeling', {name: displayName, label: labels, date: "Now"})
     })
   }  
 })
@@ -224,20 +223,20 @@ router.get('/editing', function (req, res, next) {
     if (err) {
       return res.sendStatus(500)
     }
-    res.render('editing', {name: outputName, label: labels})
+    res.render('editing', {name: displayName, label: labels})
   })  
 })
 
 router.post('/trim', function (req, res, next) {
   startTime = req.body.startTime
   duration = req.body.endTime
-  trimName = req.body.cutName
+  trimName = req.body.cutName.toString().replace(/\s+/g, '-').toLowerCase()
   edit()
   db_label.findLabels((err, labels) => {
     if (err) {
       return res.sendStatus(500)
     }
-    res.render('editing', {name: outputName, label: labels, trim: trimName})
+    res.render('editing', {name: displayName, label: labels, trim: trimName})
   })  
 })
 
