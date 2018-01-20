@@ -75,8 +75,27 @@ router.post('/streamsettings', function (req, res, next) {
   let minute = req.body.minute
 
   let scheduled = false
+  let prettyHour = hour
+  let prettyMinute = minute
+  let prettyMonth = month
+  let prettyDay = day
 
-  if(month || day || hour || minute){
+  if(month < 9 ){
+    prettyMonth = "0" + month
+  }
+  if(day < 9 ){
+    prettyDay = "0" + day
+  }
+  if(hour < 9 ){
+    prettyHour = "0" + hour
+  }
+  if(minute < 9 ){
+    prettyMinute = "0" + minute
+  }
+
+  console.log("at: " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute)
+
+  if(month && day && hour && minute){
     scheduled = true
   }
 
@@ -122,7 +141,7 @@ router.post('/streamsettings', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('labeling', {name: outputName, label: labels})
+      res.render('labeling', {name: outputName, label: labels, date: "at " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute })
     })  
   }
   if(!scheduled){
@@ -130,7 +149,7 @@ router.post('/streamsettings', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('labeling', {name: outputName, label: labels})
+      res.render('labeling', {name: outputName, label: labels, date: "Now"})
     })
   }  
 })
@@ -178,6 +197,7 @@ router.get('/stop', function (req, res, next) {
   stop()
   stopwatch.stop()
   stopwatch.reset()
+  console.log("all ffmpeg processes aborted")
   res.redirect('/')
 })
 

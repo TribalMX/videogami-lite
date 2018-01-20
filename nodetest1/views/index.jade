@@ -12,13 +12,13 @@ block content
     button(type="button") Go to logo setup
   br
 
-  h2 Input source 
+  h2 Step 1: Enter Your Input source 
   form(action='/input', method='post', id='input')
     label(for='input ') Enter your HLS input 
     input(type='text', value='', name='input', id='input')
     button(type="submit") submit
 
-  h2 Step 2: Stream settings
+  h2 Step 2: Stream Settings
   form(action='/streamsettings', method='post', id='streamSettings')
     label(for='input ') Enter your Stream Name
     br
@@ -36,23 +36,23 @@ block content
     input(type='checkbox', value='true', onchange="enableBtnJC()", name='joicaster', id='joicaster') 
     br
     br
-    button(type="submit", disabled="disabled", id="streamNowBtn") Stream now
+    button(type="button", disabled="disabled", onclick="clearSchedule()", id="streamNowBtn") Stream now
     br
     h3 OR Schedule a stream
     br 
     label(for='Month ') Month (1-12)
-    input(type='text', value='', name='month', id='Month', placeholder="1")
+    input(type='text', value='', name='month', id='month', placeholder="1")
     br
     label(for='Day ') Day (1-31)
-    input(type='text', value='', name='day', id='Day', placeholder="7")
+    input(type='text', value='', name='day', id='day', placeholder="7")
     br
     label(for='Hour ') Hour (1-23)
-    input(type='text', value='', name='hour', id='Hour', placeholder="15")
+    input(type='text', value='', name='hour', id='hour', placeholder="15")
     br
     label(for='Month ') minute (1-59)
     input(type='text', value='', name='minute', id='minute', placeholder="3")
     br
-    button(type="submit", disabled="disabled", id="scheduleStreamBtn") schedule stream 
+    button(type="button", onclick="checkScheduleInput()", disabled="disabled", id="scheduleStreamBtn") schedule stream 
     br
 
   form(action='/cancelstream', method='post', id='CancelStream')
@@ -78,6 +78,39 @@ block content
             document.getElementById("scheduleStreamBtn").disabled = false;
           } 
       }
+    }
+    function isANumber(str){
+      return !/\D/.test(str);
+    }
+    function checkScheduleInput(){
+      let month = document.getElementById("month").value
+      let day = document.getElementById("day").value
+      let hour = document.getElementById("hour").value
+      let minute = document.getElementById("minute").value 
+      console.log(month)
+      console.log(!isANumber(month))
+
+      if((month > 12 || month < 0 || !isANumber(month) ) 
+      || (day > 31 || day < 1 || !isANumber(day)) 
+      || (hour > 23 || hour < 1 || !isANumber(hour)) 
+      || (minute > 59 || minute < 1|| !isANumber(minute)) ){
+        alert("oops, you made a mistake on the input")
+      } else {
+        let form = document.getElementById("streamSettings")
+        document.getElementById("streamSettings").addEventListener("click", function () {
+        form.submit();
+      })
+      }
+    }
+    function clearSchedule(){
+      document.getElementById("month").value = ''
+      document.getElementById("day").value = ''
+      document.getElementById("hour").value = ''
+      document.getElementById("minute").value = ''
+      let form = document.getElementById("streamSettings")
+      document.getElementById("streamSettings").addEventListener("click", function () {
+        form.submit();
+      })
     }
     function enableBtnYT(){
       let streamName = document.getElementById("streamName").value
