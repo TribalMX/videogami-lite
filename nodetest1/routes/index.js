@@ -66,7 +66,7 @@ let scheduleStream = null
 
 router.post('/streamsettings', function (req, res, next) {
   displayName = req.body.name
-  outputName = displayName.toString().replace(/\s+/g, '-').toLowerCase()
+  outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   console.log(req.body)
   db_label.insertDoc(outputName)
 
@@ -230,7 +230,7 @@ router.get('/editing', function (req, res, next) {
 router.post('/trim', function (req, res, next) {
   startTime = req.body.startTime
   duration = req.body.endTime
-  trimName = req.body.cutName.toString().replace(/\s+/g, '-').toLowerCase()
+  trimName = req.body.cutName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   edit()
   db_label.findLabels((err, labels) => {
     if (err) {
