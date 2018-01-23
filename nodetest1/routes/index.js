@@ -247,25 +247,8 @@ router.get('/download', function (req, res, next) {
 })
 
 router.get('/downloadWhole', function (req, res, next) {
-
-  db_label.findLabels((err, labels) => {
-    if (err) {
-      return res.sendStatus(500)
-    }
-    db_trims.findTrims((err, trims_) => {
-      if (err) {
-        return res.sendStatus(500)
-      }
-      res.render('editing', {name: displayName, label: labels, trims: trims_, trim: trimName})
-    }) 
-  })
-  db_trims.findWhole((err, trims_) => {
-    if (err) {
-      return res.sendStatus(500)
-    }
   var file = './videos/output/' + outputName + '.mp4';
   res.download(file); // Set disposition and send it.
-  }
 })
 
 // label stuff
