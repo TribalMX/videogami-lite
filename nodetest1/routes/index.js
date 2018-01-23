@@ -5,6 +5,7 @@ const schedule = require('node-schedule')
 const Stopwatch = require('timer-stopwatch')
 const db_label = require('./db/labels.js')
 const db_logo = require('./db/logos.js')
+const db_trims = require('./db/trims.js')
 const fileUpload = require('express-fileupload');
 
 // upload
@@ -136,7 +137,7 @@ router.post('/streamsettings', function (req, res, next) {
       }
       scheduleStream.cancel()
     })
-    res.render('labeling', {name: displayName, label: '', date:  " " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute })
+    res.render('labeling', {name: displayName, label: '', date:  " " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute})
   }
   res.render('labeling', {name: displayName, label: '', date: "Now"})
 })
@@ -207,12 +208,18 @@ router.get('/editing', function (req, res, next) {
   stop()
   stopwatch.stop()
   stopwatch.reset()
+  db_trims.locateDoc(outputName)
   db_label.findLabels((err, labels) => {
     if (err) {
       return res.sendStatus(500)
     }
-    res.render('editing', {name: displayName, label: labels})
-  })  
+    db_trims.findTrims((err, trims_) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      res.render('editing', {name: displayName, label: labels, trims: trims_, trim: trimName})
+    }) 
+  })   
 })
 
 router.post('/trim', function (req, res, next) {
@@ -220,12 +227,18 @@ router.post('/trim', function (req, res, next) {
   duration = req.body.endTime
   trimName = req.body.cutName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   edit()
+  db_trims.insertTrim(trimName)
   db_label.findLabels((err, labels) => {
     if (err) {
       return res.sendStatus(500)
     }
-    res.render('editing', {name: displayName, label: labels, trim: trimName})
-  })  
+    db_trims.findTrims((err, trims_) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      res.render('editing', {name: displayName, label: labels, trims: trims_, trim: trimName})
+    }) 
+  })   
 })
 
 router.get('/download', function (req, res, next) {
@@ -234,8 +247,25 @@ router.get('/download', function (req, res, next) {
 })
 
 router.get('/downloadWhole', function (req, res, next) {
+
+  db_label.findLabels((err, labels) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
+    db_trims.findTrims((err, trims_) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      res.render('editing', {name: displayName, label: labels, trims: trims_, trim: trimName})
+    }) 
+  })
+  db_trims.findWhole((err, trims_) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
   var file = './videos/output/' + outputName + '.mp4';
   res.download(file); // Set disposition and send it.
+  }
 })
 
 // label stuff
@@ -316,5 +346,20 @@ router.post('/delete_logo', function (req, res, next) {
     res.render('logo', {name: outputName, logo_: logo})
   })
 })
-
+router.post('/downloadTrims', function (req, res, next) {
+  let trimName = req.body.trimName
+  var file = './videos/cut-videos/' + trimName + '.mp4';
+  res.download(file); // Set disposition and send it.
+  db_label.findLabels((err, labels) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
+    db_trims.findTrims((err, trims_) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      res.render('editing', {name: displayName, label: labels, trims: trims_, trim: trimName})
+    }) 
+  })   
+})
 module.exports = router

@@ -10,7 +10,7 @@ block content
   br
   h2 Labels
     each labelName in label
-      h4 #{(JSON.stringify(labelName)).substr(1).slice(0, -1).replace(/['"]+/g, '')}
+      h4 #{(JSON.stringify(labelName)).substr(1).slice(8, -1).replace(/['"]+/g, '')}
   a(href="/labeling/refresh")
     button(type="button") refresh labels
   br
