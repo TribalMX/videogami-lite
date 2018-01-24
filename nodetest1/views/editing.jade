@@ -8,6 +8,11 @@ block content
     h2 Labels
         each labelName in label
             h4 #{(JSON.stringify(labelName)).substr(1).slice(8, -1).replace(/['"]+/g, '')}
+    form(action='/editing/addLabel', method='post', id='EditAddLabel')
+        label(for='startTime') add label 
+        input(type='text', value='', name='newLabel', id='editinglabelTime', placeholder="Label Name")
+        input(type='text', value='', name='newLabelTime', id='editinglabelTime', placeholder="00:01:00")
+        button(type="submit") submit
     h2 Trim your video
     form(action='/trim', method='post', id='input')
         label(for='startTime') start time

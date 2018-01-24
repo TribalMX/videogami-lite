@@ -239,6 +239,29 @@ router.get('/editing_station/:collection_name', function (req, res, next) {
    }, 1000);
 })
 
+router.post('/editing_station/:collection_name/addLabel', function (req, res, next) {
+  let collectionName = req.params.collection_name.slice(1, -1)
+  let newLabel = req.body.newLabel
+  let newLabelTime = req.body.newLabelTime
+  db_trims.locateDoc(collectionName)
+  db_label.locateDoc(collectionName)
+
+  setTimeout(function(){ 
+    db_label.insertLabel(newLabel, newLabelTime)
+    db_label.findLabels((err, labels) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      db_trims.findTrims((err, trims_) => {
+        if (err) {
+          return res.sendStatus(500)
+        }
+        res.render('editing_stream', {name: collectionName, label: labels, trims: trims_, trim: trimName})
+      }) 
+    }) 
+   }, 1000);
+})
+
 // editing process
 
 router.get('/editing', function (req, res, next) {
@@ -288,6 +311,28 @@ router.get('/downloadWhole', function (req, res, next) {
   res.download(file); // Set disposition and send it.
 })
 
+router.post('/editing/addLabel', function (req, res, next) {
+  let newLabel = req.body.newLabel
+  let newLabelTime = req.body.newLabelTime
+  db_trims.locateDoc(outputName)
+  db_label.locateDoc(outputName)
+
+  setTimeout(function(){ 
+    db_label.insertLabel(newLabel, newLabelTime)
+    db_label.findLabels((err, labels) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      db_trims.findTrims((err, trims_) => {
+        if (err) {
+          return res.sendStatus(500)
+        }
+        res.render('editing_stream', {name: displayName, label: labels, trims: trims_, trim: trimName})
+      }) 
+    }) 
+   }, 1000);
+})
+
 // label stuff
 
 router.post('/labeling/add', function (req, res, next) {
@@ -321,7 +366,7 @@ router.get('/labeling/refresh', function (req, res, next) {
     if (err) {
       return res.sendStatus(500)
     }
-    res.render('labeling', {name: outputName, label: labels})
+    res.render('labeling', {name: displayName, label: labels})
   }) 
 })
 
