@@ -1,11 +1,17 @@
 const express = require('express')
 const router = express.Router()
 const cmd = require('node-cmd')
-const schedule = require('node-schedule')
-const Stopwatch = require('timer-stopwatch')
+
+//database functions
+
 const db_label = require('./db/labels.js')
 const db_logo = require('./db/logos.js')
 const db_trims = require('./db/trims.js')
+const db_edit = require('./db/editing_station.js')
+
+// extensions
+const schedule = require('node-schedule')
+const Stopwatch = require('timer-stopwatch')
 const fileUpload = require('express-fileupload');
 
 // upload
@@ -200,6 +206,37 @@ router.post('/YTRtmpKey', function (req, res, next) {
 
 router.get('/setup_accounts', function (req, res, next) {
   res.render('accounts')
+})
+
+// editing station
+
+router.get('/editing_station', function (req, res, next) {
+  db_edit.getCollections((err, collectionNames) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
+    res.render('editing_station', {collections: collectionNames})
+  })   
+})
+
+router.get('/editing_station/:collection_name', function (req, res, next) {
+  let collectionName = req.params.collection_name.slice(1, -1)
+  db_trims.locateDoc(collectionName)
+  db_label.locateDoc(collectionName)
+
+  setTimeout(function(){ 
+    db_label.findLabels((err, labels) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      db_trims.findTrims((err, trims_) => {
+        if (err) {
+          return res.sendStatus(500)
+        }
+        res.render('editing_stream', {name: collectionName, label: labels, trims: trims_, trim: trimName})
+      }) 
+    }) 
+   }, 1000);
 })
 
 // editing process

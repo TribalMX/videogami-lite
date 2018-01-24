@@ -1,0 +1,9 @@
+extends layout
+
+block content
+
+    h1 Streams
+    br
+    each collection in collections
+        a(href='/editing_station/#{JSON.stringify(collection.name)}') #{JSON.stringify(collection.name).slice(1, -1)}
+        br

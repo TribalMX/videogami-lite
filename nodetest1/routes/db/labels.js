@@ -108,4 +108,11 @@ module.exports = {
       })
     })
   },
+  locateDoc: (docName) => MongoClient.connect(url, function (err, client) {
+    documentName = docName
+    assert.equal(null, err)
+    console.log('Connected successfully to server')
+    console.log('locate doc labels')
+    client.close()
+  })
 }

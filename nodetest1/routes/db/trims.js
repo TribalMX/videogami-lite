@@ -73,6 +73,7 @@ module.exports = {
     documentName = docName
     assert.equal(null, err)
     console.log('Connected successfully to server')
+    console.log('locate doc trims')
     client.close()
   }),
   insertTrim: (trimName_) => MongoClient.connect(url, function (err, client) {
