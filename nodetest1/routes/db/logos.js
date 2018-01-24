@@ -1,6 +1,7 @@
 const MongoClient = require('mongodb').MongoClient
 const assert = require('assert')
 const routerVariable = require('../index.js')
+const fs = require('fs');
 
 // Connection URL
 const url = 'mongodb://localhost:27017'
@@ -54,6 +55,13 @@ const deleteLogos = function (db, callback) {
         assert.equal(1, result.result.n);
         console.log("Removed the document");
         callback(result);
+      });
+      fs.unlink("./public/images/" + logoForDeletion.slice(1), (err) => {
+        if (err) {
+            console.log("failed to delete local image:"+err);
+        } else {
+            console.log('successfully deleted local image');                                
+        }
       });    
   }
 

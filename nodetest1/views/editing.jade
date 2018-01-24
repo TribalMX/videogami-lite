@@ -31,12 +31,20 @@ block content
     br
     br
     a(href="/")
-        button(type="button") Take me back
+        button(type="button") Home page
     br
     h2 Your other edited videos
         each video in trims
             h4 #{(JSON.stringify(video)).substr(1).slice(33, -1).replace(/['"]+/g, '')}
             form(action='/downloadTrims', method='post', id='input') 
-                input(type='hidden', value=(JSON.stringify(video)).substr(1).slice(48, -1).replace(/['"]+/g, ''), name='trimName', id='startTime')
+                input(type='hidden', value=(JSON.stringify(video)).substr(1).slice(48, -1).replace(/['"]+/g, ''), name='trimName', id='trimName')
                 button(type="submit") Download
+            form(action='/deleteTrim', method='post', id='input') 
+                input(type='hidden', value=(JSON.stringify(video)).substr(1).slice(48, -1).replace(/['"]+/g, ''), name='deleteTrim', id='deleteTrim')
+                button(type="submit") Delete
+
+    script.
+        function deleteTrim(){
+            let streamName = document.getElementById("streamName").value
+        }
 

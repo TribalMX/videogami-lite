@@ -13,6 +13,13 @@ block content
   a(href="/editing_station")
     button(type="button") Go to Editing Station
   br
+  h2 Stream Status
+    h4 Status: #{streamStatus}
+    h4 End Points: #{streamDestinations}
+    br
+  a(href="/labeling")
+    button(type="button") Go to labeling page
+  br
 
   h2 Step 1: Enter Your Input source 
   form(action='/input', method='post', id='input')

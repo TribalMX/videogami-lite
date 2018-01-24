@@ -9,10 +9,15 @@ const db_logo = require('./db/logos.js')
 const db_trims = require('./db/trims.js')
 const db_edit = require('./db/editing_station.js')
 
-// extensions
+// packages
 const schedule = require('node-schedule')
 const Stopwatch = require('timer-stopwatch')
 const fileUpload = require('express-fileupload');
+
+// stream status
+
+let streamStatus = "Not Streaming"
+let streamDestinations = []
 
 // upload
 
@@ -61,11 +66,29 @@ let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i 
 
 // this is to stop all ffmpeg activity
 
-let stop = () => { cmd.run('killall ffmpeg') }
+let stop = () => { 
+  streamStatus = "Not Streaming";
+  streamDestinations = [];
+  stopwatch.stop();
+  stopwatch.reset();
+  cmd.run('killall ffmpeg') 
+}
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
-  res.render('index', { title: 'title' })
+  res.render('index', { streamStatus: streamStatus, streamDestinations: streamDestinations })
+})
+
+
+// get labeling page
+
+router.get('/labeling', function (req, res, next) {
+  db_label.findLabels((err, labels) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
+    res.render('labeling', {name: displayName, label: labels})
+  }) 
 })
 
 // stream settings
@@ -108,16 +131,20 @@ router.post('/streamsettings', function (req, res, next) {
   if ((req.body.youtube || req.body.facebook || req.body.joicaster) && !scheduled) {
     stopwatch.start()
     outputMp4()
+    streamStatus = "Live"
   }
   if (req.body.youtube === 'true' && !scheduled) {
     streamYT()
+    streamDestinations.push(" Youtube")
   }
   if (req.body.facebook === 'true' && !scheduled) {
     FBrtmp = req.body.rtmplink
     streamFB()
+    streamDestinations.push(" Facebook")
   }
   if (req.body.joicaster === 'true' && !scheduled) {
     streamJC()
+    streamDestinations.push(" Joicaster")
   }
   if (scheduled) {
     let date = new Date(2018, month - 1, day, hour, minute, 0)
@@ -133,19 +160,22 @@ router.post('/streamsettings', function (req, res, next) {
       outputMp4()
       if (req.body.youtube === 'true') {
         streamYT()
+        streamDestinations.push(" Youtube")
       }
       if (req.body.facebook === 'true') {
         FBrtmp = req.body.rtmplink
         streamFB()
+        streamDestinations.push(" Facebook")
       }
       if (req.body.joicaster === 'true') {
         streamJC()
+        streamDestinations.push(" Joicaster")
       }
       scheduleStream.cancel()
     })
-    res.render('labeling', {name: displayName, label: '', date:  " " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute})
+    res.render('labeling', {name: displayName, label: '', date:  " " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute, streamDestination: streamDestinations})
   }
-  res.render('labeling', {name: displayName, label: '', date: "Now"})
+  res.render('labeling', {name: displayName, label: '', date: "Now", streamDestination: streamDestinations})
 })
 
 // cancel scheduled task
@@ -189,8 +219,6 @@ router.post('/input', function (req, res, next) {
 
 router.get('/stop', function (req, res, next) {
   stop()
-  stopwatch.stop()
-  stopwatch.reset()
   console.log("all ffmpeg processes aborted")
   res.redirect('/')
 })
@@ -266,8 +294,6 @@ router.post('/editing_station/:collection_name/addLabel', function (req, res, ne
 
 router.get('/editing', function (req, res, next) {
   stop()
-  stopwatch.stop()
-  stopwatch.reset()
   db_trims.locateDoc(outputName)
   db_label.findLabels((err, labels) => {
     if (err) {
@@ -331,6 +357,22 @@ router.post('/editing/addLabel', function (req, res, next) {
       }) 
     }) 
    }, 1000);
+})
+
+router.post('/deleteTrim', function (req, res, next) {
+  let trimToDelete = req.body.deleteTrim
+  db_trims.deleteTrim(trimToDelete)
+  db_label.findLabels((err, labels) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
+    db_trims.findTrims((err, trims_) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      res.render('editing', {name: displayName, label: labels, trims: trims_, trim: trimName})
+    }) 
+  }) 
 })
 
 // label stuff
@@ -411,6 +453,20 @@ router.post('/delete_logo', function (req, res, next) {
     res.render('logo', {name: outputName, logo_: logo})
   })
 })
+
+router.post('/logo_setup/use_logos', function (req, res, next) {
+  console.log(req.body)
+  db_logo.findLogos((err, logo) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
+    res.render('logo', {name: outputName, logo_: logo})
+  })
+})
+
+
+// download trims
+
 router.post('/downloadTrims', function (req, res, next) {
   let trimName = req.body.trimName
   var file = './videos/cut-videos/' + trimName + '.mp4';

@@ -8,6 +8,16 @@ block content
       form(action='/delete_logo', method='post', id='deleteLogoForm')
         input(type="hidden", name='logoName', value=JSON.stringify(logos) ,id='logoDeleteInput')
         button(type="submit") delete
+  br
+  a(href="/logo_setup")
+    button(type="button") refresh logos
+  br
+  h2 Choose the logos to use
+  each logos in logo_
+    form(action='/logo_setup/use_logos', method='post', id='useLogoForm')
+      label(for='logoUse') #{JSON.stringify(logos.logo).slice(2, -1)}
+      input(type="checkbox", name=JSON.stringify(logos.logo).slice(2, -1), value="true" ,id='logoUse') 
+  button(type="button" id="useLogoFormBtn" onclick="useFormSubmit()") submit
 
   h2 Upload Logo
   form(id='uploadForm', action='http://localhost:3000/upload', method='post', encType="multipart/form-data")
@@ -32,3 +42,12 @@ block content
     input(type='text', value='', name='logoHei', id='logoHei', placeholder='10')
     br
     button(type="submit") submit
+
+  a(href="/")
+    button(type="button") Take me back
+
+  script.
+    function useFormSubmit(){
+      let form = document.getElementById("useLogoForm")
+      form.submit();
+    }

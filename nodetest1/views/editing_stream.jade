@@ -39,4 +39,7 @@ block content
             form(action='/downloadTrims', method='post', id='input') 
                 input(type='hidden', value=(JSON.stringify(video)).substr(1).slice(48, -1).replace(/['"]+/g, ''), name='trimName', id='startTime')
                 button(type="submit") Download
+            form(action='/deleteTrim', method='post', id='input') 
+                input(type='hidden', value=(JSON.stringify(video)).substr(1).slice(48, -1).replace(/['"]+/g, ''), name='deleteTrim', id='deleteTrim')
+                button(type="submit") Delete
 

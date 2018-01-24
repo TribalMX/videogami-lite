@@ -1,6 +1,7 @@
 const MongoClient = require('mongodb').MongoClient
 const assert = require('assert')
 const routerVariable = require('../index.js')
+const fs = require('fs');
 
 // Connection URL
 const url = 'mongodb://localhost:27017'
@@ -10,6 +11,7 @@ const dbName = 'videogami'
 
 let documentName = null
 let trimName = null
+let trimToDelete = null
 
 const insertTrim_ = function (db, callback) {
 
@@ -43,7 +45,6 @@ const insertTrim_ = function (db, callback) {
       assert.equal(err, null);
       console.log("Found the following trims");
       console.log(docs)
-  
       return cb(null, docs);
     });
   }
@@ -67,13 +68,31 @@ const insertTrim_ = function (db, callback) {
     });
   }
 
+  const deleteTrim = function (db, callback) {
+    // Get the documents collection
+    const collection = db.collection(documentName)
+    // Insert some documents
+    collection.deleteOne({ Video_trim: " " + trimToDelete}, function(err, result) {
+        assert.equal(err, null);
+        assert.equal(1, result.result.n);
+        console.log("Removed the document");
+        callback(result);
+      });
+      fs.unlink("./videos/cut-videos/" + trimToDelete + ".mp4", (err) => {
+        if (err) {
+            console.log("failed to delete local image:"+err);
+        } else {
+            console.log('successfully deleted local image');                                
+        }
+      });    
+  }
+
 module.exports = {
   // Use connect method to connect to the server insert document
   locateDoc: (docName) => MongoClient.connect(url, function (err, client) {
     documentName = docName
     assert.equal(null, err)
     console.log('Connected successfully to server')
-    console.log('locate doc trims')
     client.close()
   }),
   insertTrim: (trimName_) => MongoClient.connect(url, function (err, client) {
@@ -124,5 +143,16 @@ module.exports = {
         return cb(null, docs)
       })
     })
-  }
+  },
+  deleteTrim: (TrimToDelete_) => MongoClient.connect(url, function (err, client) {
+    trimToDelete = TrimToDelete_
+    assert.equal(null, err)
+    console.log('Connected successfully to server')
+
+    const db = client.db(dbName)
+
+    deleteTrim(db, function (trimToDelete) {
+      client.close()
+    })
+  }) 
 }
