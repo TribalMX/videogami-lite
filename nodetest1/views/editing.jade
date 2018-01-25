@@ -7,8 +7,14 @@ block content
     video(width="320" height="240" controls src="file:../videos/output/#{fileName}" type="video/mp4")
     h2 Labels
         each labelName in label
-            h4 #{(JSON.stringify(labelName)).substr(1).slice(8, -1).replace(/['"]+/g, '')}
-    form(action='/editing/addLabel', method='post', id='EditAddLabel')
+            h4 #{(JSON.stringify(labelName)).substr(1).slice(41, -1).replace(/['"]+/g, '')}
+            //- form(action='/trim', method='post', id='input')
+            //- input(type='hidden', value='#{(JSON.stringify(labelName)).substr(1).slice(8, -1).replace(/['"]+/g, '')}', id='#{(JSON.stringify(labelName)).substr(1).slice(8, -1).replace(/['"]+/g, '')}')
+            button(type="button" onclick='enterStartTime()') Start Time 
+            button(type="button" onclick='enterEndTime()') End Time
+            br
+    br
+    form(action='/editing/#{name}/addLabel', method='post', id='EditAddLabel')
         label(for='startTime') add label 
         input(type='text', value='', name='newLabel', id='editinglabelTime', placeholder="Label Name")
         input(type='text', value='', name='newLabelTime', id='editinglabelTime', placeholder="00:01:00")
@@ -22,18 +28,15 @@ block content
         label(for='endTime') cut name
         input(type='text', value='', name='cutName', id='cutName', placeholder="cut1")
         button(type="submit") submit
-
-    h2 Download your edited file
-    a(href='/download') Download #{trim}
-    br
-    br
-    a(href='/downloadWhole') Download whole Stream
-    br
     br
     a(href="/")
         button(type="button") Home page
     br
-    h2 Your other edited videos
+    h2 Your edited videos
+        h4 Download #{name}
+        form(action='/downloadWhole', method='post', id='wholeStreamForm') 
+                input(type='hidden', value='#{name}', name='wholeStream', id='wholeStream')
+                button(type="submit") Download whole stream
         each video in trims
             h4 #{(JSON.stringify(video)).substr(1).slice(33, -1).replace(/['"]+/g, '')}
             form(action='/downloadTrims', method='post', id='input') 
@@ -44,7 +47,12 @@ block content
                 button(type="submit") Delete
 
     script.
-        function deleteTrim(){
-            let streamName = document.getElementById("streamName").value
+        let startTime = document.getElementById("startTime").value
+        let endTime = document.getElementById("endTime").value
+        function enterStartTime(){
+            startTime = 00:15:00
+        }
+        function enterStartTime(){
+            endTime = document.getElementById("streamName").value
         }
 

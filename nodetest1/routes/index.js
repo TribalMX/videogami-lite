@@ -247,47 +247,21 @@ router.get('/editing_station', function (req, res, next) {
   })   
 })
 
-router.get('/editing_station/:collection_name', function (req, res, next) {
-  let collectionName = req.params.collection_name.slice(1, -1)
-  db_trims.locateDoc(collectionName)
-  db_label.locateDoc(collectionName)
+router.get('/editing_station/:collection_name', async function (req, res, next) {
+  let collectionName = req.params.collection_name
+  await db_trims.locateDoc(collectionName)
+  await db_label.locateDoc(collectionName)
 
-  setTimeout(function(){ 
-    db_label.findLabels((err, labels) => {
-      if (err) {
-        return res.sendStatus(500)
-      }
+  db_label.findLabels((err, labels) => {
+      if (err) 
+          return res.sendStatus(500);
+
       db_trims.findTrims((err, trims_) => {
-        if (err) {
-          return res.sendStatus(500)
-        }
-        res.render('editing_stream', {name: collectionName, label: labels, trims: trims_, trim: trimName})
+          if (err)
+              return res.sendStatus(500);         
+          res.render('editing', {name: collectionName, label: labels, trims: trims_})
       }) 
-    }) 
-   }, 1000);
-})
-
-router.post('/editing_station/:collection_name/addLabel', function (req, res, next) {
-  let collectionName = req.params.collection_name.slice(1, -1)
-  let newLabel = req.body.newLabel
-  let newLabelTime = req.body.newLabelTime
-  db_trims.locateDoc(collectionName)
-  db_label.locateDoc(collectionName)
-
-  setTimeout(function(){ 
-    db_label.insertLabel(newLabel, newLabelTime)
-    db_label.findLabels((err, labels) => {
-      if (err) {
-        return res.sendStatus(500)
-      }
-      db_trims.findTrims((err, trims_) => {
-        if (err) {
-          return res.sendStatus(500)
-        }
-        res.render('editing_stream', {name: collectionName, label: labels, trims: trims_, trim: trimName})
-      }) 
-    }) 
-   }, 1000);
+  }) 
 })
 
 // editing process
@@ -303,7 +277,7 @@ router.get('/editing', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('editing', {name: displayName, label: labels, trims: trims_, trim: trimName})
+      res.render('editing', {name: outputName, name: displayName, label: labels, trims: trims_, trim: trimName})
     }) 
   })   
 })
@@ -332,19 +306,18 @@ router.get('/download', function (req, res, next) {
   res.download(file); // Set disposition and send it.
 })
 
-router.get('/downloadWhole', function (req, res, next) {
-  var file = './videos/output/' + outputName + '.mp4';
+router.post('/downloadWhole', function (req, res, next) {
+  var file = './videos/output/' + req.body.wholeStream + '.mp4';
   res.download(file); // Set disposition and send it.
 })
 
-router.post('/editing/addLabel', function (req, res, next) {
+router.post('/editing/:name/addLabel', async function (req, res, next) {
   let newLabel = req.body.newLabel
   let newLabelTime = req.body.newLabelTime
-  db_trims.locateDoc(outputName)
-  db_label.locateDoc(outputName)
-
-  setTimeout(function(){ 
-    db_label.insertLabel(newLabel, newLabelTime)
+  let name = req.params.name
+  await db_trims.locateDoc(name)
+  await db_label.locateDoc(name)
+  await db_label.insertLabel(newLabel, newLabelTime)
     db_label.findLabels((err, labels) => {
       if (err) {
         return res.sendStatus(500)
@@ -353,10 +326,9 @@ router.post('/editing/addLabel', function (req, res, next) {
         if (err) {
           return res.sendStatus(500)
         }
-        res.render('editing_stream', {name: displayName, label: labels, trims: trims_, trim: trimName})
+        res.render('editing', {name: name, label: labels, trims: trims_, trim: trimName})
       }) 
     }) 
-   }, 1000);
 })
 
 router.post('/deleteTrim', function (req, res, next) {
