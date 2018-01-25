@@ -16,7 +16,7 @@ const fileUpload = require('express-fileupload');
 
 // stream status
 
-let streamStatus = "Not Streaming"
+let streamStatus = "Not Streaming and no Scheduled streams"
 let streamDestinations = []
 
 // upload
@@ -67,7 +67,7 @@ let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i 
 // this is to stop all ffmpeg activity
 
 let stop = () => { 
-  streamStatus = "Not Streaming";
+  streamStatus = "Not Streaming and no Scheduled streams";
   streamDestinations = [];
   stopwatch.stop();
   stopwatch.reset();
@@ -106,22 +106,18 @@ router.post('/streamsettings', function (req, res, next) {
   let minute = req.body.minute
 
   let scheduled = false
-  let prettyHour = hour
-  let prettyMinute = minute
-  let prettyMonth = month
-  let prettyDay = day
 
   if(month < 9 ){
-    prettyMonth = "0" + month
+    month = "0" + month
   }
   if(day < 9 ){
-    prettyDay = "0" + day
+    day = "0" + day
   }
   if(hour < 9 ){
-    prettyHour = "0" + hour
+    hour = "0" + hour
   }
   if(minute < 9 ){
-    prettyMinute = "0" + minute
+    minute = "0" + minute
   }
 
   if(month && day && hour && minute){
@@ -148,7 +144,18 @@ router.post('/streamsettings', function (req, res, next) {
   }
   if (scheduled) {
     let date = new Date(2018, month - 1, day, hour, minute, 0)
-    console.log('schedule on ' + req.body.hour + ':' + req.body.minute)
+    console.log('Scheduled on ' + req.body.hour + ':' + req.body.minute)
+    streamStatus = "schedule for " + day + "/" + month + "/2018 at " + hour + ":" + minute
+    if (req.body.youtube === 'true') {
+      streamDestinations.push(" Youtube")
+    }
+    if (req.body.facebook === 'true') {
+      FBrtmp = req.body.rtmplink
+      streamDestinations.push(" Facebook")
+    }
+    if (req.body.joicaster === 'true') {
+      streamDestinations.push(" Joicaster")
+    }
 
     scheduleStream = schedule.scheduleJob(date, function (err) {
       stopwatch.start()
@@ -173,7 +180,7 @@ router.post('/streamsettings', function (req, res, next) {
       }
       scheduleStream.cancel()
     })
-    res.render('labeling', {name: displayName, label: '', date:  " " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute, streamDestination: streamDestinations})
+    res.render('labeling', {name: displayName, label: '', date:  " " + day + "/" + month + "/2018 at " + hour + ":" + minute, streamDestination: streamDestinations})
   }
   res.render('labeling', {name: displayName, label: '', date: "Now", streamDestination: streamDestinations})
 })
@@ -183,6 +190,7 @@ router.post('/streamsettings', function (req, res, next) {
 router.post('/cancelstream', function (req, res, next) {
   console.log('canceled')
   scheduleStream.cancel()
+  stop()
   res.redirect('/')
 })
 
