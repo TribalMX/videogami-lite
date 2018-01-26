@@ -92,24 +92,11 @@ router.get('/', function (req, res, next) {
 // get labeling page
 
 router.get('/labeling', function (req, res, next) {
-  let stopSign = null
-  if(scheduled){
-    stopSign = "Cancel scheduled Stream"
-  } else {
-    stopSign = "End Stream"
-  }
-
   db_label.findLabels((err, labels) => {
     if (err) {
       return res.sendStatus(500)
     }
-    let stopSign = null
-    if(scheduledTime){
-      stopSign = "Cancel scheduled Stream"
-    } else {
-      stopSign = "End Stream"
-    }
-    res.render('labeling', {name: displayName, label: labels, date: streamStatus.slice(13), terminate: stopSign, streamDestination: streamDestinations})
+    res.render('labeling', {name: displayName, label: labels, date: streamStatus.slice(13), terminate: "End Stream", streamDestination: streamDestinations})
   }) 
 })
 
@@ -191,8 +178,9 @@ router.post('/streamsettings', function (req, res, next) {
     }
 
     scheduleStream = schedule.scheduleJob(date, function (err) {
+      db_label.insertDoc(outputName)
+      streamStatus = "Live"
       stopwatch.start()
-      outputMp4()
       if(err){
         console.log(err)
       }
@@ -327,14 +315,6 @@ router.post('/editing_station/remove_stream', function (req, res, next) {
 // editing process
 
 router.get('/editing', async function (req, res, next) {
-  if(scheduled){
-    scheduledTime = null
-    db_edit.removeCollection(outputName)
-    scheduleStream.cancel()
-    scheduled = false
-    res.redirect('/')
-  }
-
   dirPath = "./videos/cut-videos/" + outputName
   mkdirp(dirPath, function(err) { 
     console.log('directory made')

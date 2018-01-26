@@ -18,7 +18,7 @@ block content
     h4 End Points: #{streamDestinations}
     br
   a(href="/labeling")
-    button(type="button") Go to streaming page
+    button(type="button" disabled="disabled" id="goStreamingPageBtn") Go to streaming page
   br
 
   h2 Step 1: Enter Your Input source 
@@ -50,16 +50,16 @@ block content
     h3 OR Schedule a stream
     br 
     label(for='Month ') Month (1-12)
-    input(type='text', value='', name='month', id='month', placeholder="1")
+    input(type='text', value='', name='month', id='month', onchange='checkSchedule()' placeholder="1")
     br
     label(for='Day ') Day (1-31)
-    input(type='text', value='', name='day', id='day', placeholder="7")
+    input(type='text', value='', name='day', id='day', onchange='checkSchedule()', placeholder="7")
     br
     label(for='Hour ') Hour (1-23)
-    input(type='text', value='', name='hour', id='hour', placeholder="15")
+    input(type='text', value='', name='hour', id='hour', onchange='checkSchedule()', placeholder="15")
     br
     label(for='Month ') minute (1-59)
-    input(type='text', value='', name='minute', id='minute', placeholder="3")
+    input(type='text', value='', name='minute', id='minute', onchange='checkSchedule()', placeholder="3")
     br
     button(type="button", onclick="checkScheduleInput()", disabled="disabled", id="scheduleStreamBtn") schedule stream 
     br
@@ -78,6 +78,8 @@ block content
   br
   form(action='/convert', method='post', id='convertForm')
     input(type='hidden', value= '#{scheduleStatus}', name='scheduleStatus', id='scheduleStatus')
+  form(action='/convert', method='post', id='convertForm')
+    input(type='hidden', value= '#{streamStatus}', name='streamStatus', id='streamStatus')
   
   
   script.
@@ -90,6 +92,12 @@ block content
       if (scheduleStatus.value === 'true') {
         document.getElementById("cancelStreamBtn").disabled = false;
         clearInterval(scheduleCheck);
+      }
+    }, 1);
+    var streamCheck = setInterval(function() {
+      if (streamStatus.value === 'Live') {
+        document.getElementById("goStreamingPageBtn").disabled = false;
+        clearInterval(streamCheck);
       }
     }, 1);
 
@@ -145,7 +153,9 @@ block content
         console.log(streamName)
           if (accr > 0 && streamName){
             document.getElementById("streamNowBtn").disabled = false;
+            if(month.value && day.value && hour.value && minute.value){
             document.getElementById("scheduleStreamBtn").disabled = false;
+            }
           } 
         } else {
           accr --
@@ -153,7 +163,9 @@ block content
           checkerYT = false
           if (accr === 0){
             document.getElementById("streamNowBtn").disabled = true
-            document.getElementById("scheduleStreamBtn").disabled = true
+            if(month.value && day.value && hour.value && minute.value){
+              document.getElementById("scheduleStreamBtn").disabled = false;
+            }
           }
         }
       }
@@ -169,7 +181,9 @@ block content
               let FBrtmp = document.getElementById("FBNowInputBox").value
               if(FBrtmp){
               document.getElementById("streamNowBtn").disabled = false;
-              document.getElementById("scheduleStreamBtn").disabled = false;
+                if(month.value && day.value && hour.value && minute.value){
+                  document.getElementById("scheduleStreamBtn").disabled = false;
+                }
               }
              }, 3000);
              document.getElementById("streamNowBtn").value = "Stream Now"
@@ -192,7 +206,9 @@ block content
         console.log(accr)
           if (accr > 0 && streamName){
             document.getElementById("streamNowBtn").disabled = false;
-            document.getElementById("scheduleStreamBtn").disabled = false;
+                if(month.value && day.value && hour.value && minute.value){
+                  document.getElementById("scheduleStreamBtn").disabled = false;
+                }
           } 
         } else {
           accr --
@@ -203,6 +219,10 @@ block content
             document.getElementById("scheduleStreamBtn").disabled = true;
           }
         }
+      }
+      function checkSchedule(){
+        if(month.value && day.value && hour.value && minute.value && streamName.value && (youtube.value || facebook.value || joicaster.value))
+          document.getElementById("scheduleStreamBtn").disabled = false;
       }
 
   script.
