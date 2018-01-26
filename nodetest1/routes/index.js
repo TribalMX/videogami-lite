@@ -220,6 +220,7 @@ router.post('/streamsettings', function (req, res, next) {
 router.post('/convert', function (req, res, next) {
   displayName = req.body.name
   outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
+  db_label.insertDoc(outputName)
   outputMp4()
   streamStatus = "Converting"
   console.log(">>>>>" + outputName)
