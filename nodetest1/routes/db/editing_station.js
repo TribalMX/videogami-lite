@@ -1,6 +1,8 @@
 const MongoClient = require('mongodb').MongoClient
 const assert = require('assert')
 const routerVariable = require('../index.js')
+const fs = require('fs');
+const rimraf = require('rimraf');
 
 // Connection URL
 const url = 'mongodb://localhost:27017'
@@ -25,6 +27,16 @@ const getCollections = (db, cb) => {
       console.log(docs)
   
       return cb(null, docs);
+    });
+  }
+  const removeCollection_ = function (db, callback) {
+
+    // Get the documents collection
+    // const collection = db.collection(documentName)
+    // Insert some documents
+    db.collection(documentName).drop(function(err, delOK) {
+      if (err) throw err;
+      if (delOK) console.log("Collection deleted");
     });
   }
 
@@ -53,5 +65,20 @@ module.exports = {
     assert.equal(null, err)
     console.log('Connected successfully to server')
     client.close()
+  }),
+  removeCollection: (collectionName) => MongoClient.connect(url, function (err, client) {
+    const db = client.db(dbName)
+    documentName = collectionName
+    removeCollection_(db, function (collectionName) {
+      client.close()
+    })
+    fs.unlink("./videos/output/" + collectionName + ".mp4", (err) => {
+      if (err) {
+          console.log("failed to delete local image:"+err);
+      } else {
+          console.log('successfully deleted local image');                                
+      }
+    })
+    rimraf('./videos/cut-videos/' + collectionName, function () { console.log('cut-videos subdirectory removed'); });
   }),
 }

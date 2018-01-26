@@ -12,11 +12,13 @@
     "express": "~4.15.5",
     "express-fileupload": "^0.3.0",
     "jade": "~1.11.0",
+    "mkdirp": "^0.5.1",
     "mongodb": "^3.0.1",
     "morgan": "~1.9.0",
     "node-cmd": "^3.0.0",
     "node-schedule": "^1.2.5",
     "request": "^2.83.0",
+    "rimraf": "^2.6.2",
     "save": "^2.3.2",
     "serve-favicon": "~2.4.5",
     "timer-stopwatch": "^0.2.0"

@@ -2,8 +2,13 @@ extends layout
 
 block content
 
+    a(href="/")
+        button(type="button") Take me back
     h1 Streams
     br
     each collection in collections
         a(href='/editing_station/#{JSON.stringify(collection.name).slice(1, -1)}') #{JSON.stringify(collection.name).slice(1, -1)}
+        form(action='/editing_station/remove_stream', method='post', id='removeStreamForm')
+            input(type='hidden', value=JSON.stringify(collection.name).slice(1, -1), name='collectionName', id='removeStream')
+            button(type="submit") Remove Stream
         br

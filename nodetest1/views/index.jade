@@ -63,15 +63,21 @@ block content
     br
     button(type="button", onclick="checkScheduleInput()", disabled="disabled", id="scheduleStreamBtn") schedule stream 
     br
-
-  form(action='/cancelstream', method='post', id='CancelStream')
-    button(type="submit") Cancel scheduled stream 
+    h3 OR only convert stream to mp4
+  form(action='/convert', method='post', id='convertForm')
+    input(type='hidden', value= '', name='name', id='convertName')
+    button(type="submit", disabled="disabled", id="convertBtn" ) Convert
   br
 
+  form(action='/cancelstream', method='post', id='CancelStream')
+    button(type="submit" disabled="disabled", id='cancelStreamBtn') Cancel scheduled stream 
+  br
   a(href="/stop")
     button(type="button") Stop Streaming
   br
   br
+  form(action='/convert', method='post', id='convertForm')
+    input(type='hidden', value= '#{scheduleStatus}', name='scheduleStatus', id='scheduleStatus')
   
   
   script.
@@ -79,9 +85,19 @@ block content
     let checkerYT = false
     let checkerJC = false
     let checkerFB = false
+
+    var scheduleCheck = setInterval(function() {
+      if (scheduleStatus.value === 'true') {
+        document.getElementById("cancelStreamBtn").disabled = false;
+        clearInterval(scheduleCheck);
+      }
+    }, 1);
+
+
     function checkNameChange(){
-      let streamName = document.getElementById("streamName").value
+      document.getElementById("convertName").value = document.getElementById("streamName").value
       if(streamName){
+        document.getElementById("convertBtn").disabled = false;
         if (accr > 0){
             document.getElementById("streamNowBtn").disabled = false;
             document.getElementById("scheduleStreamBtn").disabled = false;

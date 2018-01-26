@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const cmd = require('node-cmd')
+const mkdirp = require('mkdirp');
 
 //database functions
 
@@ -13,11 +13,14 @@ const db_edit = require('./db/editing_station.js')
 const schedule = require('node-schedule')
 const Stopwatch = require('timer-stopwatch')
 const fileUpload = require('express-fileupload');
+const cmd = require('node-cmd')
 
 // stream status
 
 let streamStatus = "Not Streaming and no Scheduled streams"
 let streamDestinations = []
+let scheduledTime = null
+let scheduled = false
 
 // upload
 
@@ -62,13 +65,19 @@ let startTime = null
 let duration = null
 let trimName = null
 
-let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./videos/output/' + outputName + '.mp4 -c copy ./videos/cut-videos/' + trimName + '.mp4') }
+let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./videos/output/' + outputName + '.mp4 -c copy ./videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
 
 // this is to stop all ffmpeg activity
 
+let scheduleStream = null
+
 let stop = () => { 
-  streamStatus = "Not Streaming and no Scheduled streams";
-  streamDestinations = [];
+  if(scheduled){
+    streamStatus = 'Scheduled on stream at: ' + scheduledTime
+  } else {
+    streamStatus = "Not Streaming and no scheduled streams";
+    streamDestinations = [];
+  }
   stopwatch.stop();
   stopwatch.reset();
   cmd.run('killall ffmpeg') 
@@ -76,23 +85,35 @@ let stop = () => {
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
-  res.render('index', { streamStatus: streamStatus, streamDestinations: streamDestinations })
+  res.render('index', { streamStatus: streamStatus, streamDestinations: streamDestinations, scheduleStatus: scheduled })
 })
 
 
 // get labeling page
 
 router.get('/labeling', function (req, res, next) {
+  let stopSign = null
+  if(scheduled){
+    stopSign = "Cancel scheduled Stream"
+  } else {
+    stopSign = "End Stream"
+  }
+
   db_label.findLabels((err, labels) => {
     if (err) {
       return res.sendStatus(500)
     }
-    res.render('labeling', {name: displayName, label: labels})
+    let stopSign = null
+    if(scheduledTime){
+      stopSign = "Cancel scheduled Stream"
+    } else {
+      stopSign = "End Stream"
+    }
+    res.render('labeling', {name: displayName, label: labels, date: streamStatus.slice(13), terminate: stopSign, streamDestination: streamDestinations})
   }) 
 })
 
 // stream settings
-let scheduleStream = null
 
 router.post('/streamsettings', function (req, res, next) {
   displayName = req.body.name
@@ -105,30 +126,35 @@ router.post('/streamsettings', function (req, res, next) {
   let hour = req.body.hour
   let minute = req.body.minute
 
-  let scheduled = false
+  let prettyMonth = month
+  let prettyDay = day
+  let prettyMinute = minute
+  let prettyHour = hour
 
   if(month < 9 ){
-    month = "0" + month
+    prettyMonth = "0" + month
   }
   if(day < 9 ){
-    day = "0" + day
+    prettyDay = "0" + day
   }
   if(hour < 9 ){
-    hour = "0" + hour
+    prettyHour = "0" + hour
   }
   if(minute < 9 ){
-    minute = "0" + minute
+    prettyMinute = "0" + minute
   }
 
   if(month && day && hour && minute){
     scheduled = true
   }
 
-  if ((req.body.youtube || req.body.facebook || req.body.joicaster) && !scheduled) {
-    stopwatch.start()
-    outputMp4()
-    streamStatus = "Live"
+  let stopSign = null
+  if(scheduled){
+    stopSign = "Cancel scheduled Stream"
+  } else {
+    stopSign = "End Stream"
   }
+
   if (req.body.youtube === 'true' && !scheduled) {
     streamYT()
     streamDestinations.push(" Youtube")
@@ -142,10 +168,17 @@ router.post('/streamsettings', function (req, res, next) {
     streamJC()
     streamDestinations.push(" Joicaster")
   }
+  if ((req.body.youtube || req.body.facebook || req.body.joicaster) && !scheduled) {
+    stopwatch.start()
+    outputMp4()
+    streamStatus = "Live"
+    res.render('labeling', {name: displayName, label: '', date: "Now", streamDestination: streamDestinations, terminate: stopSign})
+  }
   if (scheduled) {
     let date = new Date(2018, month - 1, day, hour, minute, 0)
     console.log('Scheduled on ' + req.body.hour + ':' + req.body.minute)
-    streamStatus = "schedule for " + day + "/" + month + "/2018 at " + hour + ":" + minute
+    scheduledTime = req.body.hour + ':' + req.body.minute
+    streamStatus = "schedule for " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute
     if (req.body.youtube === 'true') {
       streamDestinations.push(" Youtube")
     }
@@ -167,28 +200,40 @@ router.post('/streamsettings', function (req, res, next) {
       outputMp4()
       if (req.body.youtube === 'true') {
         streamYT()
-        streamDestinations.push(" Youtube")
       }
       if (req.body.facebook === 'true') {
         FBrtmp = req.body.rtmplink
         streamFB()
-        streamDestinations.push(" Facebook")
       }
       if (req.body.joicaster === 'true') {
         streamJC()
-        streamDestinations.push(" Joicaster")
       }
       scheduleStream.cancel()
+      scheduled = false
+      res.render('labeling', {name: displayName, label: '', date:  " " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute, streamDestination: streamDestinations, terminate: stopSign})
     })
-    res.render('labeling', {name: displayName, label: '', date:  " " + day + "/" + month + "/2018 at " + hour + ":" + minute, streamDestination: streamDestinations})
+    res.render('labeling', {name: displayName, label: '', date:  " " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute, streamDestination: streamDestinations, terminate: stopSign})
   }
-  res.render('labeling', {name: displayName, label: '', date: "Now", streamDestination: streamDestinations})
+})
+
+//convert to mp4 only
+
+router.post('/convert', function (req, res, next) {
+  displayName = req.body.name
+  outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
+  outputMp4()
+  streamStatus = "Converting"
+  console.log(">>>>>" + outputName)
+  res.render('labeling', {name: displayName, label: '', date: "Not Streaming"})
 })
 
 // cancel scheduled task
 
 router.post('/cancelstream', function (req, res, next) {
   console.log('canceled')
+  scheduledTime = null
+  scheduled = false
+  db_edit.removeCollection(outputName)
   scheduleStream.cancel()
   stop()
   res.redirect('/')
@@ -257,6 +302,7 @@ router.get('/editing_station', function (req, res, next) {
 
 router.get('/editing_station/:collection_name', async function (req, res, next) {
   let collectionName = req.params.collection_name
+  outputName = collectionName
   await db_trims.locateDoc(collectionName)
   await db_label.locateDoc(collectionName)
 
@@ -272,11 +318,29 @@ router.get('/editing_station/:collection_name', async function (req, res, next) 
   }) 
 })
 
+router.post('/editing_station/remove_stream', function (req, res, next) {
+  let collectionName = req.body.collectionName
+  db_edit.removeCollection(collectionName)
+
+  res.redirect('/editing_station')
+})
 // editing process
 
-router.get('/editing', function (req, res, next) {
+router.get('/editing', async function (req, res, next) {
+  if(scheduled){
+    scheduledTime = null
+    db_edit.removeCollection(outputName)
+    scheduleStream.cancel()
+    scheduled = false
+    res.redirect('/')
+  }
+
+  dirPath = "./videos/cut-videos/" + outputName
+  mkdirp(dirPath, function(err) { 
+    console.log('directory made')
+  });
   stop()
-  db_trims.locateDoc(outputName)
+  await db_trims.locateDoc(outputName)
   db_label.findLabels((err, labels) => {
     if (err) {
       return res.sendStatus(500)
@@ -342,6 +406,7 @@ router.post('/editing/:name/addLabel', async function (req, res, next) {
 router.post('/deleteTrim', function (req, res, next) {
   let trimToDelete = req.body.deleteTrim
   db_trims.deleteTrim(trimToDelete)
+
   db_label.findLabels((err, labels) => {
     if (err) {
       return res.sendStatus(500)
