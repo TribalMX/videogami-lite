@@ -210,9 +210,8 @@ router.post('/streamsettings', function (req, res, next) {
       }
       scheduleStream.cancel()
       scheduled = false
-      res.render('labeling', {name: displayName, label: '', date:  " " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute, streamDestination: streamDestinations, terminate: stopSign})
     })
-    res.render('labeling', {name: displayName, label: '', date:  " " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute, streamDestination: streamDestinations, terminate: stopSign})
+    res.redirect('/')
   }
 })
 
@@ -224,7 +223,7 @@ router.post('/convert', function (req, res, next) {
   outputMp4()
   streamStatus = "Converting"
   console.log(">>>>>" + outputName)
-  res.render('labeling', {name: displayName, label: '', date: "Not Streaming"})
+  res.render('labeling', {name: displayName, label: '', date: "Not Streaming", terminate: "Stop Conversion"})
 })
 
 // cancel scheduled task
@@ -341,6 +340,7 @@ router.get('/editing', async function (req, res, next) {
   });
   stop()
   await db_trims.locateDoc(outputName)
+  await db_label.locateDoc(outputName)
   db_label.findLabels((err, labels) => {
     if (err) {
       return res.sendStatus(500)
