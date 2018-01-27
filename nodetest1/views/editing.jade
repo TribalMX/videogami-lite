@@ -8,8 +8,8 @@ block content
     h2 Labels
         each labelName in label
             h4 #{(JSON.stringify(labelName)).substr(1).slice(41, -1).replace(/['"]+/g, '')}
-            //- form(action='/trim', method='post', id='input')
-            //- input(type='hidden', value='#{(JSON.stringify(labelName)).substr(1).slice(8, -1).replace(/['"]+/g, '')}', id='#{(JSON.stringify(labelName)).substr(1).slice(8, -1).replace(/['"]+/g, '')}')
+            form(action='/labelform', method='post', id='labelForm')
+                input(type='hidden', value='#{(JSON.stringify(labelName.slice(41, -1))}', id='#{(JSON.stringify(labelName.slice(41, -1))}')
             button(type="button" onclick='enterStartTime()') Start Time 
             button(type="button" onclick='enterEndTime()') End Time
             br
@@ -47,12 +47,9 @@ block content
                 button(type="submit") Delete
 
     script.
-        let startTime = document.getElementById("startTime").value
-        let endTime = document.getElementById("endTime").value
         function enterStartTime(){
-            startTime = null
         }
         function enterStartTime(){
-            endTime = document.getElementById("streamName").value
+
         }
 
