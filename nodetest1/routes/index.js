@@ -288,22 +288,23 @@ router.get('/editing_station', function (req, res, next) {
   })   
 })
 
-router.get('/editing_station/:collection_name', async function (req, res, next) {
+router.get('/editing_station/:collection_name', function (req, res, next) {
   let collectionName = req.params.collection_name
   outputName = collectionName
-  await db_trims.locateDoc(collectionName)
-  await db_label.locateDoc(collectionName)
 
-  db_label.findLabels((err, labels) => {
-      if (err) 
-          return res.sendStatus(500);
+  db_trims.locateDoc(collectionName)
+  db_label.locateDoc(collectionName)
 
-      db_trims.findTrims((err, trims_) => {
-          if (err)
-              return res.sendStatus(500);         
-          res.render('editing', {name: collectionName, label: labels, trims: trims_, startTime: labelStartTime, endTime: labelEndTime})
-      }) 
-  }) 
+  setTimeout(function(){db_label.findLabels(async(err, labels) => {
+    if (err) 
+        return res.sendStatus(500);
+
+    db_trims.findTrims((err, trims_) => {
+        if (err)
+            return res.sendStatus(500);         
+        res.render('editing', {name: collectionName, label: labels, trims: trims_, startTime: labelStartTime, endTime: labelEndTime})
+    }) 
+  }) },500);
 })
 
 router.post('/editing_station/remove_stream', function (req, res, next) {
@@ -325,7 +326,7 @@ router.get('/editing', async function (req, res, next) {
   stop()
   await db_trims.locateDoc(outputName)
   await db_label.locateDoc(outputName)
-  db_label.findLabels((err, labels) => {
+  setTimeout(function(){db_label.findLabels((err, labels) => {
     if (err) {
       return res.sendStatus(500)
     }
@@ -336,15 +337,43 @@ router.get('/editing', async function (req, res, next) {
       res.render('editing', {name: outputName, name: displayName, label: labels, trims: trims_, trim: trimName, startTime: labelStartTime, endTime: labelEndTime})
     }) 
   })   
+  },500);
 })
 
 router.post('/trim', function (req, res, next) {
   startTime = req.body.startTime
-  duration = req.body.endTime
+  endTimeInput = req.body.endTime
   trimName = req.body.cutName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
+
+  let cutDurationHour = endTimeInput.slice(0,-6)
+  let cutDurationMinute = endTimeInput.slice(3,-3)
+  let cutDurationSeconds = endTimeInput.slice(6)
+  let durationInSeconds =  (cutDurationHour * 3600) + (cutDurationMinute * 60) + cutDurationSeconds
+
+  let cutStartHour = startTime.slice(0,-6)
+  let cutStartMinute = startTime.slice(3,-3)
+  let cutStartSeconds = startTime.slice(6)
+  let startTimeInSeconds =  (cutStartHour * 3600) + (cutStartMinute * 60) + cutStartSeconds
+
+  let inputDuration = durationInSeconds - startTimeInSeconds 
+  inputDuration = inputDuration.toString()
+  
+  String.prototype.toHHMMSS = function () {
+    var sec_num = parseInt(this, 10); // don't forget the second param
+    var hours   = Math.floor(sec_num / 3600);
+    var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+    var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+    if (hours   < 10) {hours   = "0"+hours;}
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+    return hours+':'+minutes+':'+seconds;
+}
+  duration = inputDuration
+  console.log(">>>>" + duration)
   edit()
   db_trims.insertTrim(trimName)
-  db_label.findLabels((err, labels) => {
+  setTimeout(function(){db_label.findLabels((err, labels) => {
     if (err) {
       return res.sendStatus(500)
     }
@@ -352,9 +381,10 @@ router.post('/trim', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('editing', {name: displayName, label: labels, trims: trims_, trim: trimName, startTime: labelStartTime, endTime: labelEndTime})
+      res.render('editing', {name: outputName, label: labels, trims: trims_, trim: trimName, startTime: labelStartTime, endTime: labelEndTime})
     }) 
   })   
+},1000);
 })
 
 router.get('/download', function (req, res, next) {
