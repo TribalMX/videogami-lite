@@ -8,11 +8,13 @@ block content
     h2 Labels
         each labelName in label
             h4 #{(JSON.stringify(labelName)).substr(1).slice(41, -1).replace(/['"]+/g, '')}
-            form(action='/labelform', method='post', id='labelForm')
-                input(type='hidden', value='#{(JSON.stringify(labelName.slice(41, -1))}', id='#{(JSON.stringify(labelName.slice(41, -1))}')
-            button(type="button" onclick='enterStartTime()') Start Time 
-            button(type="button" onclick='enterEndTime()') End Time
-            br
+            form(action='/editing/#{name}/add_start_time', method='post', id='labelForm')
+                input(type='hidden', value=JSON.stringify(labelName), name='startTime')
+                button(type="submit") Start Time 
+            form(action='/editing/#{name}/add_end_time', method='post', id='labelForm')
+                input(type='hidden', value=JSON.stringify(labelName), name='endTime')    
+                button(type="submit") End Time
+                br
     br
     form(action='/editing/#{name}/addLabel', method='post', id='EditAddLabel')
         label(for='startTime') add label 
@@ -22,9 +24,9 @@ block content
     h2 Trim your video
     form(action='/trim', method='post', id='input')
         label(for='startTime') start time
-        input(type='text', value='', name='startTime', id='startTime', placeholder="00:01:00")
+        input(type='text', value='#{startTime}', name='startTime', id='startTime', placeholder="00:01:00")
         label(for='endTime') duration
-        input(type='text', value='', name='endTime', id='endTime', placeholder="00:02:15")
+        input(type='text', value='#{endTime}', name='endTime', id='endTime', placeholder="00:02:15")
         label(for='endTime') cut name
         input(type='text', value='', name='cutName', id='cutName', placeholder="cut1")
         button(type="submit") submit
@@ -46,10 +48,4 @@ block content
                 input(type='hidden', value=(JSON.stringify(video)).substr(1).slice(48, -1).replace(/['"]+/g, ''), name='deleteTrim', id='deleteTrim')
                 button(type="submit") Delete
 
-    script.
-        function enterStartTime(){
-        }
-        function enterStartTime(){
-
-        }
 

@@ -301,7 +301,7 @@ router.get('/editing_station/:collection_name', async function (req, res, next) 
       db_trims.findTrims((err, trims_) => {
           if (err)
               return res.sendStatus(500);         
-          res.render('editing', {name: collectionName, label: labels, trims: trims_})
+          res.render('editing', {name: collectionName, label: labels, trims: trims_, startTime: labelStartTime, endTime: labelEndTime})
       }) 
   }) 
 })
@@ -313,6 +313,9 @@ router.post('/editing_station/remove_stream', function (req, res, next) {
   res.redirect('/editing_station')
 })
 // editing process
+
+let labelStartTime = ''
+let labelEndTime = ''
 
 router.get('/editing', async function (req, res, next) {
   dirPath = "./videos/cut-videos/" + outputName
@@ -330,7 +333,7 @@ router.get('/editing', async function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('editing', {name: outputName, name: displayName, label: labels, trims: trims_, trim: trimName})
+      res.render('editing', {name: outputName, name: displayName, label: labels, trims: trims_, trim: trimName, startTime: labelStartTime, endTime: labelEndTime})
     }) 
   })   
 })
@@ -349,7 +352,7 @@ router.post('/trim', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('editing', {name: displayName, label: labels, trims: trims_, trim: trimName})
+      res.render('editing', {name: displayName, label: labels, trims: trims_, trim: trimName, startTime: labelStartTime, endTime: labelEndTime})
     }) 
   })   
 })
@@ -379,7 +382,7 @@ router.post('/editing/:name/addLabel', async function (req, res, next) {
         if (err) {
           return res.sendStatus(500)
         }
-        res.render('editing', {name: name, label: labels, trims: trims_, trim: trimName})
+        res.render('editing', {name: name, label: labels, trims: trims_, trim: trimName, startTime: labelStartTime, endTime: labelEndTime})
       }) 
     }) 
 })
@@ -396,11 +399,45 @@ router.post('/deleteTrim', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('editing', {name: displayName, label: labels, trims: trims_, trim: trimName})
+      res.render('editing', {name: displayName, label: labels, trims: trims_, trim: trimName, startTime: labelStartTime, endTime: labelEndTime})
     }) 
   }) 
 })
 
+router.post('/editing/:name/add_start_time', function (req, res, next) {
+  let unCutLabelStartTime = req.body.startTime.substr(1).slice(41, -1).replace(/['"]+/g, '')
+  let sliceLength = unCutLabelStartTime.length - 8
+  labelStartTime = unCutLabelStartTime.slice(sliceLength)
+
+  db_label.findLabels((err, labels) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
+    db_trims.findTrims((err, trims_) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      res.render('editing', {name: req.params.name, label: labels, trims: trims_, trim: trimName, startTime: labelStartTime, endTime: labelEndTime})
+    }) 
+  })   
+})
+router.post('/editing/:name/add_end_time', function (req, res, next) {
+  let unCutLabelEndTime = req.body.endTime.substr(1).slice(41, -1).replace(/['"]+/g, '')
+  let sliceLength = unCutLabelEndTime.length - 8
+  labelEndTime = unCutLabelEndTime.slice(sliceLength)
+
+  db_label.findLabels((err, labels) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
+    db_trims.findTrims((err, trims_) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      res.render('editing', {name: req.params.name, label: labels, trims: trims_, trim: trimName, startTime: labelStartTime, endTime: labelEndTime})
+    }) 
+  })   
+})
 // label stuff
 
 router.post('/labeling/add', function (req, res, next) {
