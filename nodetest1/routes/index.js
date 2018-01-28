@@ -334,13 +334,13 @@ router.get('/editing', async function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('editing', {name: outputName, name: displayName, label: labels, trims: trims_, trim: trimName, startTime: labelStartTime, endTime: labelEndTime})
+      res.render('editing', {name: outputName, name: displayName, label: labels, trims: trims_, startTime: labelStartTime, endTime: labelEndTime})
     }) 
   })   
   },500);
 })
 
-router.post('/trim', function (req, res, next) {
+router.post('/editing/trim', function (req, res, next) {
   startTime = req.body.startTime
   endTimeInput = req.body.endTime
   trimName = req.body.cutName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
@@ -370,9 +370,8 @@ router.post('/trim', function (req, res, next) {
     return hours+':'+minutes+':'+seconds;
 }
   duration = inputDuration
-  console.log(">>>>" + duration)
   edit()
-  db_trims.insertTrim(trimName)
+  db_trims.insertTrim(trimName, startTime, endTimeInput)
   setTimeout(function(){db_label.findLabels((err, labels) => {
     if (err) {
       return res.sendStatus(500)
@@ -381,18 +380,14 @@ router.post('/trim', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('editing', {name: outputName, label: labels, trims: trims_, trim: trimName, startTime: labelStartTime, endTime: labelEndTime})
+      res.render('editing', {name: outputName, label: labels, trims: trims_, startTime: labelStartTime, endTime: labelEndTime})
     }) 
   })   
 },1000);
 })
 
-router.get('/download', function (req, res, next) {
-  var file = './videos/cut-videos/' + trimName + '.mp4';
-  res.download(file); // Set disposition and send it.
-})
 
-router.post('/downloadWhole', function (req, res, next) {
+router.post('/editing/downloadWhole', function (req, res, next) {
   var file = './videos/output/' + req.body.wholeStream + '.mp4';
   res.download(file); // Set disposition and send it.
 })
@@ -417,9 +412,10 @@ router.post('/editing/:name/addLabel', async function (req, res, next) {
     }) 
 })
 
-router.post('/deleteTrim', function (req, res, next) {
+router.post('/editing/deleteTrim', function (req, res, next) {
   let trimToDelete = req.body.deleteTrim
-  db_trims.deleteTrim(trimToDelete)
+  let trimIdToDelete = req.body.deleteTrimId
+  db_trims.deleteTrim(trimToDelete, trimIdToDelete)
 
   db_label.findLabels((err, labels) => {
     if (err) {
@@ -465,6 +461,23 @@ router.post('/editing/:name/add_end_time', function (req, res, next) {
         return res.sendStatus(500)
       }
       res.render('editing', {name: req.params.name, label: labels, trims: trims_, trim: trimName, startTime: labelStartTime, endTime: labelEndTime})
+    }) 
+  })   
+})
+
+router.post('/editing/downloadTrim', function (req, res, next) {
+  let trimName = req.body.trimName
+  var file = './videos/cut-videos/' + outputName + '/' + trimName + '.mp4';
+  res.download(file); // Set disposition and send it.
+  db_label.findLabels((err, labels) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
+    db_trims.findTrims((err, trims_) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      res.render('editing', {name: displayName, label: labels, trims: trims_, trim: trimName})
     }) 
   })   
 })
@@ -558,22 +571,4 @@ router.post('/logo_setup/use_logos', function (req, res, next) {
 })
 
 
-// download trims
-
-router.post('/downloadTrims', function (req, res, next) {
-  let trimName = req.body.trimName
-  var file = './videos/cut-videos/' + trimName + '.mp4';
-  res.download(file); // Set disposition and send it.
-  db_label.findLabels((err, labels) => {
-    if (err) {
-      return res.sendStatus(500)
-    }
-    db_trims.findTrims((err, trims_) => {
-      if (err) {
-        return res.sendStatus(500)
-      }
-      res.render('editing', {name: displayName, label: labels, trims: trims_, trim: trimName})
-    }) 
-  })   
-})
 module.exports = router
