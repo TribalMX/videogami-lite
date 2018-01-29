@@ -29,7 +29,7 @@ block content
     button(type="submit") submit
 
   h2 Step 2: Stream Settings
-  form(action='/streamsettings', method='post', id='streamSettings')
+  form(action='/start_stream', method='post', id='streamSettings')
     label(for='input ') Enter your Stream Name
     br
     input(type='text', value='', onchange="checkNameChange()", name='name', id='streamName')

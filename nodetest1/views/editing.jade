@@ -25,7 +25,7 @@ block content
         input(type='text', value='', name='newLabelTime', id='editinglabelTime', placeholder="00:01:00")
         button(type="submit") submit
     h2 Trim your video
-    form(action='/editing/trim', method='post', id='input')
+    form(action='/editing/#{name}/trim', method='post', id='input')
         label(for='startTime') start time
         input(type='text', value='#{startTime}', name='startTime', id='startTime', placeholder="00:01:00")
         label(for='endTime') duration
@@ -39,17 +39,17 @@ block content
     br
     h2 Your edited videos
         h4 Download #{name}
-        form(action='/editing/downloadWhole', method='post', id='wholeStreamForm') 
+        form(action='/editing/#{name}/downloadWhole', method='post', id='wholeStreamForm') 
                 input(type='hidden', value='#{name}', name='wholeStream', id='wholeStream')
                 button(type="submit") Download whole stream
         each video in trims
             h4 Trim: #{JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')}
             li Start Time: #{JSON.stringify(video.Video_trim.startTime).replace(/['"]+/g, '')}
             li End Time: #{JSON.stringify(video.Video_trim.endTime).replace(/['"]+/g, '')}
-            form(action='/editing/downloadTrim', method='post', id='input') 
+            form(action='/editing/#{name}/downloadTrim', method='post', id='input') 
                 input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='trimName', id='trimName')
                 button(type="submit") Download
-            form(action='/editing/deleteTrim', method='post', id='input') 
+            form(action='/editing/#{name}/deleteTrim', method='post', id='input') 
                 input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='deleteTrim', id='deleteTrim')
                 input(type='hidden', value=(JSON.stringify(video._id).replace(/['"]+/g, '')), name='deleteTrimId', id='deleteTrimId')
                 button(type="submit") Delete

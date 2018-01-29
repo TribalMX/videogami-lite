@@ -1,6 +1,5 @@
 const express = require('express')
 const router = express.Router()
-const mkdirp = require('mkdirp');
 
 //database functions
 
@@ -14,6 +13,7 @@ const schedule = require('node-schedule')
 const Stopwatch = require('timer-stopwatch')
 const fileUpload = require('express-fileupload');
 const cmd = require('node-cmd')
+const mkdirp = require('mkdirp');
 
 // stream status
 
@@ -92,7 +92,7 @@ router.get('/', function (req, res, next) {
 
 // get labeling page
 
-router.get('/labeling', function (req, res, next) {
+router.get('/labeling/:stream_name', function (req, res, next) {
 
   let stopSign = null
   if(scheduled){
@@ -106,14 +106,14 @@ router.get('/labeling', function (req, res, next) {
     if (err) {
       return res.sendStatus(500)
     }
-    res.render('labeling', {name: displayName, label: labels, date: streamStatus, terminate: stopSign, streamDestination: streamDestinations})
+    res.render('labeling', {name: outputName, label: labels, date: streamStatus, terminate: stopSign, streamDestination: streamDestinations})
   })   
   },500); 
 })
 
 // stream settings
 
-router.post('/streamsettings', function (req, res, next) {
+router.post('/start_stream', function (req, res, next) {
   displayName = req.body.name
   outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   console.log(req.body)
@@ -170,7 +170,7 @@ router.post('/streamsettings', function (req, res, next) {
     stopwatch.start()
     outputMp4()
     streamStatus = "Live"
-    res.redirect('/labeling')
+    res.redirect('/labeling/' + outputName)
   }
   if (scheduled) {
     let date = new Date(2018, month - 1, day, hour, minute, 0)
@@ -216,13 +216,13 @@ router.post('/streamsettings', function (req, res, next) {
 
 //convert to mp4 only
 
-router.post('/convert', function (req, res, next) {
+router.post('/convert/:stream_name', function (req, res, next) {
   displayName = req.body.name
   outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   db_label.insertDoc(outputName)
   outputMp4()
   streamStatus = "Converting"
-  res.redirect('/labeling')
+  res.redirect('/labeling/' + outputName)
 })
 
 // cancel scheduled task
@@ -324,7 +324,7 @@ router.get('/editing_station/:collection_name', function (req, res, next) {
   }) },500);
 })
 
-router.post('/editing_station/remove_stream', function (req, res, next) {
+router.post('/editing_station/:stream_name/remove_stream', function (req, res, next) {
   let collectionName = req.body.collectionName
   db_edit.removeCollection(collectionName)
 
@@ -335,7 +335,7 @@ router.post('/editing_station/remove_stream', function (req, res, next) {
 let labelStartTime = ''
 let labelEndTime = ''
 
-router.get('/editing', async function (req, res, next) {
+router.get('/editing/:stream_name', async function (req, res, next) {
   dirPath = "./videos/cut-videos/" + outputName
   mkdirp(dirPath, function(err) { 
     console.log('directory made')
@@ -357,7 +357,7 @@ router.get('/editing', async function (req, res, next) {
   },500);
 })
 
-router.post('/editing/trim', function (req, res, next) {
+router.post('/editing/:stream_name/trim', function (req, res, next) {
   startTime = req.body.startTime
   endTimeInput = req.body.endTime
   trimName = req.body.cutName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
@@ -397,59 +397,60 @@ router.post('/editing/trim', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.redirect('/editing')
+      res.redirect('/editing/' + outputName)
     }) 
   })   
 },1000);
 })
 
 
-router.post('/editing/downloadWhole', function (req, res, next) {
+router.post('/editing/:stream_name/downloadWhole', function (req, res, next) {
   var file = './videos/output/' + req.body.wholeStream + '.mp4';
   res.download(file); // Set disposition and send it.
 })
 
-router.post('/editing/:name/addLabel', async function (req, res, next) {
+router.post('/editing/:stream_name/addLabel', async function (req, res, next) {
   let newLabel = req.body.newLabel
   let newLabelTime = req.body.newLabelTime
   db_label.insertLabel(newLabel, newLabelTime)
-  res.redirect('/editing')
+  res.redirect('/editing/' + outputName)
 })
 
-router.post('/editing/deleteTrim', function (req, res, next) {
+router.post('/editing/:stream_name/deleteTrim', function (req, res, next) {
   let trimToDelete = req.body.deleteTrim
   let trimIdToDelete = req.body.deleteTrimId
   db_trims.deleteTrim(trimToDelete, trimIdToDelete)
-  res.redirect('/editing')
+  res.redirect('/editing/' + outputName)
 })
 
-router.post('/editing/:name/delete_label', function (req, res, next) {
+router.post('/editing/:stream_name/delete_label', function (req, res, next) {
   let id = req.body.labelName
   db_label.deleteLabel(id)
-  res.redirect('/editing')  
+  res.redirect('/editing/'+ outputName)  
 })
 
-router.post('/editing/:name/add_start_time', function (req, res, next) {
+router.post('/editing/:stream_name/add_start_time', function (req, res, next) {
   let unCutLabelStartTime = req.body.startTime.substr(1).slice(41, -1).replace(/['"]+/g, '')
   let sliceLength = unCutLabelStartTime.length - 8
   labelStartTime = unCutLabelStartTime.slice(sliceLength)
-  res.redirect('/editing')  
+  res.redirect('/editing/' + outputName)  
 })
-router.post('/editing/:name/add_end_time', function (req, res, next) {
+router.post('/editing/:stream_name/add_end_time', function (req, res, next) {
   let unCutLabelEndTime = req.body.endTime.substr(1).slice(41, -1).replace(/['"]+/g, '')
   let sliceLength = unCutLabelEndTime.length - 8
   labelEndTime = unCutLabelEndTime.slice(sliceLength)
-      res.redirect('/editing')  
+      res.redirect('/editing/' + outputName)  
 })
 
-router.post('/editing/downloadTrim', function (req, res, next) {
+router.post('/editing/:stream_name/downloadTrim', function (req, res, next) {
   let trimName = req.body.trimName
   var file = './videos/cut-videos/' + outputName + '/' + trimName + '.mp4';
   res.download(file); // Set disposition and send it.
 })
+
 // label stuff
 
-router.post('/labeling/add', function (req, res, next) {
+router.post('/labeling/:stream_name/add_label', function (req, res, next) {
   let time = stopwatch.ms/1000
   let minutes = Math.floor(time / 60);
   let seconds = Math.floor(time - minutes * 60);
@@ -471,12 +472,12 @@ router.post('/labeling/add', function (req, res, next) {
     if (err) {
       return res.sendStatus(500)
     }
-    res.redirect('/labeling')
+    res.redirect('/labeling/' + outputName)
   }) 
 })
 
-router.get('/labeling/refresh', function (req, res, next) {
-    res.redirect('/labeling')
+router.get('/labeling/:stream_name/refresh', function (req, res, next) {
+    res.redirect('/labeling/' + outputName)
 })
 
 // logo stuff

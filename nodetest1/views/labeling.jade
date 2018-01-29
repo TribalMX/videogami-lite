@@ -12,16 +12,16 @@ block content
   h2 Labels
     each labelName in label
       h4 #{(JSON.stringify(labelName)).substr(1).slice(41, -1).replace(/['"]+/g, '')}
-  a(href="/labeling/refresh")
+  a(href="/labeling/#{name}/refresh")
     button(type="button") refresh labels
   br
   h2 Add a label 
-  form(action='/labeling/add', method='post', id='insertLabel')
+  form(action='/labeling/#{name}/add_label', method='post', id='insertLabel')
     label(for='insertLabel ') Add label
     input(type='text', value='', name='label', id='insertLabel')
     button(type="submit") submit
   br
-  a(href="/editing")
+  a(href="/editing/" + name)
     button(type="button" onclick='stopTimer()') #{terminate}
   br
   br
