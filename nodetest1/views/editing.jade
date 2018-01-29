@@ -14,6 +14,9 @@ block content
             form(action='/editing/#{name}/add_end_time', method='post', id='labelForm')
                 input(type='hidden', value=JSON.stringify(labelName), name='endTime')    
                 button(type="submit") End Time
+            form(action='/editing/#{name}/delete_label', method='post', id='labelForm')
+                input(type='hidden', value=labelName._id name='labelName')    
+                button(type="submit") Delete Label
                 br
     br
     form(action='/editing/#{name}/addLabel', method='post', id='EditAddLabel')
@@ -32,7 +35,7 @@ block content
         button(type="submit") submit
     br
     a(href="/")
-        button(type="button") Home page
+        button(type="button" onclick='refreshTime()') Home page
     br
     h2 Your edited videos
         h4 Download #{name}
@@ -51,6 +54,5 @@ block content
                 input(type='hidden', value=(JSON.stringify(video._id).replace(/['"]+/g, '')), name='deleteTrimId', id='deleteTrimId')
                 button(type="submit") Delete
                 
- 
 
 

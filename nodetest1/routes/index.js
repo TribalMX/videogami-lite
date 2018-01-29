@@ -85,19 +85,30 @@ let stop = () => {
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
+  labelStartTime = ''
+  labelEndTime = ''
   res.render('index', { streamStatus: streamStatus, streamDestinations: streamDestinations, scheduleStatus: scheduled })
 })
-
 
 // get labeling page
 
 router.get('/labeling', function (req, res, next) {
-  db_label.findLabels((err, labels) => {
+
+  let stopSign = null
+  if(scheduled){
+    stopSign = "Cancel scheduled Stream"
+  } else if(streamStatus === "Converting"){
+    stopSign = "End Conversion"
+  } else if(!scheduled){
+    stopSign = "End Stream"
+  } 
+  setTimeout(function(){db_label.findLabels((err, labels) => {
     if (err) {
       return res.sendStatus(500)
     }
-    res.render('labeling', {name: displayName, label: labels, date: streamStatus.slice(13), terminate: "End Stream", streamDestination: streamDestinations})
-  }) 
+    res.render('labeling', {name: displayName, label: labels, date: streamStatus, terminate: stopSign, streamDestination: streamDestinations})
+  })   
+  },500); 
 })
 
 // stream settings
@@ -159,7 +170,7 @@ router.post('/streamsettings', function (req, res, next) {
     stopwatch.start()
     outputMp4()
     streamStatus = "Live"
-    res.render('labeling', {name: displayName, label: '', date: "Now", streamDestination: streamDestinations, terminate: stopSign})
+    res.redirect('/labeling')
   }
   if (scheduled) {
     let date = new Date(2018, month - 1, day, hour, minute, 0)
@@ -211,8 +222,7 @@ router.post('/convert', function (req, res, next) {
   db_label.insertDoc(outputName)
   outputMp4()
   streamStatus = "Converting"
-  console.log(">>>>>" + outputName)
-  res.render('labeling', {name: displayName, label: '', date: "Not Streaming", terminate: "Stop Conversion"})
+  res.redirect('/labeling')
 })
 
 // cancel scheduled task
@@ -334,7 +344,7 @@ router.get('/editing', async function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('editing', {name: outputName, name: displayName, label: labels, trims: trims_, startTime: labelStartTime, endTime: labelEndTime})
+      res.render('editing', {name: outputName, label: labels, trims: trims_, startTime: labelStartTime, endTime: labelEndTime})
     }) 
   })   
   },500);
@@ -380,7 +390,7 @@ router.post('/editing/trim', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('editing', {name: outputName, label: labels, trims: trims_, startTime: labelStartTime, endTime: labelEndTime})
+      res.redirect('/editing')
     }) 
   })   
 },1000);
@@ -395,91 +405,40 @@ router.post('/editing/downloadWhole', function (req, res, next) {
 router.post('/editing/:name/addLabel', async function (req, res, next) {
   let newLabel = req.body.newLabel
   let newLabelTime = req.body.newLabelTime
-  let name = req.params.name
-  await db_trims.locateDoc(name)
-  await db_label.locateDoc(name)
-  await db_label.insertLabel(newLabel, newLabelTime)
-    db_label.findLabels((err, labels) => {
-      if (err) {
-        return res.sendStatus(500)
-      }
-      db_trims.findTrims((err, trims_) => {
-        if (err) {
-          return res.sendStatus(500)
-        }
-        res.render('editing', {name: name, label: labels, trims: trims_, trim: trimName, startTime: labelStartTime, endTime: labelEndTime})
-      }) 
-    }) 
+  db_label.insertLabel(newLabel, newLabelTime)
+  res.redirect('/editing')
 })
 
 router.post('/editing/deleteTrim', function (req, res, next) {
   let trimToDelete = req.body.deleteTrim
   let trimIdToDelete = req.body.deleteTrimId
   db_trims.deleteTrim(trimToDelete, trimIdToDelete)
+  res.redirect('/editing')
+})
 
-  db_label.findLabels((err, labels) => {
-    if (err) {
-      return res.sendStatus(500)
-    }
-    db_trims.findTrims((err, trims_) => {
-      if (err) {
-        return res.sendStatus(500)
-      }
-      res.render('editing', {name: displayName, label: labels, trims: trims_, trim: trimName, startTime: labelStartTime, endTime: labelEndTime})
-    }) 
-  }) 
+router.post('/editing/:name/delete_label', function (req, res, next) {
+  let id = req.body.labelName
+  db_label.deleteLabel(id)
+  res.redirect('/editing')  
 })
 
 router.post('/editing/:name/add_start_time', function (req, res, next) {
   let unCutLabelStartTime = req.body.startTime.substr(1).slice(41, -1).replace(/['"]+/g, '')
   let sliceLength = unCutLabelStartTime.length - 8
   labelStartTime = unCutLabelStartTime.slice(sliceLength)
-
-  db_label.findLabels((err, labels) => {
-    if (err) {
-      return res.sendStatus(500)
-    }
-    db_trims.findTrims((err, trims_) => {
-      if (err) {
-        return res.sendStatus(500)
-      }
-      res.render('editing', {name: req.params.name, label: labels, trims: trims_, trim: trimName, startTime: labelStartTime, endTime: labelEndTime})
-    }) 
-  })   
+  res.redirect('/editing')  
 })
 router.post('/editing/:name/add_end_time', function (req, res, next) {
   let unCutLabelEndTime = req.body.endTime.substr(1).slice(41, -1).replace(/['"]+/g, '')
   let sliceLength = unCutLabelEndTime.length - 8
   labelEndTime = unCutLabelEndTime.slice(sliceLength)
-
-  db_label.findLabels((err, labels) => {
-    if (err) {
-      return res.sendStatus(500)
-    }
-    db_trims.findTrims((err, trims_) => {
-      if (err) {
-        return res.sendStatus(500)
-      }
-      res.render('editing', {name: req.params.name, label: labels, trims: trims_, trim: trimName, startTime: labelStartTime, endTime: labelEndTime})
-    }) 
-  })   
+      res.redirect('/editing')  
 })
 
 router.post('/editing/downloadTrim', function (req, res, next) {
   let trimName = req.body.trimName
   var file = './videos/cut-videos/' + outputName + '/' + trimName + '.mp4';
   res.download(file); // Set disposition and send it.
-  db_label.findLabels((err, labels) => {
-    if (err) {
-      return res.sendStatus(500)
-    }
-    db_trims.findTrims((err, trims_) => {
-      if (err) {
-        return res.sendStatus(500)
-      }
-      res.render('editing', {name: displayName, label: labels, trims: trims_, trim: trimName})
-    }) 
-  })   
 })
 // label stuff
 
@@ -505,17 +464,12 @@ router.post('/labeling/add', function (req, res, next) {
     if (err) {
       return res.sendStatus(500)
     }
-    res.render('labeling', {name: displayName, label: labels})
+    res.redirect('/labeling')
   }) 
 })
 
 router.get('/labeling/refresh', function (req, res, next) {
-  db_label.findLabels((err, labels) => {
-    if (err) {
-      return res.sendStatus(500)
-    }
-    res.render('labeling', {name: displayName, label: labels})
-  }) 
+    res.redirect('/labeling')
 })
 
 // logo stuff

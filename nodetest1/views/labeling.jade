@@ -6,12 +6,12 @@ block content
   h4 Streaming to: #{streamDestination}
   h4(id='timer')
     
-  iframe(width="560" height="349" src="https://www.youtube.com/embed/live_stream?channel=UCXwXlD9sodFJ59ghod7FIzg" frameborder="0" allowfullscreen)
+  //- iframe(width="560" height="349" src="https://www.youtube.com/embed/live_stream?channel=UCXwXlD9sodFJ59ghod7FIzg" frameborder="0" allowfullscreen)
   br
   br
   h2 Labels
     each labelName in label
-      h4 #{(JSON.stringify(labelName)).substr(1).slice(8, -1).replace(/['"]+/g, '')}
+      h4 #{(JSON.stringify(labelName)).substr(1).slice(41, -1).replace(/['"]+/g, '')}
   a(href="/labeling/refresh")
     button(type="button") refresh labels
   br
@@ -22,7 +22,7 @@ block content
     button(type="submit") submit
   br
   a(href="/editing")
-    button(type="button" onclick='resetTimer()') #{terminate}
+    button(type="button" onclick='stopTimer()') #{terminate}
   br
   br
   a(href="/")
@@ -30,8 +30,15 @@ block content
 
   script.
     var countDownDate = localStorage.getItem('startDate');
+    let counter = 0
     let resetTimer = function(){
-      countDownDate = new Date(); localStorage.setItem('startDate', countDownDate);
+      counter = + 1
+      if(counter === 1){
+        countDownDate = new Date(); localStorage.setItem('startDate', countDownDate);
+      }
+    }
+    let stopTimer = function(){
+      counter = 0
     }
     window.onload = resetTimer()
     if (countDownDate) {

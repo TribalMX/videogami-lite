@@ -1,6 +1,7 @@
 const MongoClient = require('mongodb').MongoClient
 const assert = require('assert')
 const routerVariable = require('../index.js')
+const mongodb = require('mongodb');
 
 // Connection URL
 const url = 'mongodb://localhost:27017'
@@ -11,6 +12,7 @@ const dbName = 'videogami'
 let documentName = null
 let labelName = null
 let time = null
+let labelToDelete = null
 
 const insertDocument = function (db, callback) {
   // Get the documents collection
@@ -63,6 +65,18 @@ const findLabels = (db, cb) => {
     return cb(null, docs);
   });
 }
+const deleteLabel = function (db, callback) {
+  // Get the documents collection
+  const collection = db.collection(documentName)
+  // Insert some documents
+  collection.deleteOne({ _id: new mongodb.ObjectID(labelToDelete.toString())}, function(err, result) {
+      assert.equal(err, null);
+      assert.equal(1, result.result.n);
+      console.log("Removed the document");
+      callback(result);
+    });  
+}
+
 
 module.exports = {
   // Use connect method to connect to the server insert document
@@ -114,5 +128,15 @@ module.exports = {
     console.log('Connected successfully to server')
     console.log('locate doc labels')
     client.close()
-  })
+  }),
+  deleteLabel: (id) => MongoClient.connect(url, function (err, client) {
+    labelToDelete = id
+    assert.equal(null, err)
+
+    const db = client.db(dbName)
+
+    deleteLabel(db, function (labelToDelete) {
+      client.close()
+    })
+  }) 
 }
