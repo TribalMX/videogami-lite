@@ -241,7 +241,7 @@ router.post('/cancelstream', function (req, res, next) {
 
 router.post('/imgScale', function (req, res, next) {
   imgScale = req.body.logoSize
-  res.redirect('/')
+  res.redirect('/logo_setup')
 })
 
 // logo placements
@@ -249,14 +249,21 @@ router.post('/imgScale', function (req, res, next) {
 router.post('/logoInput', function (req, res, next) {
   logoHeight = req.body.logoHei
   logoHorizontal = req.body.logoHor
-  res.redirect('/')
+  res.redirect('/logo_setup')
 })
 
 // JC User rtmp key
 
 router.post('/JCRtmpKey', function (req, res, next) {
   JCrtmpKey = req.body.JCRtmpKey
-  res.redirect('/')
+  res.redirect('/setup_accounts')
+})
+
+// JC User rtmp key
+
+router.post('/YTrtmpKey', function (req, res, next) {
+  YTrtmpKey = req.body.YTRtmpKey
+  res.redirect('/setup_accounts')
 })
 
 // Hls input
@@ -479,8 +486,13 @@ router.get('/logo_setup', function (req, res, next) {
     if (err) {
       return res.sendStatus(500)
     }
-    res.render('logo', {name: outputName, logo_: logo})
-  })
+    db_logo.findLogos((err, logo) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      res.render('logo', {name: outputName, logo_: logo})
+    })
+  });
 })
 
 router.post('/upload', function(req, res) {
@@ -490,14 +502,9 @@ router.post('/upload', function(req, res) {
     if (err)
       return res.status(500).send(err);
     db_logo.insertLogo(logo.name)
-    db_logo.findLogos((err, logo) => {
-      if (err) {
-        return res.sendStatus(500)
-      }
-      res.render('logo', {name: outputName, logo_: logo})
-    })
+      res.redirect('/logo_setup')
   });
-});
+})
 
 router.post('/delete_logo', function (req, res, next) {
   console.log('here is the returned delete thing')
@@ -506,12 +513,7 @@ router.post('/delete_logo', function (req, res, next) {
   let logoString = logoObjParsed.logo
   console.log(logoString)
   db_logo.deleteLogo(logoString)
-  db_logo.findLogos((err, logo) => {
-    if (err) {
-      return res.sendStatus(500)
-    }
-    res.render('logo', {name: outputName, logo_: logo})
-  })
+  res.redirect('/logo_setup')
 })
 
 router.post('/logo_setup/use_logos', function (req, res, next) {
@@ -520,7 +522,7 @@ router.post('/logo_setup/use_logos', function (req, res, next) {
     if (err) {
       return res.sendStatus(500)
     }
-    res.render('logo', {name: outputName, logo_: logo})
+    res.redirect('/logo_setup')
   })
 })
 
