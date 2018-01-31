@@ -472,6 +472,13 @@ router.post('/editing/:stream_name/add_end_time', function (req, res, next) {
       res.redirect('/editing/' + outputName)  
 })
 
+router.post('/editing/:stream_name/deleteTrim', function (req, res, next) {
+  let trimToDelete = req.body.deleteTrim
+  let trimIdToDelete = req.body.deleteTrimId
+  db_trims.deleteTrim(trimToDelete, trimIdToDelete)
+  res.redirect('/editing/' + outputName)
+})
+
 router.post('/editing/:stream_name/downloadTrim', function (req, res, next) {
   let trimName = req.body.trimName
   var file = './videos/cut-videos/' + outputName + '/' + trimName + '.mp4';

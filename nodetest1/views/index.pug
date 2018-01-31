@@ -80,7 +80,7 @@ block content
     button(type="button", onclick="checkScheduleInput()", disabled="disabled", id="scheduleStreamBtn") schedule stream 
     br
     h3 OR only convert stream to mp4
-  form(action='/convert/' + streamName_, method='post', id='convertForm')
+  form(action='/convert', method='post', id='convertForm')
     input(type='hidden', value= '', name='name', id='convertName')
     button(type="submit", disabled="disabled", id="convertBtn" ) Convert
   br
