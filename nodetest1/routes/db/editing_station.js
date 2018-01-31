@@ -15,7 +15,7 @@ let documentName = null
 const getCollections = (db, cb) => {
   
     // Find some documents
-    db.listCollections().toArray((err, docs) => {
+    db.listCollections({name: {$ne: 'outlets'}}).toArray((err, docs) => {
       // An error occurred we need to return that to the given 
       // callback function
       if (err) {

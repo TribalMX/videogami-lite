@@ -7,6 +7,7 @@ const db_label = require('./db/labels.js')
 const db_logo = require('./db/logos.js')
 const db_trims = require('./db/trims.js')
 const db_edit = require('./db/editing_station.js')
+const db_accounts = require('./db/accounts.js')
 
 // packages
 const schedule = require('node-schedule')
@@ -49,16 +50,16 @@ let displayName = 'displayName'
 
 
 // this is for joicaster
-let streamJC = () => { console.log('Now streaming to Joicaster'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://ingest-us-east.a.switchboard.zone/live/' + JCrtmpKey + '"') }
+let streamJC = () => { console.log('Now streaming to Joicaster'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://ingest-us-east.a.switchboard.zone/live/' + JCrtmpKey + '"') }
 
 // this is for facebook only
-let streamFB = () => { console.log('Now streaming to Facebook'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=580:10:enable=\'between(t,5,15)\'" -acodec aac -vcodec libx264 -f flv ' + '"' + FBrtmp + '"') }
+let streamFB = () => { console.log('Now streaming to Facebook'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=580:10:enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile=fontfile/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"' + FBrtmp + '"') }
 
 // this is for Youtube only
-let streamYT = () => { console.log('Now streaming to Youtube'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey + '"') }
+let streamYT = () => { console.log('Now streaming to Youtube'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey + '"') }
 
 // this is for output mp4
-let outputMp4 = () => { cmd.run('./ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'" -acodec aac -vcodec libx264 ' + './videos/output/' + outputName + '.mp4') }
+let outputMp4 = () => { cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 ' + './videos/output/' + outputName + '.mp4') }
 
 // this is for trimming the video with start and end time
 
@@ -88,13 +89,21 @@ let stop = () => {
 router.get('/', function (req, res, next) {
   labelStartTime = ''
   labelEndTime = ''
-  res.render('index', { streamStatus: streamStatus, streamDestinations: streamDestinations, scheduleStatus: scheduled })
+
+  db_accounts.findYToutlets((err, YToutlets_) => {
+    if (err) {
+        return res.sendStatus(500);
+    }
+    db_accounts.findFBoutlets((err, FBoutlets_) => {
+      res.render('index', { name: outputName, streamStatus: streamStatus, streamDestinations: streamDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_  })        
+    }) 
+  })
 })
 
 // get labeling page
 
 router.get('/labeling/:stream_name', function (req, res, next) {
-
+  outputName = req.params.stream_name
   let stopSign = null
   if(scheduled){
     stopSign = "Cancel scheduled Stream"
@@ -115,6 +124,18 @@ router.get('/labeling/:stream_name', function (req, res, next) {
 // stream settings
 
 router.post('/start_stream', function (req, res, next) {
+  // console.log('req.body Youtube >>>>' + req.body.YToutletCredentials)
+  // let YTcreds = req.body.YToutletCredentials
+  // var array1 = [req.body.YToutletCredentials];
+
+  // array1.forEach(function(element) {
+  //   console.log('element >>>> ' + element);
+  // });
+
+  // let streamYT =  function(YTrtmp){
+    
+  // }
+  // res.redirect('/')
   displayName = req.body.name
   outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   console.log(req.body)
@@ -260,17 +281,45 @@ router.post('/JCRtmpKey', function (req, res, next) {
   res.redirect('/setup_accounts')
 })
 
-// JC User rtmp key
+// Outlet setup
 
-router.post('/YTrtmpKey', function (req, res, next) {
+router.get('/setup_accounts', function (req, res, next) {
+  db_accounts.findYToutlets((err, YToutlets_) => {
+    if (err) {
+        return res.sendStatus(500);
+    }
+    db_accounts.findFBoutlets((err, FBoutlets_) => {        
+      res.render('accounts', {YToutlets: YToutlets_, FBoutlets: FBoutlets_ }) 
+    }) 
+  })
+})  
+
+router.post('/setup_accounts/remove_outlet', function (req, res, next) {
+  let removeID = req.body.outletID
+  db_accounts.deleteStreamOutlet(removeID)
+  res.redirect('/setup_accounts')
+})
+
+router.post('/setup_accounts/setup_youtube', function (req, res, next) {
   YTrtmpKey = req.body.YTRtmpKey
+  let YTstreamName = req.body.YTname
+  db_accounts.insertYoutubeOutlet(YTstreamName, YTrtmpKey)
+  res.redirect('/setup_accounts')
+})
+
+router.post('/setup_accounts/setup_facebook', function (req, res, next) {
+  let FBappId = req.body.FBAppId
+  let FBaccesstoken = req.body.FBaccessToken
+  let FBoutletName = req.body.FBname
+  db_accounts.insertFacebookOutlet(FBoutletName, FBappId, FBaccesstoken)
   res.redirect('/setup_accounts')
 })
 
 // Hls input
 
 router.post('/input', function (req, res, next) {
-  inputURL = req.body.JCInput
+  inputURL = req.body.input
+  console.log('inputURl >>>>>' + inputURL)
   res.redirect('/')
 })
 
@@ -280,19 +329,6 @@ router.get('/stop', function (req, res, next) {
   stop()
   console.log("all ffmpeg processes aborted")
   res.redirect('/')
-})
-
-// JC User rtmp key
-
-router.post('/YTRtmpKey', function (req, res, next) {
-  YTrtmpKey = req.body.YTRtmpKey
-  res.redirect('/')
-})
-
-// miscllaneous stuff
-
-router.get('/setup_accounts', function (req, res, next) {
-  res.render('accounts')
 })
 
 // editing station

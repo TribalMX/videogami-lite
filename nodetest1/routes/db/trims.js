@@ -12,20 +12,17 @@ const url = 'mongodb://localhost:27017'
 const dbName = 'videogami'
 
 let documentName = null
-let trimName = null
 let trimToDelete = null
-let startTimeInput = null
-let endTimeInput = null
 let trimIdToDelete = null
 
-const insertTrim_ = function (db, callback) {
+const insertTrim_ = function (db, callback, trimName, startTime, endTime) {
 
     // Get the documents collection
     const collection = db.collection(documentName)
     // Insert some documents
     collection.insertOne(
   
-      {Video_trim:{trimName: trimName, startTime: startTimeInput, endTime: endTimeInput}},
+      {Video_trim:{trimName: trimName, startTime: startTime, endTime: endTime}},
       function (err, result) {
         assert.equal(err, null)
         assert.equal(1, result.result.n)
@@ -81,10 +78,7 @@ module.exports = {
     console.log('Connected successfully to server')
     client.close()
   }),
-  insertTrim: (trimName_, startTime, EndTime) => MongoClient.connect(url, function (err, client) {
-    trimName = trimName_
-    startTimeInput = startTime
-    endTimeInput = EndTime
+  insertTrim: (trimName_, startTime, endTime) => MongoClient.connect(url, function (err, client) {
     assert.equal(null, err)
     console.log('Connected successfully to server')
 
@@ -92,7 +86,7 @@ module.exports = {
 
     insertTrim_(db, function (docName) {
       client.close()
-    })
+    }, trimName_, startTime, endTime)
   }),
   findTrims: cb => {
     MongoClient.connect(url, (err, client) => {

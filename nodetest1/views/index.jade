@@ -5,7 +5,7 @@ block content
   h1 VideoGami Lite
 
   a(href="/setup_accounts")
-    button(type="button") Go to account setup
+    button(type="button") Add/change Streaming outlets
   br
 
   a(href="/logo_setup")
@@ -18,7 +18,7 @@ block content
     h4 Status: #{streamStatus}
     h4 End Points: #{streamDestinations}
     br
-  a(href="/labeling")
+  a(href="/labeling/" + name)
     button(type="button" disabled="disabled" id="goStreamingPageBtn") Go to streaming page
   br
 
@@ -34,7 +34,7 @@ block content
     br
     input(type='text', value='', onchange="checkNameChange()", name='name', id='streamName')
     br
-    h3 choose your streaming destinations
+    h3 choose your streaming outlets
     label(for='youtube') Youtube 
     input(type='checkbox', onchange="enableBtnYT()", value='true', name='youtube', id='youtube') 
     br
@@ -45,8 +45,23 @@ block content
     label(for='joicaster') Joicaster 
     input(type='checkbox', value='true', onchange="enableBtnJC()", name='joicaster', id='joicaster') 
     br
-    br
     button(type="button", disabled="disabled", onclick="clearSchedule()", id="streamNowBtn") Stream now
+
+    //- h4 Youtube outlets:
+    //- each outlet in YToutlets
+    //-     br
+    //-     label(for='Youtube') Youtube: #{outlet.YToutlets.name}  
+    //-     input(type='checkbox', value='#{YToutletList}', onclick='addToYToutletList(' + outlet.YToutlets.YTrtmp.toString() + ')', name='YToutletCredentials', id='YToutlet')
+    //- h4 Facebook outlets:
+    //- each outlet in FBoutlets  
+    //-     br
+    //-     label(for='FBoutlet') Facebook: #{outlet.FBoutlets.name}  
+    //-     input(type='checkbox', value='#{outlet.FBoutlets.FBappId}#{outlet.FBoutlets.FBaccessToken}', name='FBappId', id='FBoutlet')
+    //- br
+    //- br
+    //- button(type="button", onclick="clearSchedule()", id="streamNowBtn") Stream now
+    br
+    br
     br
     h3 OR Schedule a stream
     br 
@@ -65,7 +80,7 @@ block content
     button(type="button", onclick="checkScheduleInput()", disabled="disabled", id="scheduleStreamBtn") schedule stream 
     br
     h3 OR only convert stream to mp4
-  form(action='/convert', method='post', id='convertForm')
+  form(action='/convert/#{streamName_}', method='post', id='convertForm')
     input(type='hidden', value= '', name='name', id='convertName')
     button(type="submit", disabled="disabled", id="convertBtn" ) Convert
   br
@@ -88,7 +103,8 @@ block content
     let checkerYT = false
     let checkerJC = false
     let checkerFB = false
-
+    let YToutletList = []
+    
     var scheduleCheck = setInterval(function() {
       if (scheduleStatus.value === 'true') {
         document.getElementById("cancelStreamBtn").disabled = false;
@@ -102,8 +118,12 @@ block content
       }
     }, 1);
 
+    function addToYToutletList(outlet){
+      YToutletList.push(outlet)
+    }
 
     function checkNameChange(){
+      streamName_ = document.getElementById("streamName").value
       document.getElementById("convertName").value = document.getElementById("streamName").value
       if(streamName){
         document.getElementById("convertBtn").disabled = false;
