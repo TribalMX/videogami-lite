@@ -48,17 +48,18 @@ let stopwatch = new Stopwatch()
 let outputName = 'stream'
 let displayName = 'displayName'
 
+// ffmpeg -i 'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale='40:40'[ovrl1], [0:v][ovrl1] overlay='580:10':enable='between(t,1,5)'[v1];[2]scale='40:40'[ovrl2], [v1][ovrl2] overlay='580:10':enable='between(t,5,15)'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text='VideoGami':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable='between(t,1,10)'" -acodec aac -vcodec libx264 -f flv "rtmp://a.rtmp.youtube.com/live2/xz4t-2x3s-rwd2-497b"
 // this is for joicaster
-let streamJC = () => { console.log('Now streaming to Joicaster'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://ingest-us-east.a.switchboard.zone/live/' + JCrtmpKey + '"') }
+let streamJC = () => { console.log('Now streaming to Joicaster'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://ingest-us-east.a.switchboard.zone/live/' + JCrtmpKey + '"') }
 
 // this is for facebook only
-let streamFB = () => { console.log('Now streaming to Facebook'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=580:10:enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile=fontfile/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"' + FBrtmp + '"') }
+let streamFB = () => { console.log('Now streaming to Facebook'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=580:10:enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"' + FBrtmp + '"') }
 
 // this is for Youtube only
-let streamYT = () => { console.log('Now streaming to Youtube'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey + '"') }
+let streamYT = () => { console.log('Now streaming to Youtube'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey + '"') }
 
 // this is for output mp4
-let outputMp4 = () => { cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=fontfile/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 ' + './videos/output/' + outputName + '.mp4') }
+let outputMp4 = () => { cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 ' + './videos/output/' + outputName + '.mp4') }
 
 // this is for trimming the video with start and end time
 
@@ -66,7 +67,7 @@ let startTime = null
 let duration = null
 let trimName = null
 
-let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./videos/output/' + outputName + '.mp4 -c copy ./videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
+let edit = () => { cmd.run('./ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./videos/output/' + outputName + '.mp4 -c copy ./videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
 
 // this is to stop all ffmpeg activity
 
@@ -237,7 +238,7 @@ router.post('/start_stream', function (req, res, next) {
 
 //convert to mp4 only
 
-router.post('/convert/:stream_name', function (req, res, next) {
+router.post('/convert', function (req, res, next) {
   displayName = req.body.name
   outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   db_label.insertDoc(outputName)
@@ -348,7 +349,7 @@ router.get('/editing_station/:collection_name', function (req, res, next) {
   db_trims.locateDoc(collectionName)
   db_label.locateDoc(collectionName)
 
-  setTimeout(function(){db_label.findLabels(async(err, labels) => {
+  setTimeout(function(){db_label.findLabels((err, labels) => {
     if (err) 
         return res.sendStatus(500);
 
@@ -371,15 +372,14 @@ router.post('/editing_station/:stream_name/remove_stream', function (req, res, n
 let labelStartTime = ''
 let labelEndTime = ''
 
-router.get('/editing/:stream_name', async function (req, res, next) {
-  outputName = req.params.stream_name
+router.get('/editing/:stream_name', function (req, res, next) {
   dirPath = "./videos/cut-videos/" + outputName
   mkdirp(dirPath, function(err) { 
     console.log('directory made')
   });
   stop()
-  await db_trims.locateDoc(outputName)
-  await db_label.locateDoc(outputName)
+  db_trims.locateDoc(outputName)
+  db_label.locateDoc(outputName)
   setTimeout(function(){db_label.findLabels((err, labels) => {
     if (err) {
       return res.sendStatus(500)
@@ -446,7 +446,7 @@ router.post('/editing/:stream_name/downloadWhole', function (req, res, next) {
   res.download(file); // Set disposition and send it.
 })
 
-router.post('/editing/:stream_name/addLabel', async function (req, res, next) {
+router.post('/editing/:stream_name/addLabel', function (req, res, next) {
   let newLabel = req.body.newLabel
   let newLabelTime = req.body.newLabelTime
   db_label.insertLabel(newLabel, newLabelTime)
