@@ -1,0 +1,84 @@
+extends layout
+
+//- head 
+//-     meta(charset="utf-8")
+//-     script(src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js")
+//-     script.
+//-       $(function() {
+//-         $("#insertLabel").on("submit",function(e) { 
+//-         e.preventDefault(); // stop submission
+//-           $.post(this.action,$(this).serialize(),function(data) {
+//-             $.each(data,function(label) { // loop over result
+//-               $("#labels").append(label._id+":"+label.labels);
+//-             });  
+//-           });  
+//-         });   
+//-       }); 
+block content
+  h1 streaming: #{name}
+  h4 Scheduled Stream Time: #{date}
+  h4 Streaming to: #{streamDestination}
+  //- h4(id='timer')
+    
+  iframe(width="560" height="349" src="https://www.youtube.com/embed/live_stream?channel=UCXwXlD9sodFJ59ghod7FIzg" frameborder="0" allowfullscreen)
+  br
+  br
+  h2 Labels
+    each labelName in label
+      div(class='div-class' id='labels')
+        h4(id='labels') #{(JSON.stringify(labelName)).substr(1).slice(41, -1).replace(/['"]+/g, '')}
+  a(href='/labeling/' + name + '/refresh')
+    button(type="button") refresh labels
+  br
+  h2 Add a label 
+  form(action='/labeling/' + name + '/add_label', method='post', id='insertLabel')
+    label(for='insertLabel ') Add label
+    input(type='text', value='', name='label', id='insertLabel')
+    button(type="submit") submit
+  br
+  a(href="/editing/" + name)
+    button(type="button" onclick='stopTimer()') #{terminate}
+  br
+  br
+  a(href="/")
+    button(type="button") Home page
+
+  script.
+    var countDownDate = localStorage.getItem('startDate');
+    let counter = 0
+    let resetTimer = function(){
+      counter = + 1
+      if(counter === 1){
+        countDownDate = new Date(); localStorage.setItem('startDate', countDownDate);
+      }
+    }
+    let stopTimer = function(){
+      counter = 0
+    }
+    window.onload = resetTimer()
+    if (countDownDate) {
+        countDownDate = new Date(countDownDate);
+    } else {
+        countDownDate = new Date();
+        localStorage.setItem('startDate', countDownDate);
+    }
+
+    // Update the count down every 1 second
+    var x = setInterval(function() {
+
+        // Get todays date and time
+        var now = new Date().getTime();
+
+        // Find the distance between now an the count down date
+        var distance = now - countDownDate.getTime();
+
+        // Time calculations for days, hours, minutes and seconds
+        var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        // Output the result in an element with id="demo"
+        document.getElementById("timer").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+    }, 1000);
+

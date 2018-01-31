@@ -453,13 +453,6 @@ router.post('/editing/:stream_name/addLabel', async function (req, res, next) {
   res.redirect('/editing/' + outputName)
 })
 
-router.post('/editing/:stream_name/deleteTrim', function (req, res, next) {
-  let trimToDelete = req.body.deleteTrim
-  let trimIdToDelete = req.body.deleteTrimId
-  db_trims.deleteTrim(trimToDelete, trimIdToDelete)
-  res.redirect('/editing/' + outputName)
-})
-
 router.post('/editing/:stream_name/delete_label', function (req, res, next) {
   let id = req.body.labelName
   db_label.deleteLabel(id)
