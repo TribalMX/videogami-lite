@@ -218,6 +218,7 @@ router.post('/start_stream', function (req, res, next) {
 //convert to mp4 only
 
 router.post('/convert', function (req, res, next) {
+  stopwatch.start()
   req.params.name = req.body.name
   displayName = req.body.name
   outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
