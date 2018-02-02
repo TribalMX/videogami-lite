@@ -521,15 +521,26 @@ router.post('/labeling/:stream_name/add_label', function (req, res, next) {
   labelName = req.body.label
   db_label.insertLabel(labelName, overallTime)
   setTimeout(function(){db_label.findLabels((err, labels) => {
-  db_label.findLabels((err, labels) => {
-    if (err) {
-      return res.sendStatus(500)
-    }
-    res.send(labels)
+      db_label.findLabels((err, labels) => {
+        if (err) {
+          return res.sendStatus(500)
+        }
+        res.send(labels)
+      })
+    },500); 
   })
-},500); 
 })
+
+router.get('/labels/refresh', function (req, res, next) {
+  console.log("refreshed!")
+    db_label.findLabels((err, labels) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      res.send(labels)
+    })
 })
+
 
 router.get('/labeling/:stream_name/refresh', function (req, res, next) {
   res.redirect('/labeling/' + outputName)

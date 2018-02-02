@@ -29,8 +29,17 @@ block content
   a(href="/")
     button(type="button") Home page
 
-
-  
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js')  
+  script.
+      $.get({ url: '/labels/refresh', 
+              success: function(data){
+                $("#labels").html("");  
+                $.each(data,function(label) { // loop over result         
+                  $("#labels").append(data[label].label + '<br/>');
+               })
+              },
+              error: function(error) { console.log(error)} 
+            })
   script.
     var countDownDate = localStorage.getItem('startDate');
     let counter = 0
