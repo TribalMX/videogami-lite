@@ -104,6 +104,7 @@ block content
     let checkerJC = false
     let checkerFB = false
     let YToutletList = []
+    let streamName_ = null
     
     var scheduleCheck = setInterval(function() {
       if (scheduleStatus.value === 'true') {
@@ -123,7 +124,6 @@ block content
     }
 
     function checkNameChange(){
-      streamName_ = document.getElementById("streamName").value
       document.getElementById("convertName").value = document.getElementById("streamName").value
       if(streamName){
         document.getElementById("convertBtn").disabled = false;
@@ -278,4 +278,3 @@ block content
       js.src = "https://connect.facebook.net/en_US/sdk.js";
       fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
-

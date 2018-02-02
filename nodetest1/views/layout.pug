@@ -5,3 +5,20 @@ html
     link(rel='stylesheet', href='/stylesheets/style.css')
   body
     block content
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js')  
+  script.
+    $(function() {
+      $("#insertLabelForm").on("submit",function(e) { 
+        e.preventDefault(); // stop submission
+        // sending all form data - you can also do { "label": $("#insertLabel").val(); 
+        // instead of $(this).serialize()
+         
+        $.post(this.action,$(this).serialize(),function(data) {
+          $("#labels").html(""); 
+          $.each(data,function(label) { // loop over result         
+            $("#labels").append(data[label].label + '<br/>');
+            document.getElementById("insertLabel").value = ""
+          });  
+        });  
+      });   
+    });

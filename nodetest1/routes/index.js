@@ -100,27 +100,6 @@ router.get('/', function (req, res, next) {
   })
 })
 
-// get labeling page
-
-router.get('/labeling/:stream_name', function (req, res, next) {
-  outputName = req.params.stream_name
-  let stopSign = null
-  if(scheduled){
-    stopSign = "Cancel scheduled Stream"
-  } else if(streamStatus === "Converting"){
-    stopSign = "End Conversion"
-  } else if(!scheduled){
-    stopSign = "End Stream"
-  } 
-  setTimeout(function(){db_label.findLabels((err, labels) => {
-    if (err) {
-      return res.sendStatus(500)
-    }
-    res.render('labeling', {name: outputName, label: labels, date: streamStatus, terminate: stopSign, streamDestination: streamDestinations})
-  })   
-  },500); 
-})
-
 // stream settings
 
 router.post('/start_stream', function (req, res, next) {
@@ -239,12 +218,27 @@ router.post('/start_stream', function (req, res, next) {
 //convert to mp4 only
 
 router.post('/convert', function (req, res, next) {
+  req.params.name = req.body.name
   displayName = req.body.name
   outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   db_label.insertDoc(outputName)
-  outputMp4()
+  // outputMp4()
   streamStatus = "Converting"
-  res.redirect('/labeling/' + outputName)
+  let stopSign = null
+  if(scheduled){
+    stopSign = "Cancel scheduled Stream"
+  } else if(streamStatus === "Converting"){
+    stopSign = "End Conversion"
+  } else if(!scheduled){
+    stopSign = "End Stream"
+  } 
+  setTimeout(function(){db_label.findLabels((err, labels) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
+    res.redirect('/labeling/' + outputName)
+  })   
+  },500); 
 })
 
 // cancel scheduled task
@@ -487,6 +481,27 @@ router.post('/editing/:stream_name/downloadTrim', function (req, res, next) {
 
 // label stuff
 
+// get labeling page
+
+router.get('/labeling/:stream_name', function (req, res, next) {
+  outputName = req.params.stream_name
+  let stopSign = null
+  if(scheduled){
+    stopSign = "Cancel scheduled Stream"
+  } else if(streamStatus === "Converting"){
+    stopSign = "End Conversion"
+  } else if(!scheduled){
+    stopSign = "End Stream"
+  } 
+  setTimeout(function(){db_label.findLabels((err, labels) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
+    res.render('labeling', {name: outputName, label: labels, date: streamStatus, terminate: stopSign, streamDestination: streamDestinations})
+  })   
+  },500); 
+})
+
 router.post('/labeling/:stream_name/add_label', function (req, res, next) {
   let time = stopwatch.ms/1000
   let minutes = Math.floor(time / 60);
@@ -505,16 +520,30 @@ router.post('/labeling/:stream_name/add_label', function (req, res, next) {
   let overallTime = hours + ":" + minutes + ":" + seconds
   labelName = req.body.label
   db_label.insertLabel(labelName, overallTime)
-  db_label.findLabels((err, labels) => {
-    if (err) {
-      return res.sendStatus(500)
-    }
-    res.redirect('/labeling/' + outputName)
-  }) 
+  setTimeout(function(){db_label.findLabels((err, labels) => {
+      db_label.findLabels((err, labels) => {
+        if (err) {
+          return res.sendStatus(500)
+        }
+        res.send(labels)
+      })
+    },500); 
+  })
 })
 
+router.get('/labels/refresh', function (req, res, next) {
+  console.log("refreshed!")
+    db_label.findLabels((err, labels) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      res.send(labels)
+    })
+})
+
+
 router.get('/labeling/:stream_name/refresh', function (req, res, next) {
-    res.redirect('/labeling/' + outputName)
+  res.redirect('/labeling/' + outputName)
 })
 
 // logo stuff
