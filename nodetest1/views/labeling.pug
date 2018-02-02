@@ -1,37 +1,23 @@
 extends layout
 
-//- head 
-//-     meta(charset="utf-8")
-//-     script(src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js")
-//-     script.
-//-       $(function() {
-//-         $("#insertLabel").on("submit",function(e) { 
-//-         e.preventDefault(); // stop submission
-//-           $.post(this.action,$(this).serialize(),function(data) {
-//-             $.each(data,function(label) { // loop over result
-//-               $("#labels").append(label._id+":"+label.labels);
-//-             });  
-//-           });  
-//-         });   
-//-       }); 
 block content
   h1 streaming: #{name}
   h4 Scheduled Stream Time: #{date}
   h4 Streaming to: #{streamDestination}
-  //- h4(id='timer')
+  h4(id='timer')
     
-  iframe(width="560" height="349" src="https://www.youtube.com/embed/live_stream?channel=UCXwXlD9sodFJ59ghod7FIzg" frameborder="0" allowfullscreen)
+  //- iframe(width="560" height="349" src="https://www.youtube.com/embed/live_stream?channel=UCXwXlD9sodFJ59ghod7FIzg" frameborder="0" allowfullscreen)
   br
   br
   h2 Labels
-    each labelName in label
-      div(class='div-class' id='labels')
-        h4(id='labels') #{(JSON.stringify(labelName)).substr(1).slice(41, -1).replace(/['"]+/g, '')}
+  h4(class='div-class' id='labels')
+    //- each labelName in label
+        //- h4(id='labels') #{(JSON.stringify(labelName)).substr(1).slice(41, -1).replace(/['"]+/g, '')}
   a(href='/labeling/' + name + '/refresh')
-    button(type="button") refresh labels
+    button(type="button" id='refreshBtn') refresh labels
   br
   h2 Add a label 
-  form(action='/labeling/' + name + '/add_label', method='post', id='insertLabel')
+  form(action='/labeling/' + name + '/add_label', method='post', id='insertLabelForm')
     label(for='insertLabel ') Add label
     input(type='text', value='', name='label', id='insertLabel')
     button(type="submit") submit
@@ -43,6 +29,8 @@ block content
   a(href="/")
     button(type="button") Home page
 
+
+  
   script.
     var countDownDate = localStorage.getItem('startDate');
     let counter = 0
@@ -81,4 +69,5 @@ block content
         // Output the result in an element with id="demo"
         document.getElementById("timer").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
     }, 1000);
+    
 
