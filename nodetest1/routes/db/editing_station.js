@@ -10,7 +10,7 @@ const url = 'mongodb://localhost:27017'
 // Database Name
 const dbName = 'videogami'
 
-let documentName = null
+let documentName = 'stream'
 
 const getCollections = (db, cb) => {
   

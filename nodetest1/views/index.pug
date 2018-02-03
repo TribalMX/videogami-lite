@@ -35,31 +35,31 @@ block content
     input(type='text', value='', onchange="checkNameChange()", name='name', id='streamName')
     br
     h3 choose your streaming outlets
-    label(for='youtube') Youtube 
-    input(type='checkbox', onchange="enableBtnYT()", value='true', name='youtube', id='youtube') 
-    br
-    label(for='Facebook') Facebook  
-    input(type='hidden', value='', name='rtmplink', id='FBNowInputBox')
-    input(type='checkbox', onchange="streamFB()", onclick="enableBtnFB()", value='true', name='facebook', id='facebook') 
-    br
-    label(for='joicaster') Joicaster 
-    input(type='checkbox', value='true', onchange="enableBtnJC()", name='joicaster', id='joicaster') 
-    br
-    button(type="button", disabled="disabled", onclick="clearSchedule()", id="streamNowBtn") Stream now
+    //- label(for='youtube') Youtube 
+    //- input(type='checkbox', onchange="enableBtnYT()", value='true', name='youtube', id='youtube') 
+    //- br
+    //- label(for='Facebook') Facebook  
+    //- input(type='hidden', value='', name='rtmplink', id='FBNowInputBox')
+    //- input(type='checkbox', onchange="streamFB()", onclick="enableBtnFB()", value='true', name='facebook', id='facebook') 
+    //- br
+    //- label(for='joicaster') Joicaster 
+    //- input(type='checkbox', value='true', onchange="enableBtnJC()", name='joicaster', id='joicaster') 
+    //- br
+    //- button(type="button", disabled="disabled", onclick="clearSchedule()", id="streamNowBtn") Stream now
 
-    //- h4 Youtube outlets:
-    //- each outlet in YToutlets
-    //-     br
-    //-     label(for='Youtube') Youtube: #{outlet.YToutlets.name}  
-    //-     input(type='checkbox', value='#{YToutletList}', onclick='addToYToutletList(' + outlet.YToutlets.YTrtmp.toString() + ')', name='YToutletCredentials', id='YToutlet')
+    h4 Youtube outlets:
+    each outlet in YToutlets
+        br
+        label(for='Youtube') Youtube: #{outlet.YToutlets.name}  
+        input(type='checkbox', value=outlet.YToutlets.YTrtmp, name='YToutletCredentials', id='YToutlet')
     //- h4 Facebook outlets:
     //- each outlet in FBoutlets  
     //-     br
     //-     label(for='FBoutlet') Facebook: #{outlet.FBoutlets.name}  
     //-     input(type='checkbox', value='#{outlet.FBoutlets.FBappId}#{outlet.FBoutlets.FBaccessToken}', name='FBappId', id='FBoutlet')
     //- br
-    //- br
-    //- button(type="button", onclick="clearSchedule()", id="streamNowBtn") Stream now
+    br
+    button(type="button", onclick="clearSchedule()", id="streamNowBtn") Stream now
     br
     br
     br
@@ -97,7 +97,7 @@ block content
   form(action='/convert', method='post', id='convertForm')
     input(type='hidden', value= streamStatus, name='streamStatus', id='streamStatus')
   
-  
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js') 
   script.
     let accr = 0
     let checkerYT = false
@@ -105,6 +105,18 @@ block content
     let checkerFB = false
     let YToutletList = []
     let streamName_ = null
+
+    $(function() {
+      $("#streamSettings").on("submit",function(e) { 
+        e.preventDefault(); // stop submission
+         
+        $.post(this.action,$(this).serialize(),function(data) {
+          $("input:checkbox[YToutletCredentials=type]:checked").each(function(){
+            YToutletList.push($(this).val());
+          });
+        });  
+      });   
+    });
     
     var scheduleCheck = setInterval(function() {
       if (scheduleStatus.value === 'true') {
@@ -118,10 +130,6 @@ block content
         clearInterval(streamCheck);
       }
     }, 1);
-
-    function addToYToutletList(outlet){
-      YToutletList.push(outlet)
-    }
 
     function checkNameChange(){
       document.getElementById("convertName").value = document.getElementById("streamName").value

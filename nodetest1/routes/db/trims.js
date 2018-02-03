@@ -11,7 +11,7 @@ const url = 'mongodb://localhost:27017'
 // Database Name
 const dbName = 'videogami'
 
-let documentName = null
+let documentName = 'stream'
 let trimToDelete = null
 let trimIdToDelete = null
 

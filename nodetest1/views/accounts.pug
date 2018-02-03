@@ -23,7 +23,7 @@ block content
     h4 Name: #{outlet.YToutlets.name}
     h4 RTMP Key: #{outlet.YToutlets.YTrtmp}
     form(action='/setup_accounts/remove_outlet', method='post', id='YTRtmpKey')
-      input(type='hidden', value='#{outlet._id}', name='outletID', id='YToutlet')
+      input(type='hidden', value=outlet._id, name='outletID', id='YToutlet')
       button(type="submit") Remove Outlet
 
   h2 Add a Facebook outlet

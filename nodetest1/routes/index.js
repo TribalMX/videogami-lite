@@ -28,7 +28,7 @@ let scheduled = false
 router.use(fileUpload());
 
 // rtmp stream keys
-let YTrtmpKey = 'xz4t-2x3s-rwd2-497b'
+// let YTrtmpKey = 'xz4t-2x3s-rwd2-497b'
 let JCrtmpKey = 'rickysychan-7hup2-mqxsa-b6kmd-gj2gq'
 let FBrtmp = null
 
@@ -56,7 +56,7 @@ let streamJC = () => { console.log('Now streaming to Joicaster'); cmd.run('ffmpe
 let streamFB = () => { console.log('Now streaming to Facebook'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=580:10:enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"' + FBrtmp + '"') }
 
 // this is for Youtube only
-let streamYT = () => { console.log('Now streaming to Youtube'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey + '"') }
+let streamYT = (YTrtmpKey) => { console.log('Now streaming to Youtube'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey + '"') }
 
 // this is for output mp4
 let outputMp4 = () => { cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 ' + './videos/output/' + outputName + '.mp4') }
@@ -103,116 +103,122 @@ router.get('/', function (req, res, next) {
 // stream settings
 
 router.post('/start_stream', function (req, res, next) {
-  // console.log('req.body Youtube >>>>' + req.body.YToutletCredentials)
-  // let YTcreds = req.body.YToutletCredentials
-  // var array1 = [req.body.YToutletCredentials];
-
-  // array1.forEach(function(element) {
-  //   console.log('element >>>> ' + element);
-  // });
-
-  // let streamYT =  function(YTrtmp){
-    
-  // }
-  // res.redirect('/')
   displayName = req.body.name
   outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
-  console.log(req.body)
-  db_label.insertDoc(outputName)
+  // db_label.insertDoc(outputName)
+  console.log('req.body Youtube >>>>' + JSON.stringify(req.body.YToutletCredentials))
+  var YTcreds = req.body.YToutletCredentials
+  console.log("Type of >>>>>" + typeof YTcreds)
 
-  let month = req.body.month
-  let day = req.body.day
-  let hour = req.body.hour
-  let minute = req.body.minute
+  if(typeof YTcreds === 'object'){
+    YTcreds[0] = YTcreds[0].slice(1)
+    YTcreds.forEach(function(YTrtmpKey) {
+      streamYT(YTrtmpKey)
+    });
+  }
+  if(typeof YTcreds === 'string'){
+    
+      streamYT(YTcreds.slice(1))
+  }
+  res.redirect('/labeling/' + outputName)
+  // displayName = req.body.name
+  // outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
+  // console.log(req.body)
+  // db_label.insertDoc(outputName)
 
-  let prettyMonth = month
-  let prettyDay = day
-  let prettyMinute = minute
-  let prettyHour = hour
+  // let month = req.body.month
+  // let day = req.body.day
+  // let hour = req.body.hour
+  // let minute = req.body.minute
 
-  if(month < 9 ){
-    prettyMonth = "0" + month
-  }
-  if(day < 9 ){
-    prettyDay = "0" + day
-  }
-  if(hour < 9 ){
-    prettyHour = "0" + hour
-  }
-  if(minute < 9 ){
-    prettyMinute = "0" + minute
-  }
+  // let prettyMonth = month
+  // let prettyDay = day
+  // let prettyMinute = minute
+  // let prettyHour = hour
 
-  if(month && day && hour && minute){
-    scheduled = true
-  }
+  // if(month < 9 ){
+  //   prettyMonth = "0" + month
+  // }
+  // if(day < 9 ){
+  //   prettyDay = "0" + day
+  // }
+  // if(hour < 9 ){
+  //   prettyHour = "0" + hour
+  // }
+  // if(minute < 9 ){
+  //   prettyMinute = "0" + minute
+  // }
 
-  let stopSign = null
-  if(scheduled){
-    stopSign = "Cancel scheduled Stream"
-  } else {
-    stopSign = "End Stream"
-  }
+  // if(month && day && hour && minute){
+  //   scheduled = true
+  // }
 
-  if (req.body.youtube === 'true' && !scheduled) {
-    streamYT()
-    streamDestinations.push(" Youtube")
-  }
-  if (req.body.facebook === 'true' && !scheduled) {
-    FBrtmp = req.body.rtmplink
-    streamFB()
-    streamDestinations.push(" Facebook")
-  }
-  if (req.body.joicaster === 'true' && !scheduled) {
-    streamJC()
-    streamDestinations.push(" Joicaster")
-  }
-  if ((req.body.youtube || req.body.facebook || req.body.joicaster) && !scheduled) {
-    stopwatch.start()
-    outputMp4()
-    streamStatus = "Live"
-    res.redirect('/labeling/' + outputName)
-  }
-  if (scheduled) {
-    let date = new Date(2018, month - 1, day, hour, minute, 0)
-    console.log('Scheduled on ' + req.body.hour + ':' + req.body.minute)
-    scheduledTime = req.body.hour + ':' + req.body.minute
-    streamStatus = "schedule for " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute
-    if (req.body.youtube === 'true') {
-      streamDestinations.push(" Youtube")
-    }
-    if (req.body.facebook === 'true') {
-      FBrtmp = req.body.rtmplink
-      streamDestinations.push(" Facebook")
-    }
-    if (req.body.joicaster === 'true') {
-      streamDestinations.push(" Joicaster")
-    }
+  // let stopSign = null
+  // if(scheduled){
+  //   stopSign = "Cancel scheduled Stream"
+  // } else {
+  //   stopSign = "End Stream"
+  // }
 
-    scheduleStream = schedule.scheduleJob(date, function (err) {
-      db_label.insertDoc(outputName)
-      streamStatus = "Live"
-      stopwatch.start()
-      if(err){
-        console.log(err)
-      }
-      console.log('stream started')
-      outputMp4()
-      if (req.body.youtube === 'true') {
-        streamYT()
-      }
-      if (req.body.facebook === 'true') {
-        FBrtmp = req.body.rtmplink
-        streamFB()
-      }
-      if (req.body.joicaster === 'true') {
-        streamJC()
-      }
-      scheduleStream.cancel()
-      scheduled = false
-    })
-    res.redirect('/')
-  }
+  // if (req.body.youtube === 'true' && !scheduled) {
+  //   streamYT()
+  //   streamDestinations.push(" Youtube")
+  // }
+  // if (req.body.facebook === 'true' && !scheduled) {
+  //   FBrtmp = req.body.rtmplink
+  //   streamFB()
+  //   streamDestinations.push(" Facebook")
+  // }
+  // if (req.body.joicaster === 'true' && !scheduled) {
+  //   streamJC()
+  //   streamDestinations.push(" Joicaster")
+  // }
+  // if ((req.body.youtube || req.body.facebook || req.body.joicaster) && !scheduled) {
+  //   stopwatch.start()
+  //   outputMp4()
+  //   streamStatus = "Live"
+  //   res.redirect('/labeling/' + outputName)
+  // }
+  // if (scheduled) {
+  //   let date = new Date(2018, month - 1, day, hour, minute, 0)
+  //   console.log('Scheduled on ' + req.body.hour + ':' + req.body.minute)
+  //   scheduledTime = req.body.hour + ':' + req.body.minute
+  //   streamStatus = "schedule for " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute
+  //   if (req.body.youtube === 'true') {
+  //     streamDestinations.push(" Youtube")
+  //   }
+  //   if (req.body.facebook === 'true') {
+  //     FBrtmp = req.body.rtmplink
+  //     streamDestinations.push(" Facebook")
+  //   }
+  //   if (req.body.joicaster === 'true') {
+  //     streamDestinations.push(" Joicaster")
+  //   }
+
+  //   scheduleStream = schedule.scheduleJob(date, function (err) {
+  //     db_label.insertDoc(outputName)
+  //     streamStatus = "Live"
+  //     stopwatch.start()
+  //     if(err){
+  //       console.log(err)
+  //     }
+  //     console.log('stream started')
+  //     outputMp4()
+  //     if (req.body.youtube === 'true') {
+  //       streamYT()
+  //     }
+  //     if (req.body.facebook === 'true') {
+  //       FBrtmp = req.body.rtmplink
+  //       streamFB()
+  //     }
+  //     if (req.body.joicaster === 'true') {
+  //       streamJC()
+  //     }
+  //     scheduleStream.cancel()
+  //     scheduled = false
+  //   })
+  //   res.redirect('/')
+  // }
 })
 
 //convert to mp4 only
@@ -290,9 +296,13 @@ router.get('/setup_accounts', function (req, res, next) {
 })  
 
 router.post('/setup_accounts/remove_outlet', function (req, res, next) {
+
   let removeID = req.body.outletID
   db_accounts.deleteStreamOutlet(removeID)
-  res.redirect('/setup_accounts')
+  setTimeout(function(){db_label.findLabels((err, labels) => {
+    res.redirect('/setup_accounts')
+  },500); 
+  })
 })
 
 router.post('/setup_accounts/setup_youtube', function (req, res, next) {

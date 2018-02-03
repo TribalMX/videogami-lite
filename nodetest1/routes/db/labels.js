@@ -9,7 +9,7 @@ const url = 'mongodb://localhost:27017'
 // Database Name
 const dbName = 'videogami'
 
-let documentName = null
+let documentName = 'stream'
 let labelName = null
 let time = null
 let labelToDelete = null
