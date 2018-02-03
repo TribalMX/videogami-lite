@@ -105,7 +105,7 @@ router.get('/', function (req, res, next) {
 router.post('/start_stream', function (req, res, next) {
   displayName = req.body.name
   outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
-  // db_label.insertDoc(outputName)
+  db_label.insertDoc(outputName)
   console.log('req.body Youtube >>>>' + JSON.stringify(req.body.YToutletCredentials))
   var YTcreds = req.body.YToutletCredentials
   console.log("Type of >>>>>" + typeof YTcreds)
@@ -121,10 +121,6 @@ router.post('/start_stream', function (req, res, next) {
       streamYT(YTcreds.slice(1))
   }
   res.redirect('/labeling/' + outputName)
-  // displayName = req.body.name
-  // outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
-  // console.log(req.body)
-  // db_label.insertDoc(outputName)
 
   // let month = req.body.month
   // let day = req.body.day
