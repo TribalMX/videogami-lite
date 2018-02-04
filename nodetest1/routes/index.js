@@ -30,7 +30,7 @@ router.use(fileUpload());
 // rtmp stream keys
 // let YTrtmpKey = 'xz4t-2x3s-rwd2-497b'
 let JCrtmpKey = 'rickysychan-7hup2-mqxsa-b6kmd-gj2gq'
-let FBrtmp = null
+// let FBrtmp = null
 
 // input urls
 let inputURL = 'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8'
@@ -53,7 +53,7 @@ let displayName = 'displayName'
 let streamJC = () => { console.log('Now streaming to Joicaster'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://ingest-us-east.a.switchboard.zone/live/' + JCrtmpKey + '"') }
 
 // this is for facebook only
-let streamFB = () => { console.log('Now streaming to Facebook'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=580:10:enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"' + FBrtmp + '"') }
+let streamFB = (FBrtmp) => { console.log('Now streaming to Facebook'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=580:10:enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"' + FBrtmp + '"') }
 
 // this is for Youtube only
 let streamYT = (YTrtmpKey) => { console.log('Now streaming to Youtube'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey + '"') }
@@ -106,10 +106,10 @@ router.post('/start_stream', function (req, res, next) {
   displayName = req.body.name
   outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   db_label.insertDoc(outputName)
-  console.log('req.body Youtube >>>>' + JSON.stringify(req.body.YToutletCredentials))
+  // console.log('req.body Youtube >>>>' + JSON.stringify(req.body.YToutletCredentials))
   var YTcreds = req.body.YToutletCredentials
-  console.log("Type of >>>>>" + typeof YTcreds)
-
+  // console.log("Type of >>>>>" + typeof YTcreds)
+  // youtube
   if(typeof YTcreds === 'object'){
     YTcreds[0] = YTcreds[0].slice(1)
     YTcreds.forEach(function(YTrtmpKey) {
@@ -119,6 +119,18 @@ router.post('/start_stream', function (req, res, next) {
   if(typeof YTcreds === 'string'){
     
       streamYT(YTcreds.slice(1))
+  }
+  // Facebook
+  console.log('req.body FB >>>>' + JSON.stringify(req.body.FBoutletCredentials))
+  var FBcreds = req.body.FBoutletCredentials
+  console.log("Type of >>>>>" + typeof FBcreds)
+  if(typeof FBcreds === 'object'){
+    FBcreds.forEach(function(FBrtmp) {
+      streamFB(FBrtmp)
+    });
+  }
+  if(typeof FBcreds === 'string'){
+      streamFB(FBcreds)
   }
   res.redirect('/labeling/' + outputName)
 
@@ -281,13 +293,17 @@ router.post('/JCRtmpKey', function (req, res, next) {
 // Outlet setup
 
 router.get('/setup_accounts', function (req, res, next) {
-  db_accounts.findYToutlets((err, YToutlets_) => {
+  setTimeout(function(){  db_accounts.findYToutlets((err, YToutlets_) => {
     if (err) {
         return res.sendStatus(500);
     }
-    db_accounts.findFBoutlets((err, FBoutlets_) => {        
+    db_accounts.findFBoutlets((err, FBoutlets_) => {      
+      if (err) {
+        return res.sendStatus(500);
+    }  
       res.render('accounts', {YToutlets: YToutlets_, FBoutlets: FBoutlets_ }) 
     }) 
+  },500); 
   })
 })  
 
@@ -295,10 +311,9 @@ router.post('/setup_accounts/remove_outlet', function (req, res, next) {
 
   let removeID = req.body.outletID
   db_accounts.deleteStreamOutlet(removeID)
-  setTimeout(function(){db_label.findLabels((err, labels) => {
+  
     res.redirect('/setup_accounts')
-  },500); 
-  })
+
 })
 
 router.post('/setup_accounts/setup_youtube', function (req, res, next) {
@@ -309,10 +324,10 @@ router.post('/setup_accounts/setup_youtube', function (req, res, next) {
 })
 
 router.post('/setup_accounts/setup_facebook', function (req, res, next) {
-  let FBappId = req.body.FBAppId
+  let FBpageId = req.body.FBpageId
   let FBaccesstoken = req.body.FBaccessToken
   let FBoutletName = req.body.FBname
-  db_accounts.insertFacebookOutlet(FBoutletName, FBappId, FBaccesstoken)
+  db_accounts.insertFacebookOutlet(FBoutletName, FBpageId, FBaccesstoken)
   res.redirect('/setup_accounts')
 })
 

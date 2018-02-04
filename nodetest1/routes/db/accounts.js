@@ -59,12 +59,12 @@ const findYToutlets = (db, cb) => {
 
 // Facebook outlet functions
 
-const insertFacebook = function (db, callback, FBoutletName_, FBappId_, FBaccessToken_) {
+const insertFacebook = function (db, callback, FBoutletName_, FBpageId_, FBaccessToken_) {
     // Get the documents collection
     const collection = db.collection("outlets")
     // Insert some documents
     collection.insertOne(
-      {FBoutlets: {name: FBoutletName_, FBaccessToken: FBaccessToken_, FBappId: FBappId_}},
+      {FBoutlets: {name: FBoutletName_, FBaccessToken: FBaccessToken_, FBpageId: FBpageId_}},
       function (err, result) {
         assert.equal(err, null)
         assert.equal(1, result.result.n)

@@ -51,15 +51,16 @@ block content
     each outlet in YToutlets
         br
         label(for='Youtube') Youtube: #{outlet.YToutlets.name}  
-        input(type='checkbox', value=outlet.YToutlets.YTrtmp, name='YToutletCredentials', id='YToutlet')
-    //- h4 Facebook outlets:
-    //- each outlet in FBoutlets  
-    //-     br
-    //-     label(for='FBoutlet') Facebook: #{outlet.FBoutlets.name}  
-    //-     input(type='checkbox', value='#{outlet.FBoutlets.FBappId}#{outlet.FBoutlets.FBaccessToken}', name='FBappId', id='FBoutlet')
-    //- br
+        input(type='checkbox', onchange="enableBtnYT()", value=outlet.YToutlets.YTrtmp, name='YToutletCredentials', id='YToutlet')
+    h4 Facebook outlets:
+    each outlet in FBoutlets  
+        br
+        label(for='FBoutlet') Facebook: #{outlet.FBoutlets.name}  
+        input(type='checkbox', value='', onclick="enableBtnFB()", onchange="streamFB(" + outlet.FBoutlets.FBpageId + "," + JSON.stringify(outlet.FBoutlets.FBaccessToken) + "," + JSON.stringify(outlet.FBoutlets.name) + ")", name='FBoutletCredentials', id=JSON.stringify(outlet.FBoutlets.name))
+        input(type='hidden', value='', name='rtmplink', id='FBNowInputBox')
     br
-    button(type="button", onclick="clearSchedule()", id="streamNowBtn") Stream now
+    br
+    button(type="button", disabled="disabled", onclick="clearSchedule()", id="streamNowBtn") Stream now
     br
     br
     br
@@ -104,17 +105,22 @@ block content
     let checkerJC = false
     let checkerFB = false
     let YToutletList = []
+    let FBoutletList = []
     let streamName_ = null
 
     $(function() {
       $("#streamSettings").on("submit",function(e) { 
         e.preventDefault(); // stop submission
          
-        $.post(this.action,$(this).serialize(),function(data) {
+        $.post(this.action,$(this).serialize(),function() {
           $("input:checkbox[YToutletCredentials=type]:checked").each(function(){
             YToutletList.push($(this).val());
           });
-        });  
+          $("input:checkbox[FBoutletCredentials=type]:checked").each(function(){
+            FBoutletList.push($(this).val());
+            console.log(FBoutletList)
+          });
+        });   
       });   
     });
     
@@ -205,7 +211,6 @@ block content
         accr ++ 
         console.log(accr)
           if (accr > 0 && streamName){
-            document.getElementById("streamNowBtn").value = "processing..."
             setTimeout(function(){ 
               let FBrtmp = document.getElementById("FBNowInputBox").value
               if(FBrtmp){
@@ -227,30 +232,9 @@ block content
           }
         }
       }
-    function enableBtnJC(){
-      let streamName = document.getElementById("streamName").value
-      if (checkerJC === false){
-        checkerJC = true
-        accr ++ 
-        console.log(accr)
-          if (accr > 0 && streamName){
-            document.getElementById("streamNowBtn").disabled = false;
-                if(month.value && day.value && hour.value && minute.value){
-                  document.getElementById("scheduleStreamBtn").disabled = false;
-                }
-          } 
-        } else {
-          accr --
-          console.log(accr)
-          checkerJC = false
-          if (accr === 0){
-            document.getElementById("streamNowBtn").disabled = true
-            document.getElementById("scheduleStreamBtn").disabled = true;
-          }
-        }
-      }
+
       function checkSchedule(){
-        if(month.value && day.value && hour.value && minute.value && streamName.value && (youtube.value || facebook.value || joicaster.value))
+        if(month.value && day.value && hour.value && minute.value && streamName.value)
           document.getElementById("scheduleStreamBtn").disabled = false;
       }
 
@@ -260,20 +244,22 @@ block content
       appId             : '202133753681543',
       autoLogAppEvents  : true,
       xfbml             : true,
-      version           : 'v2.11'
+      version           : 'v2.12'
       });
       };
 
-    function streamFB(){
+    function streamFB(pageId, accessToken, FBoutletName){
       FB.api(
-        '/913878858767085/live_videos',
+        '/' + pageId + '/live_videos',
         'POST',
-        {access_token: "EAAC31u6V1ocBANKZAMreCkjL3UjJoNpRI5HoKfvsXQ95QZBCJfyjKcjzPrYvcK0ZBNsDQH039C471FcoUhpT0SgxKkOP5UKZAquPtlDZB8I7ZCFas0syDtHhxpHywpSx5eU2ZAaZBFvqq9vLxRE5jjmEE2zsWqy929QpRjFqe25IDQZDZD"},
+        {access_token: accessToken},
         function(response) {
             let rtmp = response.stream_url
             console.log(rtmp)
             console.log(response)
-            document.getElementById("FBNowInputBox").value = rtmp;
+            let name = JSON.stringify(FBoutletName)
+            document.getElementById(name).value =  rtmp
+            document.getElementById("FBNowInputBox").value =  rtmp
         }
       );
     }
