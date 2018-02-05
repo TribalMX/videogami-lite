@@ -59,8 +59,8 @@ const findLabels = (db, cb) => {
     }
 
     assert.equal(err, null);
-    console.log("Found the following records");
-    console.log(docs)
+    // console.log("Found the following records");
+    // console.log(docs)
 
     return cb(null, docs);
   });
@@ -126,7 +126,6 @@ module.exports = {
     documentName = docName
     assert.equal(null, err)
     console.log('Connected successfully to server')
-    console.log('locate doc labels')
     client.close()
   }),
   deleteLabel: (id) => MongoClient.connect(url, function (err, client) {

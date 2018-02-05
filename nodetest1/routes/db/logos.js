@@ -39,8 +39,8 @@ collection.find({}, {projection:{ _id: 0, name: 0 }}).toArray((err, logo) => {
     }
 
     assert.equal(err, null);
-    console.log("Found the following records");
-    console.log(logo)
+    // console.log("Found the following records");
+    // console.log(logo)
 
     return cb(null, logo);
 });

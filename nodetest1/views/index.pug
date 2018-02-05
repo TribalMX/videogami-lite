@@ -14,6 +14,7 @@ block content
   a(href="/editing_station")
     button(type="button") Go to Editing Station
   br
+  br
   h2 Stream Status
     h4 Status: #{streamStatus}
     h4 End Points: #{streamDestinations}
@@ -35,52 +36,41 @@ block content
     input(type='text', value='', onchange="checkNameChange()", name='name', id='streamName')
     br
     h3 choose your streaming outlets
-    //- label(for='youtube') Youtube 
-    //- input(type='checkbox', onchange="enableBtnYT()", value='true', name='youtube', id='youtube') 
-    //- br
-    //- label(for='Facebook') Facebook  
-    //- input(type='hidden', value='', name='rtmplink', id='FBNowInputBox')
-    //- input(type='checkbox', onchange="streamFB()", onclick="enableBtnFB()", value='true', name='facebook', id='facebook') 
-    //- br
-    //- label(for='joicaster') Joicaster 
-    //- input(type='checkbox', value='true', onchange="enableBtnJC()", name='joicaster', id='joicaster') 
-    //- br
-    //- button(type="button", disabled="disabled", onclick="clearSchedule()", id="streamNowBtn") Stream now
-
     h4 Youtube outlets:
     each outlet in YToutlets
         br
         label(for='Youtube') Youtube: #{outlet.YToutlets.name}  
-        input(type='checkbox', onchange="enableBtnYT()", value=outlet.YToutlets.YTrtmp, name='YToutletCredentials', id='YToutlet')
+        input(type='checkbox', value=outlet.YToutlets.YTrtmp, name='YToutletCredentials', id='YToutlet')
     h4 Facebook outlets:
     each outlet in FBoutlets  
         br
         label(for='FBoutlet') Facebook: #{outlet.FBoutlets.name}  
-        input(type='checkbox', value='', onclick="enableBtnFB()", onchange="streamFB(" + outlet.FBoutlets.FBpageId + "," + JSON.stringify(outlet.FBoutlets.FBaccessToken) + "," + JSON.stringify(outlet.FBoutlets.name) + ")", name='FBoutletCredentials', id=JSON.stringify(outlet.FBoutlets.name))
+        input(type='checkbox', value='', onchange="streamFB(" + outlet.FBoutlets.FBpageId + "," + JSON.stringify(outlet.FBoutlets.FBaccessToken) + "," + JSON.stringify(outlet.FBoutlets.name) + ")", name='FBoutletCredentials', id=JSON.stringify(outlet.FBoutlets.name))
         input(type='hidden', value='', name='rtmplink', id='FBNowInputBox')
     br
     br
-    button(type="button", disabled="disabled", onclick="clearSchedule()", id="streamNowBtn") Stream now
+    button(type="button", onclick="clearSchedule()", id="streamNowBtn") Stream now
     br
     br
     br
     h3 OR Schedule a stream
     br 
-    label(for='Month ') Month (1-12)
-    input(type='text', value='', name='month', id='month', onchange='checkSchedule()' placeholder="1")
     br
-    label(for='Day ') Day (1-31)
-    input(type='text', value='', name='day', id='day', onchange='checkSchedule()', placeholder="7")
+    label(for='month ') Month 
+    select(class="month" , name="month", id="month")
     br
-    label(for='Hour ') Hour (1-23)
-    input(type='text', value='', name='hour', id='hour', onchange='checkSchedule()', placeholder="15")
+    label(for='day ') Day 
+    select(class="day" , name="day", id="day")
     br
-    label(for='Month ') minute (1-59)
-    input(type='text', value='', name='minute', id='minute', onchange='checkSchedule()', placeholder="3")
+    label(for='hour ') Hour 
+    select(class="hour" , name="hour", id="hour")
     br
-    button(type="button", onclick="checkScheduleInput()", disabled="disabled", id="scheduleStreamBtn") schedule stream 
+    label(for='minute ') minute
+    select(class="minute" , name="minute", id="minute")
     br
-    h3 OR only convert stream to mp4
+    button(type="submit", disabled="disabled", id="scheduleStreamBtn") schedule stream 
+  br
+  h3 OR only convert stream to mp4
   form(action='/convert', method='post', id='convertForm')
     input(type='hidden', value= '', name='name', id='convertName')
     button(type="submit", disabled="disabled", id="convertBtn" ) Convert
@@ -98,34 +88,17 @@ block content
   form(action='/convert', method='post', id='convertForm')
     input(type='hidden', value= streamStatus, name='streamStatus', id='streamStatus')
   
+
+
+
   script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js') 
   script.
     let accr = 0
-    let checkerYT = false
-    let checkerJC = false
-    let checkerFB = false
-    let YToutletList = []
-    let FBoutletList = []
     let streamName_ = null
 
-    $(function() {
-      $("#streamSettings").on("submit",function(e) { 
-        e.preventDefault(); // stop submission
-         
-        $.post(this.action,$(this).serialize(),function() {
-          $("input:checkbox[YToutletCredentials=type]:checked").each(function(){
-            YToutletList.push($(this).val());
-          });
-          $("input:checkbox[FBoutletCredentials=type]:checked").each(function(){
-            FBoutletList.push($(this).val());
-            console.log(FBoutletList)
-          });
-        });   
-      });   
-    });
-    
+
     var scheduleCheck = setInterval(function() {
-      if (scheduleStatus.value === 'true') {
+      if (streamStatus.value && streamStatus.value !== 'Live' && streamStatus.value !== "Not Streaming and no scheduled streams") {
         document.getElementById("cancelStreamBtn").disabled = false;
         clearInterval(scheduleCheck);
       }
@@ -134,6 +107,18 @@ block content
       if (streamStatus.value === 'Live') {
         document.getElementById("goStreamingPageBtn").disabled = false;
         clearInterval(streamCheck);
+      }
+    }, 1);
+
+    var scheduleInputCheck = setInterval(function() {
+      let month = document.getElementById("month").value
+      let day = document.getElementById("day").value
+      let hour = document.getElementById("hour").value
+      let minute = document.getElementById("minute").value
+
+      if (month && day && hour && minute) {
+        document.getElementById("scheduleStreamBtn").disabled = false;
+        clearInterval(scheduleCheck);
       }
     }, 1);
 
@@ -147,96 +132,23 @@ block content
           } 
       }
     }
-    function isANumber(str){
-      return !/\D/.test(str);
-    }
-    function checkScheduleInput(){
-      let month = document.getElementById("month").value
-      let day = document.getElementById("day").value
-      let hour = document.getElementById("hour").value
-      let minute = document.getElementById("minute").value 
-      console.log(month)
-      console.log(!isANumber(month))
-
-      if((month > 12 || month < 0 || !isANumber(month) ) 
-      || (day > 31 || day < 1 || !isANumber(day)) 
-      || (hour > 23 || hour < 1 || !isANumber(hour)) 
-      || (minute > 59 || minute < 1|| !isANumber(minute)) ){
-        alert("oops, you made a mistake on the input")
-      } else {
-        let form = document.getElementById("streamSettings")
-        document.getElementById("streamSettings").addEventListener("click", function () {
-        form.submit();
-      })
-      }
-    }
     function clearSchedule(){
       document.getElementById("month").value = ''
       document.getElementById("day").value = ''
       document.getElementById("hour").value = ''
       document.getElementById("minute").value = ''
       let form = document.getElementById("streamSettings")
-      document.getElementById("streamSettings").addEventListener("click", function () {
-        form.submit();
-      })
+      let YTcreds = $('input[name="YToutletCredentials"]:checked').serialize()
+      let FBcreds = $('input[name="FBoutletCredentials"]:checked').serialize()
+      let streamName = document.getElementById("streamName").value
+      if((YTcreds || FBcreds) && streamName){
+        document.getElementById("streamSettings").addEventListener("click", function () {
+          form.submit();
+        })
+      } else {
+        alert('oops you missed something')
+      }
     }
-    function enableBtnYT(){
-      let streamName = document.getElementById("streamName").value
-      if (checkerYT === false){
-        checkerYT = true
-        accr ++ 
-        console.log(streamName)
-          if (accr > 0 && streamName){
-            document.getElementById("streamNowBtn").disabled = false;
-            if(month.value && day.value && hour.value && minute.value){
-            document.getElementById("scheduleStreamBtn").disabled = false;
-            }
-          } 
-        } else {
-          accr --
-          console.log(streamName)
-          checkerYT = false
-          if (accr === 0){
-            document.getElementById("streamNowBtn").disabled = true
-            if(month.value && day.value && hour.value && minute.value){
-              document.getElementById("scheduleStreamBtn").disabled = false;
-            }
-          }
-        }
-      }
-    function enableBtnFB(){
-      let streamName = document.getElementById("streamName").value
-      if (checkerFB === false){
-        checkerFB = true
-        accr ++ 
-        console.log(accr)
-          if (accr > 0 && streamName){
-            setTimeout(function(){ 
-              let FBrtmp = document.getElementById("FBNowInputBox").value
-              if(FBrtmp){
-              document.getElementById("streamNowBtn").disabled = false;
-                if(month.value && day.value && hour.value && minute.value){
-                  document.getElementById("scheduleStreamBtn").disabled = false;
-                }
-              }
-             }, 3000);
-             document.getElementById("streamNowBtn").value = "Stream Now"
-          } 
-        } else {
-          accr --
-          console.log(accr)
-          checkerFB = false
-          if (accr === 0){
-            document.getElementById("streamNowBtn").disabled = true
-            document.getElementById("scheduleStreamBtn").disabled = true;
-          }
-        }
-      }
-
-      function checkSchedule(){
-        if(month.value && day.value && hour.value && minute.value && streamName.value)
-          document.getElementById("scheduleStreamBtn").disabled = false;
-      }
 
   script.
     window.fbAsyncInit  = function()  {
@@ -259,7 +171,7 @@ block content
             console.log(response)
             let name = JSON.stringify(FBoutletName)
             document.getElementById(name).value =  rtmp
-            document.getElementById("FBNowInputBox").value =  rtmp
+            //- document.getElementById("FBNowInputBox").value =  rtmp
         }
       );
     }
@@ -272,3 +184,35 @@ block content
       js.src = "https://connect.facebook.net/en_US/sdk.js";
       fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
+  script.
+    $(function(){
+        var $select = $(".month");
+        $select.append($('<option></option>').val('').html('-'))
+        for (i=1;i<=12;i++){
+            $select.append($('<option></option>').val(i).html(i))
+        }
+    });
+  script.
+      $(function(){
+          var $select = $(".day");
+          $select.append($('<option></option>').val('').html('-'))
+          for (i=1;i<=31;i++){
+              $select.append($('<option></option>').val(i).html(i))
+          }
+      });
+  script.
+      $(function(){
+          var $select = $(".hour");
+          $select.append($('<option></option>').val('').html('-'))
+          for (i=1;i<=23;i++){
+              $select.append($('<option></option>').val(i).html(i))
+          }
+      });
+  script.
+      $(function(){
+          var $select = $(".minute");
+          $select.append($('<option></option>').val('').html('-'))
+          for (i=1;i<=59;i++){
+              $select.append($('<option></option>').val(i).html(i))
+          }
+      });

@@ -50,8 +50,8 @@ const findYToutlets = (db, cb) => {
       }
   
       assert.equal(err, null);
-      console.log("Found the following records for Youtube outlets");
-      console.log(docs)
+      // console.log("Found the following records for Youtube outlets");
+      // console.log(docs)
   
       return cb(null, docs);
     });
@@ -87,8 +87,8 @@ const insertFacebook = function (db, callback, FBoutletName_, FBpageId_, FBacces
       }
   
       assert.equal(err, null);
-      console.log("Found the following records for Facebook outlets");
-      console.log(docs)
+      // console.log("Found the following records for Facebook outlets");
+      // console.log(docs)
   
       return cb(null, docs);
     });

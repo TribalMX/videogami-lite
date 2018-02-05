@@ -45,8 +45,8 @@ const insertTrim_ = function (db, callback, trimName, startTime, endTime) {
       }
   
       assert.equal(err, null);
-      console.log("Found the following trims");
-      console.log(docs)
+      // console.log("Found the following trims");
+      // console.log(docs)
       return cb(null, docs);
     });
   }

@@ -23,8 +23,8 @@ const getCollections = (db, cb) => {
       }
   
       assert.equal(err, null);
-      console.log("Found the following records");
-      console.log(docs)
+      // console.log("Found the following records");
+      // console.log(docs)
   
       return cb(null, docs);
     });

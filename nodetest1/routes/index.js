@@ -103,130 +103,131 @@ router.get('/', function (req, res, next) {
 // stream settings
 
 router.post('/start_stream', function (req, res, next) {
+  console.log(req.body)
   displayName = req.body.name
   outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   db_label.insertDoc(outputName)
-  // console.log('req.body Youtube >>>>' + JSON.stringify(req.body.YToutletCredentials))
+  let scheduled = false
+
+  let month = req.body.month
+  let day = req.body.day
+  let hour = req.body.hour
+  let minute = req.body.minute
+
+  let prettyMonth = month
+  let prettyDay = day
+  let prettyMinute = minute
+  let prettyHour = hour
+
+  if(month < 9 ){
+    prettyMonth = "0" + month
+  }
+  if(day < 9 ){
+    prettyDay = "0" + day
+  }
+  if(hour < 9 ){
+    prettyHour = "0" + hour
+  }
+  if(minute < 9 ){
+    prettyMinute = "0" + minute
+  }
+
+  if(month && day && hour && minute){
+    scheduled = true
+  }
+
+  let stopSign = null
+  if(scheduled){
+    stopSign = "Cancel scheduled Stream"
+  } else {
+    stopSign = "End Stream"
+  }
+  
+
   var YTcreds = req.body.YToutletCredentials
-  // console.log("Type of >>>>>" + typeof YTcreds)
+  var FBcreds = req.body.FBoutletCredentials
+
+  if((YTcreds || FBcreds) && !scheduled){
+    stopwatch.start()
+    outputMp4()
+    streamStatus = "Live"
+
   // youtube
   if(typeof YTcreds === 'object'){
     YTcreds[0] = YTcreds[0].slice(1)
     YTcreds.forEach(function(YTrtmpKey) {
       streamYT(YTrtmpKey)
+      streamDestinations.push(" Youtube")
     });
   }
   if(typeof YTcreds === 'string'){
-    
-      streamYT(YTcreds.slice(1))
+    streamYT(YTcreds.slice(1))
+    streamDestinations.push(" Youtube")
   }
   // Facebook
-  console.log('req.body FB >>>>' + JSON.stringify(req.body.FBoutletCredentials))
-  var FBcreds = req.body.FBoutletCredentials
-  console.log("Type of >>>>>" + typeof FBcreds)
+
   if(typeof FBcreds === 'object'){
     FBcreds.forEach(function(FBrtmp) {
       streamFB(FBrtmp)
+      streamDestinations.push(" Facebook")
     });
   }
   if(typeof FBcreds === 'string'){
       streamFB(FBcreds)
+      streamDestinations.push(" Facebook")
   }
   res.redirect('/labeling/' + outputName)
+}
 
-  // let month = req.body.month
-  // let day = req.body.day
-  // let hour = req.body.hour
-  // let minute = req.body.minute
+  if (scheduled) {
+    let date = new Date(2018, month - 1, day, hour, minute, 0)
+    console.log('Scheduled on ' + req.body.hour + ':' + req.body.minute)
+    scheduledTime = req.body.hour + ':' + req.body.minute
+    streamStatus = "schedule for " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute
+    if (YTcreds) {
+      streamDestinations.push(" Youtube")
+    }
+    if (FBcreds) {
+      streamDestinations.push(" Facebook")
+    }
 
-  // let prettyMonth = month
-  // let prettyDay = day
-  // let prettyMinute = minute
-  // let prettyHour = hour
-
-  // if(month < 9 ){
-  //   prettyMonth = "0" + month
-  // }
-  // if(day < 9 ){
-  //   prettyDay = "0" + day
-  // }
-  // if(hour < 9 ){
-  //   prettyHour = "0" + hour
-  // }
-  // if(minute < 9 ){
-  //   prettyMinute = "0" + minute
-  // }
-
-  // if(month && day && hour && minute){
-  //   scheduled = true
-  // }
-
-  // let stopSign = null
-  // if(scheduled){
-  //   stopSign = "Cancel scheduled Stream"
-  // } else {
-  //   stopSign = "End Stream"
-  // }
-
-  // if (req.body.youtube === 'true' && !scheduled) {
-  //   streamYT()
-  //   streamDestinations.push(" Youtube")
-  // }
-  // if (req.body.facebook === 'true' && !scheduled) {
-  //   FBrtmp = req.body.rtmplink
-  //   streamFB()
-  //   streamDestinations.push(" Facebook")
-  // }
-  // if (req.body.joicaster === 'true' && !scheduled) {
-  //   streamJC()
-  //   streamDestinations.push(" Joicaster")
-  // }
-  // if ((req.body.youtube || req.body.facebook || req.body.joicaster) && !scheduled) {
-  //   stopwatch.start()
-  //   outputMp4()
-  //   streamStatus = "Live"
-  //   res.redirect('/labeling/' + outputName)
-  // }
-  // if (scheduled) {
-  //   let date = new Date(2018, month - 1, day, hour, minute, 0)
-  //   console.log('Scheduled on ' + req.body.hour + ':' + req.body.minute)
-  //   scheduledTime = req.body.hour + ':' + req.body.minute
-  //   streamStatus = "schedule for " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute
-  //   if (req.body.youtube === 'true') {
-  //     streamDestinations.push(" Youtube")
-  //   }
-  //   if (req.body.facebook === 'true') {
-  //     FBrtmp = req.body.rtmplink
-  //     streamDestinations.push(" Facebook")
-  //   }
-  //   if (req.body.joicaster === 'true') {
-  //     streamDestinations.push(" Joicaster")
-  //   }
-
-  //   scheduleStream = schedule.scheduleJob(date, function (err) {
-  //     db_label.insertDoc(outputName)
-  //     streamStatus = "Live"
-  //     stopwatch.start()
-  //     if(err){
-  //       console.log(err)
-  //     }
-  //     console.log('stream started')
-  //     outputMp4()
-  //     if (req.body.youtube === 'true') {
-  //       streamYT()
-  //     }
-  //     if (req.body.facebook === 'true') {
-  //       FBrtmp = req.body.rtmplink
-  //       streamFB()
-  //     }
-  //     if (req.body.joicaster === 'true') {
-  //       streamJC()
-  //     }
-  //     scheduleStream.cancel()
-  //     scheduled = false
-  //   })
-  //   res.redirect('/')
-  // }
+    scheduleStream = schedule.scheduleJob(date, function (err) {
+      db_label.insertDoc(outputName)
+      streamStatus = "Live"
+      stopwatch.start()
+      if(err){
+        console.log(err)
+      }
+      console.log('stream started')
+      outputMp4()
+      // Youtube
+      if(typeof YTcreds === 'object'){
+        YTcreds[0] = YTcreds[0].slice(1)
+        YTcreds.forEach(function(YTrtmpKey) {
+          streamYT(YTrtmpKey)
+          streamDestinations.push(" Youtube")
+        });
+      }
+      if(typeof YTcreds === 'string'){
+        streamYT(YTcreds.slice(1))
+        streamDestinations.push(" Youtube")
+      }
+      // Facebook
+      if(typeof FBcreds === 'object'){
+        FBcreds.forEach(function(FBrtmp) {
+          streamFB(FBrtmp)
+          streamDestinations.push(" Facebook")
+        });
+      }
+      if(typeof FBcreds === 'string'){
+          streamFB(FBcreds)
+          streamDestinations.push(" Facebook")
+      }
+      scheduleStream.cancel()
+      scheduled = false
+    })
+    res.redirect('/')
+  }
 })
 
 //convert to mp4 only
