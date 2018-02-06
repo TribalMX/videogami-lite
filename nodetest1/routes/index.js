@@ -153,6 +153,11 @@ let outputMp4 = () => {
         let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv ' + './videos/output/' + outputName + '.mp4'
         let convert = () => { console.log('Now converting'); cmd.run(command)}
         convert()
+
+        dirPath = "./videos/cut-videos/" + outputName
+        mkdirp(dirPath, function(err) { 
+          console.log('directory made')
+        });
 }
 
 // this is for trimming the video with start and end time
@@ -161,7 +166,7 @@ let startTime = null
 let duration = null
 let trimName = null
 
-let edit = () => { cmd.run('./ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./videos/output/' + outputName + '.mp4 -c copy ./videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
+let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./videos/output/' + outputName + '.mp4 -c copy ./videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
 
 // this is to stop all ffmpeg activity
 
@@ -504,10 +509,6 @@ let labelStartTime = ''
 let labelEndTime = ''
 
 router.get('/editing/:stream_name', function (req, res, next) {
-  dirPath = "./videos/cut-videos/" + outputName
-  mkdirp(dirPath, function(err) { 
-    console.log('directory made')
-  });
   stop()
   db_trims.locateDoc(outputName)
   db_label.locateDoc(outputName)
