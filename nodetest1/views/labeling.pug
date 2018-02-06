@@ -11,10 +11,6 @@ block content
   br
   h2 Labels
   h4(class='div-class' id='labels')
-    //- each labelName in label
-        //- h4(id='labels') #{(JSON.stringify(labelName)).substr(1).slice(41, -1).replace(/['"]+/g, '')}
-  a(href='/labeling/' + name + '/refresh')
-    button(type="button" id='refreshBtn') refresh labels
   br
   h2 Add a label 
   form(action='/labeling/' + name + '/add_label', method='post', id='insertLabelForm')

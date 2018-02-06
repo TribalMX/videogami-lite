@@ -32,8 +32,8 @@ block content
     label(for='FBname') Enter your Facebook outlet Name 
     input(type='text', value='', name='FBname', id='FBname')
     br
-    label(for='FBAppId') App ID 
-    input(type='text', value='', name='FBAppId', id='FBAppId')
+    label(for='FBpageId') Page ID 
+    input(type='text', value='', name='FBpageId', id='FBpageId')
     br
     label(for='FBAppId') Permanent Access Token 
     input(type='text', value='', name='FBaccessToken', id='FBaccessToken')
@@ -43,10 +43,10 @@ block content
   h2 Facebook outlets
   each outlet in FBoutlets
     h4 Name: #{outlet.FBoutlets.name}
-    h4 App-ID: #{outlet.FBoutlets.FBappId}
+    h4 Page-ID: #{outlet.FBoutlets.FBpageId}
     h4 Access Token: #{outlet.FBoutlets.FBaccessToken}
     form(action='/setup_accounts/remove_outlet', method='post', id='FBRtmpKey')
-      input(type='hidden', value='#{outlet._id}', name='outletID', id='FBoutlet')
+      input(type='hidden', value=outlet._id, name='outletID', id='FBoutlet')
       button(type="submit") Remove Outlet
     
 

@@ -1,6 +1,7 @@
 extends layout
 
 block content
+  br
   h2 Current logos
     each logos in logo_
       h4 #{(JSON.stringify(logos)).substr(1).slice(0, -1).replace(/['"]+/g, '')}
@@ -9,14 +10,14 @@ block content
         input(type="hidden", name='logoName', value=JSON.stringify(logos) ,id='logoDeleteInput')
         button(type="submit") delete
   br
-  a(href="/logo_setup")
-    button(type="button") refresh logos
   br
   h2 Choose the logos to use
-  each logos in logo_
-    form(action='/logo_setup/use_logos', method='post', id='useLogoForm')
-      label(for='logoUse') #{JSON.stringify(logos.logo).slice(2, -1)}
-      input(type="checkbox", name=JSON.stringify(logos.logo).slice(2, -1), value="true" ,id='logoUse') 
+  form(action='/logo_setup/use_logos', method='post', id='useLogoForm')
+    each logos in logo_
+      label(for='logoUse')  #{JSON.stringify(logos.logo).slice(2, -1)}   
+      input(type="checkbox", name="logo", value=JSON.stringify(logos.logo).slice(2, -1) ,id='logoUse')
+      br 
+  p Currently in use: (#{logosInUse})
   button(type="button" id="useLogoFormBtn" onclick="useFormSubmit()") submit
 
   h2 Upload Logo
@@ -34,7 +35,7 @@ block content
 
   
   h2 Logo placements
-  form(action='/logoInput', method='post', id='logoForm')
+  form(action='/logo_placement', method='post', id='logoForm')
     label(for='logoHor') Adust horizontal (higher - left, lower right) 
     input(type='text', value='', name='logoHor', id='logoHor', placeholder='580')
     br
@@ -42,6 +43,12 @@ block content
     input(type='text', value='', name='logoHei', id='logoHei', placeholder='10')
     br
     button(type="submit") submit
+  h2 Logo alternation time
+  form(action='/logo_setup/logo_time', method='post', id='logoAltForm')
+    label(for='altTime') Time between alternation 
+    input(type='text', value='', name='time', id='altTime', placeholder='5')
+    button(type='submit') Submit
+  br
 
   a(href="/")
     button(type="button") Take me back

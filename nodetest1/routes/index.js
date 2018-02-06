@@ -27,11 +27,6 @@ let scheduled = false
 
 router.use(fileUpload());
 
-// rtmp stream keys
-// let YTrtmpKey = 'xz4t-2x3s-rwd2-497b'
-let JCrtmpKey = 'rickysychan-7hup2-mqxsa-b6kmd-gj2gq'
-let FBrtmp = null
-
 // input urls
 let inputURL = 'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8'
 
@@ -40,6 +35,8 @@ let inputURL = 'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8'
 let logoHeight = 10
 let logoHorizontal = 580
 let imgScale = '40:40'
+let altTime = 5
+let logosInUse = 0
 
 // stopwatch
 let stopwatch = new Stopwatch()
@@ -48,18 +45,120 @@ let stopwatch = new Stopwatch()
 let outputName = 'stream'
 let displayName = 'displayName'
 
-// ffmpeg -i 'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale='40:40'[ovrl1], [0:v][ovrl1] overlay='580:10':enable='between(t,1,5)'[v1];[2]scale='40:40'[ovrl2], [v1][ovrl2] overlay='580:10':enable='between(t,5,15)'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text='VideoGami':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable='between(t,1,10)'" -acodec aac -vcodec libx264 -f flv "rtmp://a.rtmp.youtube.com/live2/xz4t-2x3s-rwd2-497b"
-// this is for joicaster
-let streamJC = () => { console.log('Now streaming to Joicaster'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://ingest-us-east.a.switchboard.zone/live/' + JCrtmpKey + '"') }
-
 // this is for facebook only
-let streamFB = () => { console.log('Now streaming to Facebook'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=580:10:enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"' + FBrtmp + '"') }
+// let streamFB = (FBrtmp) => { console.log('Now streaming to Facebook'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=580:10:enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"' + FBrtmp + '"') }
 
 // this is for Youtube only
-let streamYT = (YTrtmpKey) => { console.log('Now streaming to Youtube'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey + '"') }
+let streamYT = (YTrtmpKey) => { 
+  let L = logosInUse.length
+  let location = logoHorizontal + ":" + logoHeight
+  let scale = imgScale
+
+  let formula = null
+  let accr = altTime*2
+  let accr2 = accr
+  for(var i=0; i<(L + 1); i++) {
+      if(i === 1){
+          formula = "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
+      }
+      if(i === 2){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
+      }
+      if(i === 3){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr +")'[v"+i+"];"
+      }
+      if(i > 3){
+          accr2 = accr2 + altTime
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr2 +")'[v"+i+"];"
+      }
+  }
+let listOfLogos = ''
+for(n in logosInUse){
+  listOfLogos = listOfLogos + "-i ./public/images/" + logosInUse[n] + " "
+}
+if(formula !==  null){
+  formula = formula.slice(0, -5)
+  }
+  let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv \"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey +'\"'
+  let streamYT2 = (YTrtmpKey) => { console.log('Now streaming to Youtube'); cmd.run(command)}
+  streamYT2()
+}
+
+let streamFB = (FBrtmp) => { 
+  let L = logosInUse.length
+  let location = logoHorizontal + ":" + logoHeight
+  let scale = imgScale
+
+  let formula = null
+  let accr = altTime*2
+  let accr2 = accr
+  for(var i=0; i<(L + 1); i++) {
+      if(i === 1){
+          formula = "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
+      }
+      if(i === 2){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
+      }
+      if(i === 3){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr +")'[v"+i+"];"
+      }
+      if(i > 3){
+          accr2 = accr2 + altTime
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr2 +")'[v"+i+"];"
+      }
+  }
+let listOfLogos = ''
+for(n in logosInUse){
+  listOfLogos = listOfLogos + "-i ./public/images/" + logosInUse[n] + " "
+}
+if(formula !==  null){
+  formula = formula.slice(0, -5)
+  }
+  let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv \"'+ FBrtmp +'\"'
+  let streamFB2 = () => { console.log('Now streaming to Facebook'); cmd.run(command)}
+  streamFB2()
+}
 
 // this is for output mp4
-let outputMp4 = () => { cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 ' + './videos/output/' + outputName + '.mp4') }
+let outputMp4 = () => { 
+  let L = logosInUse.length
+  let location = logoHorizontal + ":" + logoHeight
+  let scale = imgScale
+
+  let formula = null
+  let accr = altTime*2
+  let accr2 = accr
+  for(var i=0; i<(L + 1); i++) {
+      if(i === 1){
+          formula = "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
+      }
+      if(i === 2){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
+      }
+      if(i === 3){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr +")'[v"+i+"];"
+      }
+      if(i > 3){
+          accr2 = accr2 + altTime
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr2 +")'[v"+i+"];"
+      }
+        }
+      let listOfLogos = ''
+      for(n in logosInUse){
+        listOfLogos = listOfLogos + "-i ./public/images/" + logosInUse[n] + " "
+      }
+      if(formula !==  null){
+        formula = formula.slice(0, -5)
+        }
+        let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv ' + './videos/output/' + outputName + '.mp4'
+        let convert = () => { console.log('Now converting'); cmd.run(command)}
+        convert()
+
+        dirPath = "./videos/cut-videos/" + outputName
+        mkdirp(dirPath, function(err) { 
+          console.log('directory made')
+        });
+}
 
 // this is for trimming the video with start and end time
 
@@ -67,7 +166,7 @@ let startTime = null
 let duration = null
 let trimName = null
 
-let edit = () => { cmd.run('./ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./videos/output/' + outputName + '.mp4 -c copy ./videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
+let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./videos/output/' + outputName + '.mp4 -c copy ./videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
 
 // this is to stop all ffmpeg activity
 
@@ -95,7 +194,7 @@ router.get('/', function (req, res, next) {
         return res.sendStatus(500);
     }
     db_accounts.findFBoutlets((err, FBoutlets_) => {
-      res.render('index', { name: outputName, streamStatus: streamStatus, streamDestinations: streamDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_  })        
+      res.render('index', { name: outputName, streamStatus: streamStatus, streamDestinations: streamDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
     }) 
   })
 })
@@ -103,118 +202,151 @@ router.get('/', function (req, res, next) {
 // stream settings
 
 router.post('/start_stream', function (req, res, next) {
+  console.log(req.body)
   displayName = req.body.name
   outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   db_label.insertDoc(outputName)
-  console.log('req.body Youtube >>>>' + JSON.stringify(req.body.YToutletCredentials))
-  var YTcreds = req.body.YToutletCredentials
-  console.log("Type of >>>>>" + typeof YTcreds)
+  let scheduled = false
 
+  let month = req.body.month
+  let day = req.body.day
+  let hour = req.body.hour
+  let minute = req.body.minute
+
+  let prettyMonth = month
+  let prettyDay = day
+  let prettyMinute = minute
+  let prettyHour = hour
+
+  if(month < 9 ){
+    prettyMonth = "0" + month
+  }
+  if(day < 9 ){
+    prettyDay = "0" + day
+  }
+  if(hour < 9 ){
+    prettyHour = "0" + hour
+  }
+  if(minute < 9 ){
+    prettyMinute = "0" + minute
+  }
+
+  if(month && day && hour && minute){
+    scheduled = true
+  }
+
+  let stopSign = null
+  if(scheduled){
+    stopSign = "Cancel scheduled Stream"
+  } else {
+    stopSign = "End Stream"
+  }
+  
+
+  var YTcreds = req.body.YToutletCredentials
+  var FBcreds = req.body.FBoutletCredentials
+
+  if((YTcreds || FBcreds) && !scheduled){
+    stopwatch.start()
+    outputMp4()
+    streamStatus = "Live"
+
+  // youtube
   if(typeof YTcreds === 'object'){
-    YTcreds[0] = YTcreds[0].slice(1)
+    // console.log(YTcreds)
     YTcreds.forEach(function(YTrtmpKey) {
-      streamYT(YTrtmpKey)
+      let parsed = JSON.parse(YTrtmpKey)
+      streamYT(parsed[0])
+      streamDestinations.push(parsed[1])
     });
   }
   if(typeof YTcreds === 'string'){
-    
-      streamYT(YTcreds.slice(1))
+    let parsed = JSON.parse(YTcreds)
+    streamYT(parsed[0])
+    streamDestinations.push(parsed[1])
+  }
+  // Facebook
+
+  if(typeof FBcreds === 'object'){
+    FBcreds.forEach(function(FBrtmpKey) {
+      let parsed = JSON.parse(FBrtmpKey)
+      streamFB(parsed[0])
+      streamDestinations.push(parsed[1].slice(1,-1))
+    });
+  }
+  if(typeof FBcreds === 'string'){
+      let parsed = JSON.parse(FBcreds)
+      streamFB(parsed[0])
+      streamDestinations.push(parsed[1].slice(1,-1))
   }
   res.redirect('/labeling/' + outputName)
+}
 
-  // let month = req.body.month
-  // let day = req.body.day
-  // let hour = req.body.hour
-  // let minute = req.body.minute
+  if (scheduled) {
+    let date = new Date(2018, month - 1, day, hour, minute, 0)
+    console.log('Scheduled on ' + req.body.hour + ':' + req.body.minute)
+    scheduledTime = req.body.hour + ':' + req.body.minute
+    streamStatus = "schedule for " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute
 
-  // let prettyMonth = month
-  // let prettyDay = day
-  // let prettyMinute = minute
-  // let prettyHour = hour
+    // setting destinations
+    if(typeof YTcreds === 'object'){
+        YTcreds.forEach(function(YTrtmpKey) {
+          let parsed = JSON.parse(YTrtmpKey)
+          streamDestinations.push(parsed[1])
+        });
+      }
+      if(typeof YTcreds === 'string'){
+        let parsed = JSON.parse(YTcreds)
+        streamDestinations.push(parsed[1])
+      }
+      // Facebook
+      if(typeof FBcreds === 'object'){
+        FBcreds.forEach(function(FBrtmpKey) {
+          let parsed = JSON.parse(FBrtmpKey)
+          streamDestinations.push(parsed[1].slice(1,-1))
+        });
+      }
+      if(typeof FBcreds === 'string'){
+        let parsed = JSON.parse(FBcreds)
+        streamDestinations.push(parsed[1].slice(1,-1))
+      }
 
-  // if(month < 9 ){
-  //   prettyMonth = "0" + month
-  // }
-  // if(day < 9 ){
-  //   prettyDay = "0" + day
-  // }
-  // if(hour < 9 ){
-  //   prettyHour = "0" + hour
-  // }
-  // if(minute < 9 ){
-  //   prettyMinute = "0" + minute
-  // }
-
-  // if(month && day && hour && minute){
-  //   scheduled = true
-  // }
-
-  // let stopSign = null
-  // if(scheduled){
-  //   stopSign = "Cancel scheduled Stream"
-  // } else {
-  //   stopSign = "End Stream"
-  // }
-
-  // if (req.body.youtube === 'true' && !scheduled) {
-  //   streamYT()
-  //   streamDestinations.push(" Youtube")
-  // }
-  // if (req.body.facebook === 'true' && !scheduled) {
-  //   FBrtmp = req.body.rtmplink
-  //   streamFB()
-  //   streamDestinations.push(" Facebook")
-  // }
-  // if (req.body.joicaster === 'true' && !scheduled) {
-  //   streamJC()
-  //   streamDestinations.push(" Joicaster")
-  // }
-  // if ((req.body.youtube || req.body.facebook || req.body.joicaster) && !scheduled) {
-  //   stopwatch.start()
-  //   outputMp4()
-  //   streamStatus = "Live"
-  //   res.redirect('/labeling/' + outputName)
-  // }
-  // if (scheduled) {
-  //   let date = new Date(2018, month - 1, day, hour, minute, 0)
-  //   console.log('Scheduled on ' + req.body.hour + ':' + req.body.minute)
-  //   scheduledTime = req.body.hour + ':' + req.body.minute
-  //   streamStatus = "schedule for " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute
-  //   if (req.body.youtube === 'true') {
-  //     streamDestinations.push(" Youtube")
-  //   }
-  //   if (req.body.facebook === 'true') {
-  //     FBrtmp = req.body.rtmplink
-  //     streamDestinations.push(" Facebook")
-  //   }
-  //   if (req.body.joicaster === 'true') {
-  //     streamDestinations.push(" Joicaster")
-  //   }
-
-  //   scheduleStream = schedule.scheduleJob(date, function (err) {
-  //     db_label.insertDoc(outputName)
-  //     streamStatus = "Live"
-  //     stopwatch.start()
-  //     if(err){
-  //       console.log(err)
-  //     }
-  //     console.log('stream started')
-  //     outputMp4()
-  //     if (req.body.youtube === 'true') {
-  //       streamYT()
-  //     }
-  //     if (req.body.facebook === 'true') {
-  //       FBrtmp = req.body.rtmplink
-  //       streamFB()
-  //     }
-  //     if (req.body.joicaster === 'true') {
-  //       streamJC()
-  //     }
-  //     scheduleStream.cancel()
-  //     scheduled = false
-  //   })
-  //   res.redirect('/')
-  // }
+    scheduleStream = schedule.scheduleJob(date, function (err) {
+      db_label.insertDoc(outputName)
+      streamStatus = "Live"
+      stopwatch.start()
+      if(err){
+        console.log(err)
+      }
+      console.log('stream started')
+      outputMp4()
+      // Youtube
+      if(typeof YTcreds === 'object'){
+        YTcreds.forEach(function(YTrtmpKey) {
+          let parsed = JSON.parse(YTrtmpKey)
+          streamYT(parsed[0])
+        });
+      }
+      if(typeof YTcreds === 'string'){
+        let parsed = JSON.parse(YTcreds)
+        streamYT(parsed[0])
+      }
+      // Facebook
+      if(typeof FBcreds === 'object'){
+        FBcreds.forEach(function(FBrtmpKey) {
+          let parsed = JSON.parse(FBrtmpKey)
+          streamFB(parsed[0])
+        });
+      }
+      if(typeof FBcreds === 'string'){
+        let parsed = JSON.parse(FBcreds)
+        streamFB(parsed[0])
+      }
+      scheduleStream.cancel()
+      scheduled = false
+    })
+    res.redirect('/')
+  }
 })
 
 //convert to mp4 only
@@ -281,13 +413,17 @@ router.post('/JCRtmpKey', function (req, res, next) {
 // Outlet setup
 
 router.get('/setup_accounts', function (req, res, next) {
-  db_accounts.findYToutlets((err, YToutlets_) => {
+  setTimeout(function(){  db_accounts.findYToutlets((err, YToutlets_) => {
     if (err) {
         return res.sendStatus(500);
     }
-    db_accounts.findFBoutlets((err, FBoutlets_) => {        
+    db_accounts.findFBoutlets((err, FBoutlets_) => {      
+      if (err) {
+        return res.sendStatus(500);
+    }  
       res.render('accounts', {YToutlets: YToutlets_, FBoutlets: FBoutlets_ }) 
     }) 
+  },500); 
   })
 })  
 
@@ -295,10 +431,9 @@ router.post('/setup_accounts/remove_outlet', function (req, res, next) {
 
   let removeID = req.body.outletID
   db_accounts.deleteStreamOutlet(removeID)
-  setTimeout(function(){db_label.findLabels((err, labels) => {
+  
     res.redirect('/setup_accounts')
-  },500); 
-  })
+
 })
 
 router.post('/setup_accounts/setup_youtube', function (req, res, next) {
@@ -309,10 +444,10 @@ router.post('/setup_accounts/setup_youtube', function (req, res, next) {
 })
 
 router.post('/setup_accounts/setup_facebook', function (req, res, next) {
-  let FBappId = req.body.FBAppId
+  let FBpageId = req.body.FBpageId
   let FBaccesstoken = req.body.FBaccessToken
   let FBoutletName = req.body.FBname
-  db_accounts.insertFacebookOutlet(FBoutletName, FBappId, FBaccesstoken)
+  db_accounts.insertFacebookOutlet(FBoutletName, FBpageId, FBaccesstoken)
   res.redirect('/setup_accounts')
 })
 
@@ -374,10 +509,6 @@ let labelStartTime = ''
 let labelEndTime = ''
 
 router.get('/editing/:stream_name', function (req, res, next) {
-  dirPath = "./videos/cut-videos/" + outputName
-  mkdirp(dirPath, function(err) { 
-    console.log('directory made')
-  });
   stop()
   db_trims.locateDoc(outputName)
   db_label.locateDoc(outputName)
@@ -564,7 +695,7 @@ router.get('/logo_setup', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('logo', {name: outputName, logo_: logo})
+      res.render('logo', {name: outputName, logo_: logo, logosInUse: logosInUse})
     })
   });
 })
@@ -591,14 +722,13 @@ router.post('/delete_logo', function (req, res, next) {
 })
 
 router.post('/logo_setup/use_logos', function (req, res, next) {
-  console.log(req.body)
-  db_logo.findLogos((err, logo) => {
-    if (err) {
-      return res.sendStatus(500)
-    }
-    res.redirect('/logo_setup')
-  })
+  logosInUse = req.body.logo
+  res.redirect('/logo_setup')
 })
 
+router.post('/logo_setup/logo_time', function (req, res, next) {
+  altTime = req.body.time
+  res.redirect("/logo_setup")
+})
 
 module.exports = router

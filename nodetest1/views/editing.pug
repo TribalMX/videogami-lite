@@ -20,17 +20,17 @@ block content
                 br
     br
     form(action='/editing/'+ name +'/addLabel', method='post', id='EditAddLabel')
-        label(for='startTime') add label 
+        label(for='startTime') add label  
         input(type='text', value='', name='newLabel', id='editinglabelTime', placeholder="Label Name")
         input(type='text', value='', name='newLabelTime', id='editinglabelTime', placeholder="00:01:00")
         button(type="submit") submit
     h2 Trim your video
     form(action='/editing/'+ name + '/trim', method='post', id='input')
-        label(for='startTime') start time
+        label(for='startTime') start time 
         input(type='text', value=startTime, name='startTime', id='startTime', placeholder="00:01:00")
-        label(for='endTime') End Time
+        label(for='endTime') End Time 
         input(type='text', value=endTime, name='endTime', id='endTime', placeholder="00:02:15")
-        label(for='endTime') cut name
+        label(for='endTime') cut name 
         input(type='text', value='', name='cutName', id='cutName', placeholder="cut1")
         button(type="submit") submit
     br
