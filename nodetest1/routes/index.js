@@ -153,6 +153,7 @@ let outputMp4 = () => {
         }
         let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv ' + './videos/output/' + outputName + '.mp4'
         let convert = () => { console.log('Now converting'); cmd.run(command)}
+        console.log(command)
         convert()
 
         dirPath = "./videos/cut-videos/" + outputName
@@ -358,7 +359,7 @@ router.post('/convert', function (req, res, next) {
   displayName = req.body.name
   outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   db_label.insertDoc(outputName)
-  // outputMp4()
+  outputMp4()
   streamStatus = "Converting"
   let stopSign = null
   if(scheduled){
