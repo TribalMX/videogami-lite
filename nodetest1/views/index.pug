@@ -14,6 +14,7 @@ block content
   form(action='/input', method='post', id='input')
     label(for='input ') Enter your HLS input 
     input(type='text', value='', name='input', id='input')
+    p current #{currentUrl}
     button(type="submit") submit
 
   h2 Step 2: Stream Settings
@@ -27,7 +28,7 @@ block content
     each outlet in YToutlets
         br
         label(for='Youtube') Youtube: #{outlet.YToutlets.name}  
-        input(type='checkbox', value=outlet.YToutlets.YTrtmp, name='YToutletCredentials', id='YToutlet')
+        input(type='checkbox', value=[outlet.YToutlets.YTrtmp, outlet.YToutlets.name], name='YToutletCredentials', id='YToutlet')
     h4 Facebook outlets:
     each outlet in FBoutlets  
         br
@@ -191,7 +192,7 @@ block content
       $(function(){
           var $select = $(".hour");
           $select.append($('<option></option>').val('').html('-'))
-          for (i=1;i<=23;i++){
+          for (i=0;i<=23;i++){
               $select.append($('<option></option>').val(i).html(i))
           }
       });

@@ -27,11 +27,6 @@ let scheduled = false
 
 router.use(fileUpload());
 
-// rtmp stream keys
-// let YTrtmpKey = 'xz4t-2x3s-rwd2-497b'
-let JCrtmpKey = 'rickysychan-7hup2-mqxsa-b6kmd-gj2gq'
-// let FBrtmp = null
-
 // input urls
 let inputURL = 'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8'
 
@@ -40,6 +35,8 @@ let inputURL = 'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8'
 let logoHeight = 10
 let logoHorizontal = 580
 let imgScale = '40:40'
+let altTime = 5
+let logosInUse = 0
 
 // stopwatch
 let stopwatch = new Stopwatch()
@@ -48,18 +45,115 @@ let stopwatch = new Stopwatch()
 let outputName = 'stream'
 let displayName = 'displayName'
 
-// ffmpeg -i 'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale='40:40'[ovrl1], [0:v][ovrl1] overlay='580:10':enable='between(t,1,5)'[v1];[2]scale='40:40'[ovrl2], [v1][ovrl2] overlay='580:10':enable='between(t,5,15)'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text='VideoGami':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable='between(t,1,10)'" -acodec aac -vcodec libx264 -f flv "rtmp://a.rtmp.youtube.com/live2/xz4t-2x3s-rwd2-497b"
-// this is for joicaster
-let streamJC = () => { console.log('Now streaming to Joicaster'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://ingest-us-east.a.switchboard.zone/live/' + JCrtmpKey + '"') }
-
 // this is for facebook only
-let streamFB = (FBrtmp) => { console.log('Now streaming to Facebook'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=580:10:enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"' + FBrtmp + '"') }
+// let streamFB = (FBrtmp) => { console.log('Now streaming to Facebook'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=580:10:enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"' + FBrtmp + '"') }
 
 // this is for Youtube only
-let streamYT = (YTrtmpKey) => { console.log('Now streaming to Youtube'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey + '"') }
+let streamYT = (YTrtmpKey) => { 
+  let L = logosInUse.length
+  let location = logoHorizontal + ":" + logoHeight
+  let scale = imgScale
+
+  let formula = null
+  let accr = altTime*2
+  let accr2 = accr
+  for(var i=0; i<(L + 1); i++) {
+      if(i === 1){
+          formula = "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
+      }
+      if(i === 2){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
+      }
+      if(i === 3){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr +")'[v"+i+"];"
+      }
+      if(i > 3){
+          accr2 = accr2 + altTime
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr2 +")'[v"+i+"];"
+      }
+  }
+let listOfLogos = ''
+for(n in logosInUse){
+  listOfLogos = listOfLogos + "-i ./public/images/" + logosInUse[n] + " "
+}
+if(formula !==  null){
+  formula = formula.slice(0, -5)
+  }
+  let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv \"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey +'\"'
+  let streamYT2 = (YTrtmpKey) => { console.log('Now streaming to Youtube'); cmd.run(command)}
+  streamYT2()
+}
+
+let streamFB = (FBrtmp) => { 
+  let L = logosInUse.length
+  let location = logoHorizontal + ":" + logoHeight
+  let scale = imgScale
+
+  let formula = null
+  let accr = altTime*2
+  let accr2 = accr
+  for(var i=0; i<(L + 1); i++) {
+      if(i === 1){
+          formula = "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
+      }
+      if(i === 2){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
+      }
+      if(i === 3){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr +")'[v"+i+"];"
+      }
+      if(i > 3){
+          accr2 = accr2 + altTime
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr2 +")'[v"+i+"];"
+      }
+  }
+let listOfLogos = ''
+for(n in logosInUse){
+  listOfLogos = listOfLogos + "-i ./public/images/" + logosInUse[n] + " "
+}
+if(formula !==  null){
+  formula = formula.slice(0, -5)
+  }
+  let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv \"'+ FBrtmp +'\"'
+  let streamFB2 = () => { console.log('Now streaming to Facebook'); cmd.run(command)}
+  streamFB2()
+}
 
 // this is for output mp4
-let outputMp4 = () => { cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 ' + './videos/output/' + outputName + '.mp4') }
+let outputMp4 = () => { 
+  let L = logosInUse.length
+  let location = logoHorizontal + ":" + logoHeight
+  let scale = imgScale
+
+  let formula = null
+  let accr = altTime*2
+  let accr2 = accr
+  for(var i=0; i<(L + 1); i++) {
+      if(i === 1){
+          formula = "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
+      }
+      if(i === 2){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
+      }
+      if(i === 3){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr +")'[v"+i+"];"
+      }
+      if(i > 3){
+          accr2 = accr2 + altTime
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr2 +")'[v"+i+"];"
+      }
+        }
+      let listOfLogos = ''
+      for(n in logosInUse){
+        listOfLogos = listOfLogos + "-i ./public/images/" + logosInUse[n] + " "
+      }
+      if(formula !==  null){
+        formula = formula.slice(0, -5)
+        }
+        let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv ' + './videos/output/' + outputName + '.mp4'
+        let convert = () => { console.log('Now converting'); cmd.run(command)}
+        convert()
+}
 
 // this is for trimming the video with start and end time
 
@@ -95,7 +189,7 @@ router.get('/', function (req, res, next) {
         return res.sendStatus(500);
     }
     db_accounts.findFBoutlets((err, FBoutlets_) => {
-      res.render('index', { name: outputName, streamStatus: streamStatus, streamDestinations: streamDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_  })        
+      res.render('index', { name: outputName, streamStatus: streamStatus, streamDestinations: streamDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
     }) 
   })
 })
@@ -154,15 +248,17 @@ router.post('/start_stream', function (req, res, next) {
 
   // youtube
   if(typeof YTcreds === 'object'){
-    YTcreds[0] = YTcreds[0].slice(1)
+    // console.log(YTcreds)
     YTcreds.forEach(function(YTrtmpKey) {
-      streamYT(YTrtmpKey)
-      streamDestinations.push(" Youtube")
+      let parsed = JSON.parse(YTrtmpKey)
+      streamYT(parsed[0])
+      streamDestinations.push(parsed[1])
     });
   }
   if(typeof YTcreds === 'string'){
-    streamYT(YTcreds.slice(1))
-    streamDestinations.push(" Youtube")
+    let parsed = JSON.parse(YTcreds)
+    streamYT(parsed[0])
+    streamDestinations.push(parsed[1])
   }
   // Facebook
 
@@ -184,12 +280,6 @@ router.post('/start_stream', function (req, res, next) {
     console.log('Scheduled on ' + req.body.hour + ':' + req.body.minute)
     scheduledTime = req.body.hour + ':' + req.body.minute
     streamStatus = "schedule for " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute
-    if (YTcreds) {
-      streamDestinations.push(" Youtube")
-    }
-    if (FBcreds) {
-      streamDestinations.push(" Facebook")
-    }
 
     scheduleStream = schedule.scheduleJob(date, function (err) {
       db_label.insertDoc(outputName)
@@ -202,26 +292,22 @@ router.post('/start_stream', function (req, res, next) {
       outputMp4()
       // Youtube
       if(typeof YTcreds === 'object'){
-        YTcreds[0] = YTcreds[0].slice(1)
         YTcreds.forEach(function(YTrtmpKey) {
           streamYT(YTrtmpKey)
           streamDestinations.push(" Youtube")
         });
       }
       if(typeof YTcreds === 'string'){
-        streamYT(YTcreds.slice(1))
-        streamDestinations.push(" Youtube")
+        streamYT(YTcreds)
       }
       // Facebook
       if(typeof FBcreds === 'object'){
         FBcreds.forEach(function(FBrtmp) {
           streamFB(FBrtmp)
-          streamDestinations.push(" Facebook")
         });
       }
       if(typeof FBcreds === 'string'){
           streamFB(FBcreds)
-          streamDestinations.push(" Facebook")
       }
       scheduleStream.cancel()
       scheduled = false
@@ -580,7 +666,7 @@ router.get('/logo_setup', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('logo', {name: outputName, logo_: logo})
+      res.render('logo', {name: outputName, logo_: logo, logosInUse: logosInUse})
     })
   });
 })
@@ -607,14 +693,13 @@ router.post('/delete_logo', function (req, res, next) {
 })
 
 router.post('/logo_setup/use_logos', function (req, res, next) {
-  console.log(req.body)
-  db_logo.findLogos((err, logo) => {
-    if (err) {
-      return res.sendStatus(500)
-    }
-    res.redirect('/logo_setup')
-  })
+  logosInUse = req.body.logo
+  res.redirect('/logo_setup')
 })
 
+router.post('/logo_setup/logo_time', function (req, res, next) {
+  altTime = req.body.time
+  res.redirect("/logo_setup")
+})
 
 module.exports = router

@@ -16,15 +16,12 @@ const getCollections = (db, cb) => {
   
     // Find some documents
     db.listCollections({name: {$ne: 'outlets'}}).toArray((err, docs) => {
-      // An error occurred we need to return that to the given 
-      // callback function
+      console.log(docs)
       if (err) {
         return cb(err);
       }
   
       assert.equal(err, null);
-      // console.log("Found the following records");
-      // console.log(docs)
   
       return cb(null, docs);
     });
