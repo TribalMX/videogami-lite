@@ -34,7 +34,6 @@ block content
         br
         label(for='FBoutlet') Facebook: #{outlet.FBoutlets.name}  
         input(type='checkbox', value='', onchange="streamFB(" + outlet.FBoutlets.FBpageId + "," + JSON.stringify(outlet.FBoutlets.FBaccessToken) + "," + JSON.stringify(outlet.FBoutlets.name) + ")", name='FBoutletCredentials', id=JSON.stringify(outlet.FBoutlets.name))
-        input(type='hidden', value='', name='rtmplink', id='FBNowInputBox')
     br
     br
     button(type="button", onclick="clearSchedule()", id="streamNowBtn") Stream now
@@ -158,8 +157,7 @@ block content
             console.log(rtmp)
             console.log(response)
             let name = JSON.stringify(FBoutletName)
-            document.getElementById(name).value =  rtmp
-            //- document.getElementById("FBNowInputBox").value =  rtmp
+            document.getElementById(name).value =  JSON.stringify([rtmp, name])
         }
       );
     }

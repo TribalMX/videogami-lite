@@ -15,8 +15,7 @@ let documentName = 'stream'
 const getCollections = (db, cb) => {
   
     // Find some documents
-    db.listCollections({name: {$ne: 'outlets'}}).toArray((err, docs) => {
-      console.log(docs)
+    db.listCollections({name: {$nin: ['outlets', 'logos']}}).toArray((err, docs) => {
       if (err) {
         return cb(err);
       }

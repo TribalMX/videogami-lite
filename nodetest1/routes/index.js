@@ -263,14 +263,16 @@ router.post('/start_stream', function (req, res, next) {
   // Facebook
 
   if(typeof FBcreds === 'object'){
-    FBcreds.forEach(function(FBrtmp) {
-      streamFB(FBrtmp)
-      streamDestinations.push(" Facebook")
+    FBcreds.forEach(function(FBrtmpKey) {
+      let parsed = JSON.parse(FBrtmpKey)
+      streamFB(parsed[0])
+      streamDestinations.push(parsed[1].slice(1,-1))
     });
   }
   if(typeof FBcreds === 'string'){
-      streamFB(FBcreds)
-      streamDestinations.push(" Facebook")
+      let parsed = JSON.parse(FBcreds)
+      streamFB(parsed[0])
+      streamDestinations.push(parsed[1].slice(1,-1))
   }
   res.redirect('/labeling/' + outputName)
 }
@@ -280,6 +282,29 @@ router.post('/start_stream', function (req, res, next) {
     console.log('Scheduled on ' + req.body.hour + ':' + req.body.minute)
     scheduledTime = req.body.hour + ':' + req.body.minute
     streamStatus = "schedule for " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute
+
+    // setting destinations
+    if(typeof YTcreds === 'object'){
+        YTcreds.forEach(function(YTrtmpKey) {
+          let parsed = JSON.parse(YTrtmpKey)
+          streamDestinations.push(parsed[1])
+        });
+      }
+      if(typeof YTcreds === 'string'){
+        let parsed = JSON.parse(YTcreds)
+        streamDestinations.push(parsed[1])
+      }
+      // Facebook
+      if(typeof FBcreds === 'object'){
+        FBcreds.forEach(function(FBrtmpKey) {
+          let parsed = JSON.parse(FBrtmpKey)
+          streamDestinations.push(parsed[1].slice(1,-1))
+        });
+      }
+      if(typeof FBcreds === 'string'){
+        let parsed = JSON.parse(FBcreds)
+        streamDestinations.push(parsed[1].slice(1,-1))
+      }
 
     scheduleStream = schedule.scheduleJob(date, function (err) {
       db_label.insertDoc(outputName)
@@ -293,21 +318,24 @@ router.post('/start_stream', function (req, res, next) {
       // Youtube
       if(typeof YTcreds === 'object'){
         YTcreds.forEach(function(YTrtmpKey) {
-          streamYT(YTrtmpKey)
-          streamDestinations.push(" Youtube")
+          let parsed = JSON.parse(YTrtmpKey)
+          streamYT(parsed[0])
         });
       }
       if(typeof YTcreds === 'string'){
-        streamYT(YTcreds)
+        let parsed = JSON.parse(YTcreds)
+        streamYT(parsed[0])
       }
       // Facebook
       if(typeof FBcreds === 'object'){
-        FBcreds.forEach(function(FBrtmp) {
-          streamFB(FBrtmp)
+        FBcreds.forEach(function(FBrtmpKey) {
+          let parsed = JSON.parse(FBrtmpKey)
+          streamFB(parsed[0])
         });
       }
       if(typeof FBcreds === 'string'){
-          streamFB(FBcreds)
+        let parsed = JSON.parse(FBcreds)
+        streamFB(parsed[0])
       }
       scheduleStream.cancel()
       scheduled = false
