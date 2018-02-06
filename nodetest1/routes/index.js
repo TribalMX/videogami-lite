@@ -80,7 +80,8 @@ if(formula !==  null){
   formula = formula.slice(0, -5)
   }
   let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv \"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey +'\"'
-  let streamYT2 = (YTrtmpKey) => { console.log('Now streaming to Youtube'); cmd.run(command)}
+	console.log(command) 
+ let streamYT2 = (YTrtmpKey) => { console.log('Now streaming to Youtube'); cmd.run(command)}
   streamYT2()
 }
 
