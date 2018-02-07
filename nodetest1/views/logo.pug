@@ -21,7 +21,7 @@ block content
   button(type="button" id="useLogoFormBtn" onclick="useFormSubmit()") submit
 
   h2 Upload Logo
-  form(id='uploadForm', action='http://localhost:3000/upload', method='post', encType="multipart/form-data")
+  form(id='uploadForm', action='/upload', method='post', encType="multipart/form-data")
     input(type='file', value='', name='logoUpload', id='logoUpform')
     br
     button(type="submit") submit
