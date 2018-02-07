@@ -164,9 +164,9 @@ let outputMp4 = () => {
 
 // this is for trimming the video with start and end time
 
-let startTime = null
-let duration = null
-let trimName = null
+let startTime = '00:00:00'
+let duration = "00:00:01"
+let trimName = "trim_delete"
 
 let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./videos/output/' + outputName + '.mp4 -c copy ./videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
 
@@ -507,6 +507,21 @@ router.post('/editing_station/:stream_name/remove_stream', function (req, res, n
 
   res.redirect('/editing_station')
 })
+
+router.get('/labels/refresh', function (req, res, next) {
+  console.log("refreshed!")
+    db_label.findLabels((err, labels) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      res.send(labels)
+    })
+})
+
+
+router.get('/labeling/:stream_name/refresh', function (req, res, next) {
+  res.redirect('/labeling/' + outputName)
+})
 // editing process
 
 let labelStartTime = ''
@@ -560,8 +575,13 @@ router.post('/editing/:stream_name/trim', function (req, res, next) {
     return hours+':'+minutes+':'+seconds;
 }
   duration = inputDuration
-  edit()
   db_trims.insertTrim(trimName, startTime, endTimeInput)
+  setTimeout(function(){  edit((err) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
+  },500)});
+
   setTimeout(function(){db_label.findLabels((err, labels) => {
     if (err) {
       return res.sendStatus(500)
