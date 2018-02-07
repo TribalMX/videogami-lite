@@ -472,12 +472,14 @@ router.get('/stop', function (req, res, next) {
 // editing station
 
 router.get('/editing_station', function (req, res, next) {
-  db_edit.getCollections((err, collectionNames) => {
-    if (err) {
-      return res.sendStatus(500)
-    }
-    res.render('editing_station', {collections: collectionNames})
-  })   
+  setTimeout(function(){db_label.findLabels((err, labels) => {
+    db_edit.getCollections((err, collectionNames) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      res.render('editing_station', {collections: collectionNames})
+    })
+  }) },500);   
 })
 
 router.get('/editing_station/:collection_name', function (req, res, next) {
