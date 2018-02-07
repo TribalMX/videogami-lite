@@ -4,7 +4,7 @@ block content
 
     h1 Edit your video: #{name}
 
-    //- video(width="320" height="240" controls src="'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8'" type="video/mp4")
+    video(width="320" height="240" controls src="'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8'" type="video/mp4")
     h2 Labels
         each labelName in label
             h4 #{(JSON.stringify(labelName)).substr(1).slice(41, -1).replace(/['"]+/g, '')}

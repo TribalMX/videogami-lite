@@ -671,35 +671,23 @@ router.post('/labeling/:stream_name/add_label', function (req, res, next) {
   })
 })
 
-router.get('/labels/refresh', function (req, res, next) {
-  console.log("refreshed!")
-    db_label.findLabels((err, labels) => {
-      if (err) {
-        return res.sendStatus(500)
-      }
-      res.send(labels)
-    })
-})
-
-
-router.get('/labeling/:stream_name/refresh', function (req, res, next) {
-  res.redirect('/labeling/' + outputName)
-})
-
 // logo stuff
 
 router.get('/logo_setup', function (req, res, next) {
-  db_logo.findLogos((err, logo) => {
-    if (err) {
-      return res.sendStatus(500)
-    }
+  setTimeout(function(){db_label.findLabels((err, labels) => {
     db_logo.findLogos((err, logo) => {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('logo', {name: outputName, logo_: logo, logosInUse: logosInUse})
-    })
-  });
+      db_logo.findLogos((err, logo) => {
+        if (err) {
+          return res.sendStatus(500)
+        }
+        res.render('logo', {name: outputName, logo_: logo, logosInUse: logosInUse})
+      })
+    });
+  },500);
+  })
 })
 
 router.post('/upload', function(req, res) {
@@ -714,7 +702,6 @@ router.post('/upload', function(req, res) {
 })
 
 router.post('/delete_logo', function (req, res, next) {
-  console.log('here is the returned delete thing')
   let logoObj = req.body.logoName
   let logoObjParsed = JSON.parse(logoObj)
   let logoString = logoObjParsed.logo
