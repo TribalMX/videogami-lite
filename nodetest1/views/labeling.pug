@@ -3,7 +3,10 @@ extends layout
 block content
   h1 streaming: #{name}
   h4 Scheduled Stream Time: #{date}
-  h4 Streaming to: #{streamDestination}
+  h4 Streaming to:
+  each destination in streamFBDestinations
+        a(href='https://www.facebook.com/913878858767085/videos/' + JSON.stringify(destination.id).slice(1, -1)) #{JSON.stringify(destination.name).slice(1, -1)} 
+  p #{streamYTDestinations}
   h4(id='timer')
     
   iframe(width="560" height="349" src="https://www.youtube.com/embed/live_stream?channel=UCXwXlD9sodFJ59ghod7FIzg" frameborder="0" allowfullscreen)

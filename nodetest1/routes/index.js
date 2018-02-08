@@ -19,7 +19,8 @@ const mkdirp = require('mkdirp');
 // stream status
 
 let streamStatus = "Not Streaming and no Scheduled streams"
-let streamDestinations = []
+let streamFBDestinations = []
+let streamYTDestinations = []
 let scheduledTime = null
 let scheduled = false
 
@@ -179,7 +180,8 @@ let stop = () => {
     streamStatus = 'Scheduled on stream at: ' + scheduledTime
   } else {
     streamStatus = "Not Streaming and no scheduled streams";
-    streamDestinations = [];
+    streamFBDestinations = [];
+    streamYTDestinations = [];
   }
   stopwatch.stop();
   stopwatch.reset();
@@ -196,7 +198,7 @@ router.get('/', function (req, res, next) {
         return res.sendStatus(500);
     }
     db_accounts.findFBoutlets((err, FBoutlets_) => {
-      res.render('index', { name: outputName, streamStatus: streamStatus, streamDestinations: streamDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
+      res.render('index', { name: outputName, streamStatus: streamStatus, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
     }) 
   })
 })
@@ -259,13 +261,13 @@ router.post('/start_stream', function (req, res, next) {
     YTcreds.forEach(function(YTrtmpKey) {
       let parsed = JSON.parse(YTrtmpKey)
       streamYT(parsed[0])
-      streamDestinations.push(parsed[1])
+      streamYTDestinations.push(parsed[1])
     });
   }
   if(typeof YTcreds === 'string'){
     let parsed = JSON.parse(YTcreds)
     streamYT(parsed[0])
-    streamDestinations.push(parsed[1])
+    streamYTDestinations.push(parsed[1])
   }
   // Facebook
 
@@ -273,13 +275,17 @@ router.post('/start_stream', function (req, res, next) {
     FBcreds.forEach(function(FBrtmpKey) {
       let parsed = JSON.parse(FBrtmpKey)
       streamFB(parsed[0])
-      streamDestinations.push(parsed[1].slice(1,-1))
+      slicedNamed = parsed[1].slice(1,-1)
+      streamFBDestinations.push({name: slicedNamed, id: parsed[2]})
+      console.log(">>>>>" + JSON.stringify(streamFBDestinations))
     });
   }
   if(typeof FBcreds === 'string'){
       let parsed = JSON.parse(FBcreds)
       streamFB(parsed[0])
-      streamDestinations.push(parsed[1].slice(1,-1))
+      slicedNamed = parsed[1].slice(1,-1)
+      streamFBDestinations.push({name: slicedNamed, id: parsed[2]})
+      console.log(">>>>>" + JSON.stringify(streamFBDestinations))
   }
   res.redirect('/labeling/' + outputName)
 }
@@ -294,23 +300,23 @@ router.post('/start_stream', function (req, res, next) {
     if(typeof YTcreds === 'object'){
         YTcreds.forEach(function(YTrtmpKey) {
           let parsed = JSON.parse(YTrtmpKey)
-          streamDestinations.push(parsed[1])
+          streamYTDestinations.push(parsed[1])
         });
       }
       if(typeof YTcreds === 'string'){
         let parsed = JSON.parse(YTcreds)
-        streamDestinations.push(parsed[1])
+        streamYTDestinations.push(parsed[1])
       }
       // Facebook
       if(typeof FBcreds === 'object'){
         FBcreds.forEach(function(FBrtmpKey) {
           let parsed = JSON.parse(FBrtmpKey)
-          streamDestinations.push(parsed[1].slice(1,-1))
+          streamYTDestinations.push(parsed[1].slice(1,-1))
         });
       }
       if(typeof FBcreds === 'string'){
         let parsed = JSON.parse(FBcreds)
-        streamDestinations.push(parsed[1].slice(1,-1))
+        streamFBDestinations.push(parsed[1].slice(1,-1))
       }
 
     scheduleStream = schedule.scheduleJob(date, function (err) {
@@ -403,13 +409,6 @@ router.post('/logoInput', function (req, res, next) {
   logoHeight = req.body.logoHei
   logoHorizontal = req.body.logoHor
   res.redirect('/logo_setup')
-})
-
-// JC User rtmp key
-
-router.post('/JCRtmpKey', function (req, res, next) {
-  JCrtmpKey = req.body.JCRtmpKey
-  res.redirect('/setup_accounts')
 })
 
 // Outlet setup
@@ -574,13 +573,9 @@ router.post('/editing/:stream_name/trim', function (req, res, next) {
     if (seconds < 10) {seconds = "0"+seconds;}
     return hours+':'+minutes+':'+seconds;
 }
-  duration = inputDuration
+  duration = inputDuration.toHHMMSS()
   db_trims.insertTrim(trimName, startTime, endTimeInput)
-  setTimeout(function(){  edit((err) => {
-    if (err) {
-      return res.sendStatus(500)
-    }
-  },500)});
+  edit()
 
   setTimeout(function(){db_label.findLabels((err, labels) => {
     if (err) {
@@ -593,7 +588,7 @@ router.post('/editing/:stream_name/trim', function (req, res, next) {
       res.redirect('/editing/' + outputName)
     }) 
   })   
-},1000);
+},2000);
 })
 
 
@@ -659,7 +654,7 @@ router.get('/labeling/:stream_name', function (req, res, next) {
     if (err) {
       return res.sendStatus(500)
     }
-    res.render('labeling', {name: outputName, label: labels, date: streamStatus, terminate: stopSign, streamDestination: streamDestinations})
+    res.render('labeling', {name: outputName, label: labels, date: streamStatus, terminate: stopSign, streamFBDestinations: streamFBDestinations, streamYTDestinations: streamYTDestinations})
   })   
   },500); 
 })
@@ -740,6 +735,12 @@ router.post('/logo_setup/use_logos', function (req, res, next) {
 router.post('/logo_setup/logo_time', function (req, res, next) {
   altTime = req.body.time
   res.redirect("/logo_setup")
+})
+
+// video settings
+
+router.get('/video_settings', function (req, res, next) {
+  res.render('video_settings')
 })
 
 module.exports = router

@@ -1,0 +1,13 @@
+extends layout
+
+block content
+    br
+    h4 Select the resolution you want to use
+    select(class="resolution" , name="resolution", id="resolution")
+  
+  
+    script.
+        $(function(){
+            var $select = $(".resolution");
+                $select.append($('<option></option>').val("420").html("420"))
+        });

@@ -13,7 +13,7 @@ block content
   h2 Step 1: Enter Your Input source 
   form(action='/input', method='post', id='input')
     label(for='input ') Enter your HLS input 
-    input(type='text', value='', name='input', id='input')
+    input(type='text', value='', name='input', id='input', placeholder="https://example.m3u8")
     p current #{currentUrl}
     button(type="submit") submit
 
@@ -21,7 +21,11 @@ block content
   form(action='/start_stream', method='post', id='streamSettings')
     label(for='input ') Enter your Stream Name
     br
-    input(type='text', value='', onchange="checkNameChange()", name='name', id='streamName')
+    input(type='text', value='', onchange="checkNameChange()", name='name', id='streamName', placeholder="Stream name")
+    br
+    label(for='description') description (optional)
+    br
+    <textarea class="form-control", value='Live video', placeholder="Your description goes here" id="streamDescription" rows="2"></textarea>
     br
     h3 choose your streaming outlets
     h4 Youtube outlets:
@@ -40,7 +44,7 @@ block content
     br
     br
     br
-    h3 OR Schedule a stream
+    h3 OR Schedule a stream (In EST time)
     br 
     br
     label(for='month ') Month 
@@ -151,13 +155,18 @@ block content
       FB.api(
         '/' + pageId + '/live_videos',
         'POST',
-        {access_token: accessToken},
+        {access_token: accessToken,
+        description: document.getElementById("streamDescription").value,
+        title: document.getElementById("streamName").value,
+        targeting:{geo_locations:{countries:["CA"]}}
+        },
         function(response) {
             let rtmp = response.stream_url
             console.log(rtmp)
             console.log(response)
+            console.log(response.id)
             let name = JSON.stringify(FBoutletName)
-            document.getElementById(name).value =  JSON.stringify([rtmp, name])
+            document.getElementById(name).value =  JSON.stringify([rtmp, name, response.id])
         }
       );
     }
