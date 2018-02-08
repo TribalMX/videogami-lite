@@ -166,7 +166,7 @@ let outputMp4 = () => {
 
 let startTime = '00:00:00'
 let duration = "00:00:01"
-let trimName = "trim_delete"
+let trimName = "example"
 
 let edit = () => { cmd.run('sudo ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./videos/output/' + outputName + '.mp4 -c copy ./videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
 
@@ -529,6 +529,7 @@ let labelEndTime = ''
 
 router.get('/editing/:stream_name', function (req, res, next) {
   stop()
+edit()
   db_trims.locateDoc(outputName)
   db_label.locateDoc(outputName)
   setTimeout(function(){db_label.findLabels((err, labels) => {
