@@ -223,6 +223,7 @@ let stop = () => {
     streamStatus = "Not Streaming and no scheduled streams";
     streamFBDestinations = [];
     streamYTDestinations = [];
+    streamSTVDestinations = [];
   }
   stopwatch.stop();
   stopwatch.reset();
@@ -246,7 +247,7 @@ router.get('/', function (req, res, next) {
         if (err) {
           return res.sendStatus(500);
       }
-      res.render('index', { name: outputName, streamStatus: streamStatus, STVoutlets: STVoutlets_,streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
+      res.render('index', { name: outputName, streamStatus: streamStatus, STVoutlets: STVoutlets_, streamSTVDestinations: streamSTVDestinations, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
       })
     }) 
   })
@@ -384,6 +385,17 @@ router.post('/start_stream', function (req, res, next) {
         let parsed = JSON.parse(FBcreds)
         streamFBDestinations.push(parsed[1].slice(1,-1))
       }
+      // Snappy TV
+      if(typeof STVcreds === 'object'){
+        STVcreds.forEach(function(STVrtmp) {
+          let parsed = JSON.parse(STVrtmp)
+          streamSTVDestinations.push({name: parsed[0]})
+        });
+      }
+      if(typeof STVcreds === 'string'){
+        let parsed = JSON.parse(STVcreds)
+        streamSTVDestinations.push({name: parsed[0]})
+      }
 
     scheduleStream = schedule.scheduleJob(date, function (err) {
       db_label.insertDoc(outputName)
@@ -415,6 +427,17 @@ router.post('/start_stream', function (req, res, next) {
       if(typeof FBcreds === 'string'){
         let parsed = JSON.parse(FBcreds)
         streamFB(parsed[0])
+      }
+      //Snappy TV
+      if(typeof STVcreds === 'object'){
+        STVcreds.forEach(function(STVrtmp) {
+          let parsed = JSON.parse(STVrtmp)
+          streamSTV(parsed[1])
+        });
+      }
+      if(typeof STVcreds === 'string'){
+          let parsed = JSON.parse(STVcreds)
+          streamSTV(parsed[1])
       }
       scheduleStream.cancel()
       scheduled = false
