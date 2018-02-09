@@ -14,6 +14,15 @@ block content
   iframe(width="560" height="349" src="https://www.youtube.com/embed/live_stream?channel=UCXwXlD9sodFJ59ghod7FIzg" frameborder="0" allowfullscreen)
   br
   br
+  h2 Make a trim
+  form(action='/labeling/'+ name + '/trim_start', method='post', id='input')
+      label(for='startTime') Start trim
+      input(type='text', value='', name='name', id='trimName')
+      button(type="submit") Submit
+  form(action='/labeling/'+ name + '/trim_end', method='post', id='input')
+      label(for='startTime') End trim 
+      button(type="submit") Submit
+  p editing: #{trimStatus}
   h2 Labels
   h4(class='div-class' id='labels')
   br
@@ -27,6 +36,18 @@ block content
     button(type="button" onclick='stopTimer()') #{terminate}
   br
   br
+  h2 Your edited videos
+    each video in trims
+        h4 Trim: #{JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')}
+        li Start Time: #{JSON.stringify(video.Video_trim.startTime).replace(/['"]+/g, '')}
+        li End Time: #{JSON.stringify(video.Video_trim.endTime).replace(/['"]+/g, '')}
+        form(action='/editing/'+ name +'/downloadTrim', method='post', id='input') 
+            input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='trimName', id='trimName')
+            button(type="submit") Download
+        form(action='/editing/'+ name +'/deleteTrim', method='post', id='input') 
+            input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='deleteTrim', id='deleteTrim')
+            input(type='hidden', value=(JSON.stringify(video._id).replace(/['"]+/g, '')), name='deleteTrimId', id='deleteTrimId')
+            button(type="submit") Delete
   a(href="/")
     button(type="button") Home page
 

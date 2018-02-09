@@ -209,8 +209,50 @@ let outputMp4 = () => {
 let startTime = '00:00:00'
 let duration = "00:00:01"
 let trimName = "example"
+let inStreamEditName = null
 
-let edit = () => { cmd.run('sudo ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./videos/output/' + outputName + '.mp4 -c copy ./videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
+let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./videos/output/' + outputName + '.mp4 -c copy ./videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
+let inStreamEdit = () => { 
+  let L = logosInUse.length
+  let location = logoHorizontal + ":" + logoHeight
+  let scale = imgScale
+
+  let formula = null
+  let accr = altTime*2
+  let accr2 = accr
+  for(var i=0; i<(L + 1); i++) {
+      if(i === 1){
+          formula = "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
+      }
+      if(i === 2){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
+      }
+      if(i === 3){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr +")'[v"+i+"];"
+      }
+      if(i > 3){
+          accr2 = accr2 + altTime
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr2 +")'[v"+i+"];"
+      }
+        }
+      let listOfLogos = ''
+      for(n in logosInUse){
+        listOfLogos = listOfLogos + "-i ./public/images/" + logosInUse[n] + " "
+      }
+      if(formula !==  null){
+        formula = formula.slice(0, -5)
+        }
+        let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv ./videos/cut-videos/' + outputName + '/' + inStreamEditName + '.mp4'
+        let convert = () => { console.log('Now converting'); cmd.run(command)}
+        console.log(command)
+        convert()
+}
+
+let killTrim = () => {
+  inStreamEditName = null
+  console.log('kill "$(pgrep -f ' + inStreamEditName + '.mp4)"')
+  cmd.run('kill "$(pgrep -f ' + inStreamEditName + '.mp4)"')
+}
 
 // this is to stop all ffmpeg activity
 
@@ -608,20 +650,8 @@ router.post('/editing_station/:stream_name/remove_stream', function (req, res, n
   res.redirect('/editing_station')
 })
 
-router.get('/labels/refresh', function (req, res, next) {
-  console.log("refreshed!")
-    db_label.findLabels((err, labels) => {
-      if (err) {
-        return res.sendStatus(500)
-      }
-      res.send(labels)
-    })
-})
 
 
-router.get('/labeling/:stream_name/refresh', function (req, res, next) {
-  res.redirect('/labeling/' + outputName)
-})
 // editing process
 
 let labelStartTime = ''
@@ -629,7 +659,7 @@ let labelEndTime = ''
 
 router.get('/editing/:stream_name', function (req, res, next) {
   stop()
-edit()
+  edit()
   db_trims.locateDoc(outputName)
   db_label.locateDoc(outputName)
   setTimeout(function(){db_label.findLabels((err, labels) => {
@@ -744,6 +774,8 @@ router.post('/editing/:stream_name/downloadTrim', function (req, res, next) {
 
 router.get('/labeling/:stream_name', function (req, res, next) {
   outputName = req.params.stream_name
+  db_trims.locateDoc(outputName)
+  db_label.locateDoc(outputName)
   let stopSign = null
   if(scheduled){
     stopSign = "Cancel scheduled Stream"
@@ -752,13 +784,18 @@ router.get('/labeling/:stream_name', function (req, res, next) {
   } else if(!scheduled){
     stopSign = "End Stream"
   } 
+
   setTimeout(function(){db_label.findLabels((err, labels) => {
     if (err) {
       return res.sendStatus(500)
     }
-    res.render('labeling', {name: outputName, label: labels, date: streamStatus, terminate: stopSign, streamSTVDestinations: streamSTVDestinations,streamFBDestinations: streamFBDestinations, streamYTDestinations: streamYTDestinations})
+    db_trims.findTrims((err, trims_) => {
+      if (err)
+          return res.sendStatus(500);         
+      res.render('labeling', {name: outputName, label: labels, trims: trims_, date: streamStatus, terminate: stopSign, streamSTVDestinations: streamSTVDestinations,streamFBDestinations: streamFBDestinations, streamYTDestinations: streamYTDestinations})
+    }) 
   })   
-  },500); 
+  },1000); 
 })
 
 router.post('/labeling/:stream_name/add_label', function (req, res, next) {
@@ -778,7 +815,7 @@ router.post('/labeling/:stream_name/add_label', function (req, res, next) {
   console.log("the elapsed time: " + hours + ":" + minutes + ":" + seconds)
   let overallTime = hours + ":" + minutes + ":" + seconds
   labelName = req.body.label
-  db_label.insertLabel(labelName, overallTime)
+  
   setTimeout(function(){db_label.findLabels((err, labels) => {
       db_label.findLabels((err, labels) => {
         if (err) {
@@ -788,6 +825,68 @@ router.post('/labeling/:stream_name/add_label', function (req, res, next) {
       })
     },500); 
   })
+})
+
+router.get('/labels/refresh', function (req, res, next) {
+  console.log("refreshed!")
+    db_label.findLabels((err, labels) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      res.send(labels)
+    })
+})
+
+
+router.get('/labeling/:stream_name/refresh', function (req, res, next) {
+  res.redirect('/labeling/' + outputName)
+})
+
+let inStreamEditStartTime = null
+
+router.post('/labeling/:stream_name/trim_start', function (req, res, next) {
+  let time = stopwatch.ms/1000
+  let minutes = Math.floor(time / 60);
+  let seconds = Math.floor(time - minutes * 60);
+  let hours = Math.floor(time / 3600);
+  if(seconds < 10){
+      seconds = "0" + seconds
+    }
+  if(minutes < 10){
+    minutes = "0" + minutes
+  }
+  if(hours < 10){
+    hours = "0" + hours
+  }
+  console.log("the elapsed time: " + hours + ":" + minutes + ":" + seconds)
+  inStreamEditStartTime = hours + ":" + minutes + ":" + seconds
+
+  inStreamEditName = req.body.name.replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
+  inStreamEdit()
+  res.redirect('/labeling/' + outputName)
+})
+
+let inStreamEditEndTime = null
+
+router.post('/labeling/:stream_name/trim_end', function (req, res, next) {
+  let time = stopwatch.ms/1000
+  let minutes = Math.floor(time / 60);
+  let seconds = Math.floor(time - minutes * 60);
+  let hours = Math.floor(time / 3600);
+  if(seconds < 10){
+      seconds = "0" + seconds
+    }
+  if(minutes < 10){
+    minutes = "0" + minutes
+  }
+  if(hours < 10){
+    hours = "0" + hours
+  }
+  console.log("the elapsed time: " + hours + ":" + minutes + ":" + seconds)
+  inStreamEditEndTime = hours + ":" + minutes + ":" + seconds
+  db_trims.insertTrim(inStreamEditName, inStreamEditStartTime, inStreamEditEndTime)
+  killTrim()
+  res.redirect('/labeling/' + outputName)
 })
 
 // logo stuff
