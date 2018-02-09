@@ -4,8 +4,6 @@ block content
 
   p To add an outlet, fill in the required information below
   br
-  a(href="/")
-    button(type="button") Home page
 
   h2 Add a Youtube outlet
 
@@ -20,12 +18,12 @@ block content
   br
   h2 Youtube outlets
   each outlet in YToutlets
-    h4 Name: #{outlet.YToutlets.name}
-    h4 RTMP Key: #{outlet.YToutlets.YTrtmp}
+    p Name: #{outlet.YToutlets.name}
+    p RTMP Key: #{outlet.YToutlets.YTrtmp}
     form(action='/setup_accounts/remove_outlet', method='post', id='YTRtmpKey')
       input(type='hidden', value=outlet._id, name='outletID', id='YToutlet')
       button(type="submit") Remove Outlet
-
+  br
   h2 Add a Facebook outlet
 
   form(action='/setup_accounts/setup_facebook', method='post', id='FBRtmpKey')
@@ -40,13 +38,39 @@ block content
     br
     button(type="submit") Add outlet
   br
+  br
   h2 Facebook outlets
   each outlet in FBoutlets
-    h4 Name: #{outlet.FBoutlets.name}
-    h4 Page-ID: #{outlet.FBoutlets.FBpageId}
-    h4 Access Token: #{outlet.FBoutlets.FBaccessToken}
+    p Name: #{outlet.FBoutlets.name}
+    p Page-ID: #{outlet.FBoutlets.FBpageId}
+    p Access Token: #{outlet.FBoutlets.FBaccessToken}
     form(action='/setup_accounts/remove_outlet', method='post', id='FBRtmpKey')
       input(type='hidden', value=outlet._id, name='outletID', id='FBoutlet')
-      button(type="submit") Remove Outlet
+      button(type="submit") Remove outlet
+  br    
+  h2 Add a SnappyTV outlet
+  br
+  form(action='/setup_accounts/setup_snappyTV', method='post', id='FBRtmpKey')
+    label(for='FBname') Enter your SnappyTV outlet Name 
+    input(type='text', value='', name='STVname', id='FBname')
+    br
+    label(for='FBpageId') Publishing Point
+    input(type='text', value='', name='STVpublishP', id='FBpageId')
+    br
+    label(for='FBAppId') Stream Name
+    input(type='text', value='', name='STVstreamName', id='FBaccessToken')
+    br
+    button(type="submit") Add outlet
+    br
+    br
+    h2 SnappyTV outlets
+    each outlet in STVoutlets
+      p Name: #{outlet.STVoutlets.name}
+      p Publishing Point: #{outlet.STVoutlets.STVpublishingPoint}
+      p stream Name: #{outlet.STVoutlets.STVstreamName}
+      form(action='/setup_accounts/remove_outlet', method='post', id='FBRtmpKey')
+        input(type='hidden', value=outlet._id, name='outletID', id='FBoutlet')
+        button(type="submit") Remove Outlet
+    br
     
 

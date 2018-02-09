@@ -30,6 +30,7 @@ block content
   form(action='/imgScale', method='post', id='imgScaleForm')
     label(for='logoSize') Adust size (higher - the larger) 
     input(type='text', value='', name='logoSize', id='logoSize', placeholder='40:40')
+    p current: #{size}
     br
     button(type="submit") submit
 
@@ -38,16 +39,19 @@ block content
   form(action='/logo_placement', method='post', id='logoForm')
     label(for='logoHor') Adust horizontal (higher - left, lower right) 
     input(type='text', value='', name='logoHor', id='logoHor', placeholder='580')
+    p current: #{horizontal}
     br
     label(for='logoHei') Adust height (higher - lower down, lower-higher up) 
     input(type='text', value='', name='logoHei', id='logoHei', placeholder='10')
+    p current: #{height}
     br
     button(type="submit") submit
   h2 Logo alternation time
   form(action='/logo_setup/logo_time', method='post', id='logoAltForm')
     label(for='altTime') Time between alternation 
-    input(type='text', value='', name='time', id='altTime', placeholder='5')
+    input(type='text', value='', name='time', id='altTime', placeholder='10')
     button(type='submit') Submit
+  p current alternation time: #{logoAltTime}
   br
 
   a(href="/")

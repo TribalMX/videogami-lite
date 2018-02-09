@@ -94,6 +94,41 @@ const insertFacebook = function (db, callback, FBoutletName_, FBpageId_, FBacces
     });
 }
 
+// Snappy TV
+const insertSnappyTV = function (db, callback, STVoutletName_, STVpublishingPoint_, STVstreamName_) {
+  // Get the documents collection
+  const collection = db.collection("outlets")
+  // Insert some documents
+  collection.insertOne(
+    {STVoutlets: {name: STVoutletName_, STVpublishingPoint: STVpublishingPoint_, STVstreamName: STVstreamName_}},
+    function (err, result) {
+      assert.equal(err, null)
+      assert.equal(1, result.result.n)
+      assert.equal(1, result.ops.length)
+      console.log('Inserted Snappy TV streaming info into the Streams collection')
+      callback(result)
+  })
+}
+const findSTVoutlets = (db, cb) => {
+  // Get the documents collection
+  const collection = db.collection('outlets');
+
+  // Find some documents
+  collection.find({"STVoutlets": { $exists: true } }).toArray((err, docs) => {
+    // An error occurred we need to return that to the given 
+    // callback function
+    if (err) {
+      return cb(err);
+    }
+
+    assert.equal(err, null);
+    // console.log("Found the following records for Facebook outlets");
+    console.log("Found the following records for Snappy TV" + docs)
+
+    return cb(null, docs);
+  });
+}
+
 module.exports = {
     deleteStreamOutlet: (outletToDelete_) => MongoClient.connect(url, function (err, client) {
         outletForDeletion = outletToDelete_
@@ -164,5 +199,35 @@ module.exports = {
             return cb(null, docs)
             })
         })
-    },  
+    },
+    insertSnappyTVOutlet: (STVoutletName_, STVpublishingPoint_, STVstreamName_) => MongoClient.connect(url, function (err, client) {
+
+      assert.equal(null, err)
+      console.log('Connected successfully to server')
+  
+      const db = client.db(dbName)
+  
+      insertSnappyTV(db, function () {
+        client.close()
+      }, STVoutletName_, STVpublishingPoint_, STVstreamName_)
+    }),
+    findSTVoutlets: cb => {
+      MongoClient.connect(url, (err, client) => {
+          if (err) {
+          return cb(err)
+          }
+          console.log('Connected successfully to server')
+
+          const db = client.db(dbName)
+
+          findSTVoutlets(db, (err, docs) => {
+          if (err) {
+              return cb(err)
+          }
+
+          // return your documents back to the given callback
+          return cb(null, docs)
+          })
+      })
+  }  
 }

@@ -3,11 +3,17 @@ extends layout
 block content
     br
     h4 Select the resolution you want to use
-    select(class="resolution" , name="resolution", id="resolution")
-  
-  
+    form(action='/change_resolution', method='post', id='streamSettings')
+        label(for='resolution') change resolution 
+        select(class="resolution" , name="resolution", id="resolution")
+        p current resolution: #{currentResolution}
+        button(type="submit") Submit
+        
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js')
     script.
         $(function(){
             var $select = $(".resolution");
-                $select.append($('<option></option>').val("420").html("420"))
+                $select.append($('<option></option>').val("480").html("480"))
+                $select.append($('<option></option>').val("720").html("720"))
+                $select.append($('<option></option>').val("1080").html("1080"))
         });

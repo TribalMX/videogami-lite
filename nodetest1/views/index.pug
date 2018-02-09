@@ -33,11 +33,18 @@ block content
         br
         label(for='Youtube') Youtube: #{outlet.YToutlets.name}  
         input(type='checkbox', value=[outlet.YToutlets.YTrtmp, outlet.YToutlets.name], name='YToutletCredentials', id='YToutlet')
+    br
     h4 Facebook outlets:
     each outlet in FBoutlets  
         br
         label(for='FBoutlet') Facebook: #{outlet.FBoutlets.name}  
         input(type='checkbox', value='', onchange="streamFB(" + outlet.FBoutlets.FBpageId + "," + JSON.stringify(outlet.FBoutlets.FBaccessToken) + "," + JSON.stringify(outlet.FBoutlets.name) + ")", name='FBoutletCredentials', id=JSON.stringify(outlet.FBoutlets.name))
+    br
+    h4 SnappyTV outlets:
+    each outlet in STVoutlets  
+        br
+        label(for='STVoutlet') SnappyTV: #{outlet.STVoutlets.name}  
+        input(type='checkbox',value=[outlet.STVoutlets.name, outlet.STVoutlets.STVpublishingPoint + '/' + outlet.STVoutlets.STVstreamName], name='STVoutletCredentials', id=JSON.stringify(outlet.STVoutlets.name))
     br
     br
     button(type="button", onclick="clearSchedule()", id="streamNowBtn") Stream now
@@ -131,8 +138,9 @@ block content
       let form = document.getElementById("streamSettings")
       let YTcreds = $('input[name="YToutletCredentials"]:checked').serialize()
       let FBcreds = $('input[name="FBoutletCredentials"]:checked').serialize()
+      let STVcreds = $('input[name="STVoutletCredentials"]:checked').serialize()
       let streamName = document.getElementById("streamName").value
-      if((YTcreds || FBcreds) && streamName){
+      if((YTcreds || FBcreds || STVcreds) && streamName){
         document.getElementById("streamSettings").addEventListener("click", function () {
           form.submit();
         })

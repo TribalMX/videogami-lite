@@ -21,6 +21,7 @@ const mkdirp = require('mkdirp');
 let streamStatus = "Not Streaming and no Scheduled streams"
 let streamFBDestinations = []
 let streamYTDestinations = []
+let streamSTVDestinations = []
 let scheduledTime = null
 let scheduled = false
 
@@ -36,7 +37,7 @@ let inputURL = 'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8'
 let logoHeight = 10
 let logoHorizontal = 580
 let imgScale = '40:40'
-let altTime = 5
+let altTime = 10
 let logosInUse = 0
 
 // stopwatch
@@ -45,6 +46,7 @@ let stopwatch = new Stopwatch()
 // stream name
 let outputName = 'stream'
 let displayName = 'displayName'
+let resolution = 720
 
 // this is for facebook only
 // let streamFB = (FBrtmp) => { console.log('Now streaming to Facebook'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=580:10:enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"' + FBrtmp + '"') }
@@ -82,11 +84,49 @@ if(formula !==  null){
   }
   let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv \"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey +'\"'
 	console.log(command) 
- let streamYT2 = (YTrtmpKey) => { console.log('Now streaming to Youtube'); cmd.run(command)}
+  let streamYT2 = (YTrtmpKey) => { console.log('Now streaming to Youtube'); cmd.run(command)}
   streamYT2()
 }
 
 let streamFB = (FBrtmp) => { 
+  let L = logosInUse.length
+  let location = logoHorizontal + ":" + logoHeight
+  let scale = imgScale
+
+  let formula = null
+  let accr = altTime*2
+  let accr2 = accr
+  for(var i=0; i<(L + 1); i++) {
+      if(i === 1){
+          formula = "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
+      }
+      if(i === 2){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
+      }
+      if(i === 3){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr +")'[v"+i+"];"
+      }
+      if(i > 3){
+          accr2 = accr2 + altTime
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr2 +")'[v"+i+"];"
+      }
+  }
+  
+let listOfLogos = ''
+for(n in logosInUse){
+  listOfLogos = listOfLogos + "-i ./public/images/" + logosInUse[n] + " "
+}
+if(formula !==  null){
+  formula = formula.slice(0, -5)
+  }
+  let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv \"'+ FBrtmp +'\"'
+  console.log(command)
+  let streamFB2 = () => { console.log('Now streaming to Facebook'); cmd.run(command)}
+  streamFB2()
+}
+// stream Snappy TV
+
+let streamSTV = (STVrtmpKey) => { 
   let L = logosInUse.length
   let location = logoHorizontal + ":" + logoHeight
   let scale = imgScale
@@ -116,9 +156,10 @@ for(n in logosInUse){
 if(formula !==  null){
   formula = formula.slice(0, -5)
   }
-  let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv \"'+ FBrtmp +'\"'
-  let streamFB2 = () => { console.log('Now streaming to Facebook'); cmd.run(command)}
-  streamFB2()
+  let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv \"' + STVrtmpKey +'\"'
+	console.log(command) 
+  let streamSTV2 = (YTrtmpKey) => { console.log('Now streaming to SnappyTV'); cmd.run(command)}
+  streamSTV2()
 }
 
 // this is for output mp4
@@ -198,7 +239,15 @@ router.get('/', function (req, res, next) {
         return res.sendStatus(500);
     }
     db_accounts.findFBoutlets((err, FBoutlets_) => {
-      res.render('index', { name: outputName, streamStatus: streamStatus, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
+      if (err) {
+          return res.sendStatus(500);
+      }
+      db_accounts.findSTVoutlets((err, STVoutlets_) => {      
+        if (err) {
+          return res.sendStatus(500);
+      }
+      res.render('index', { name: outputName, streamStatus: streamStatus, STVoutlets: STVoutlets_,streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
+      })
     }) 
   })
 })
@@ -249,8 +298,9 @@ router.post('/start_stream', function (req, res, next) {
 
   var YTcreds = req.body.YToutletCredentials
   var FBcreds = req.body.FBoutletCredentials
+  var STVcreds = req.body.STVoutletCredentials
 
-  if((YTcreds || FBcreds) && !scheduled){
+  if((YTcreds || FBcreds || STVcreds) && !scheduled){
     stopwatch.start()
     outputMp4()
     streamStatus = "Live"
@@ -286,6 +336,22 @@ router.post('/start_stream', function (req, res, next) {
       slicedNamed = parsed[1].slice(1,-1)
       streamFBDestinations.push({name: slicedNamed, id: parsed[2]})
       console.log(">>>>>" + JSON.stringify(streamFBDestinations))
+  }
+  // Snappy TV
+
+  if(typeof STVcreds === 'object'){
+    STVcreds.forEach(function(STVrtmp) {
+      let parsed = JSON.parse(STVrtmp)
+      streamSTV(parsed[1])
+      streamSTVDestinations.push({name: parsed[0]})
+      console.log(">>>>>" + JSON.stringify(streamSTVDestinations))
+    });
+  }
+  if(typeof STVcreds === 'string'){
+      let parsed = JSON.parse(STVcreds)
+      streamSTV(parsed[1])
+      streamSTVDestinations.push({name: parsed[0]})
+      console.log(">>>>>" + JSON.stringify(streamSTVDestinations))
   }
   res.redirect('/labeling/' + outputName)
 }
@@ -421,8 +487,13 @@ router.get('/setup_accounts', function (req, res, next) {
     db_accounts.findFBoutlets((err, FBoutlets_) => {      
       if (err) {
         return res.sendStatus(500);
-    }  
-      res.render('accounts', {YToutlets: YToutlets_, FBoutlets: FBoutlets_ }) 
+    }
+      db_accounts.findSTVoutlets((err, STVoutlets_) => {      
+        if (err) {
+          return res.sendStatus(500);
+      }   
+        res.render('accounts', {YToutlets: YToutlets_, FBoutlets: FBoutlets_, STVoutlets: STVoutlets_ })
+    }) 
     }) 
   },500); 
   })
@@ -449,6 +520,13 @@ router.post('/setup_accounts/setup_facebook', function (req, res, next) {
   let FBaccesstoken = req.body.FBaccessToken
   let FBoutletName = req.body.FBname
   db_accounts.insertFacebookOutlet(FBoutletName, FBpageId, FBaccesstoken)
+  res.redirect('/setup_accounts')
+})
+router.post('/setup_accounts/setup_snappyTV', function (req, res, next) {
+  let STVname = req.body.STVname
+  let STVpublishP= req.body.STVpublishP
+  let STVstreamName = req.body.STVstreamName
+  db_accounts.insertSnappyTVOutlet(STVname, STVpublishP, STVstreamName)
   res.redirect('/setup_accounts')
 })
 
@@ -655,7 +733,7 @@ router.get('/labeling/:stream_name', function (req, res, next) {
     if (err) {
       return res.sendStatus(500)
     }
-    res.render('labeling', {name: outputName, label: labels, date: streamStatus, terminate: stopSign, streamFBDestinations: streamFBDestinations, streamYTDestinations: streamYTDestinations})
+    res.render('labeling', {name: outputName, label: labels, date: streamStatus, terminate: stopSign, streamSTVDestinations: streamSTVDestinations,streamFBDestinations: streamFBDestinations, streamYTDestinations: streamYTDestinations})
   })   
   },500); 
 })
@@ -701,7 +779,7 @@ router.get('/logo_setup', function (req, res, next) {
         if (err) {
           return res.sendStatus(500)
         }
-        res.render('logo', {name: outputName, logo_: logo, logosInUse: logosInUse})
+        res.render('logo', {name: outputName, logo_: logo, logosInUse: logosInUse, logoAltTime: altTime, horizontal: logoHorizontal, height: logoHeight, size: imgScale})
       })
     });
   },500);
@@ -741,7 +819,13 @@ router.post('/logo_setup/logo_time', function (req, res, next) {
 // video settings
 
 router.get('/video_settings', function (req, res, next) {
-  res.render('video_settings')
+  res.render('video_settings', {currentResolution: resolution})
+})
+
+router.post('/change_resolution', function (req, res, next) {
+  resolution = req.body.resolution
+  console.log(resolution)
+  res.redirect('video_settings')
 })
 
 module.exports = router
