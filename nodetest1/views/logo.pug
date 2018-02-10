@@ -16,7 +16,9 @@ block content
     each logos in logo_
       label(for='logoUse')  #{JSON.stringify(logos.logo).slice(2, -1)}   
       input(type="checkbox", name="logo", value=JSON.stringify(logos.logo).slice(2, -1) ,id='logoUse')
-      br 
+      br
+    label(for='logoUse')  Don't use logos   
+    input(type="checkbox", name="noLogo", value="none" ,id='logoUse') 
   p Currently in use: (#{logosInUse})
   button(type="button" id="useLogoFormBtn" onclick="useFormSubmit()") submit
 

@@ -15,7 +15,7 @@ const Stopwatch = require('timer-stopwatch')
 const fileUpload = require('express-fileupload');
 const cmd = require('node-cmd')
 const mkdirp = require('mkdirp');
-
+const fs = require('fs');
 // stream status
 
 let streamStatus = "Not Streaming and no Scheduled streams"
@@ -930,6 +930,9 @@ router.post('/delete_logo', function (req, res, next) {
 
 router.post('/logo_setup/use_logos', function (req, res, next) {
   logosInUse = req.body.logo
+  if(req.body.noLogo){
+    logosInUse = 0
+  }
   res.redirect('/logo_setup')
 })
 
@@ -949,5 +952,6 @@ router.post('/change_resolution', function (req, res, next) {
   console.log(resolution)
   res.redirect('video_settings')
 })
+
 
 module.exports = router
