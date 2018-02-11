@@ -5,7 +5,7 @@ block content
   h2 Current logos
     each logos in logo_
       h4 #{(JSON.stringify(logos)).substr(1).slice(0, -1).replace(/['"]+/g, '')}
-      img.image(src=("file:../public/uploads/ACE.png") alt="logo" height="42" width="42")
+      img.image(src=("/images/" + (JSON.stringify(logos)).substr(1).slice(9, -1).replace(/['"]+/g, '')) alt="logo" height="42" width="42")
       form(action='/delete_logo', method='post', id='deleteLogoForm')
         input(type="hidden", name='logoName', value=JSON.stringify(logos) ,id='logoDeleteInput')
         button(type="submit") delete

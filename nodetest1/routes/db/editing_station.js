@@ -68,13 +68,13 @@ module.exports = {
     removeCollection_(db, function (collectionName) {
       client.close()
     })
-    fs.unlink("./videos/output/" + collectionName + ".mp4", (err) => {
+    fs.unlink("./public/videos/output/" + collectionName + ".mp4", (err) => {
       if (err) {
           console.log("failed to delete local image:"+err);
       } else {
           console.log('successfully deleted local image');                                
       }
     })
-    rimraf('./videos/cut-videos/' + collectionName, function () { console.log('cut-videos subdirectory removed'); });
+    rimraf('./public/videos/cut-videos/' + collectionName, function () { console.log('cut-videos subdirectory removed'); });
   }),
 }

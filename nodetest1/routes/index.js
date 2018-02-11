@@ -193,12 +193,12 @@ let outputMp4 = () => {
       if(formula !==  null){
         formula = formula.slice(0, -5)
         }
-        let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv ' + './videos/output/' + outputName + '.mp4'
+        let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -c:v libx264 -c:a copy -movflags +faststart ' + './public/videos/output/' + outputName + '.mp4'
         let convert = () => { console.log('Now converting'); cmd.run(command)}
         console.log(command)
         convert()
 
-        dirPath = "./videos/cut-videos/" + outputName
+        dirPath = "./public/videos/cut-videos/" + outputName
         mkdirp(dirPath, function(err) { 
           console.log('directory made')
         });
@@ -211,7 +211,7 @@ let duration = "00:00:01"
 let trimName = "example"
 let inStreamEditName = null
 
-let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./videos/output/' + outputName + '.mp4 -c copy ./videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
+let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./public/videos/output/' + outputName + '.mp4 -c copy ./public/videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
 let inStreamEdit = () => { 
   let L = logosInUse.length
   let location = logoHorizontal + ":" + logoHeight
@@ -242,7 +242,7 @@ let inStreamEdit = () => {
       if(formula !==  null){
         formula = formula.slice(0, -5)
         }
-        let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv ./videos/cut-videos/' + outputName + '/' + inStreamEditName + '.mp4'
+        let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -c:v libx264 -c:a copy -movflags +faststart ./public/videos/cut-videos/' + outputName + '/' + inStreamEditName + '.mp4'
         let convert = () => { console.log('Now converting'); cmd.run(command)}
         console.log(command)
         convert()
@@ -725,7 +725,7 @@ router.post('/editing/:stream_name/trim', function (req, res, next) {
 
 
 router.post('/editing/:stream_name/downloadWhole', function (req, res, next) {
-  var file = './videos/output/' + req.body.wholeStream + '.mp4';
+  var file = './public/videos/output/' + req.body.wholeStream + '.mp4';
   res.download(file); // Set disposition and send it.
 })
 
@@ -764,7 +764,7 @@ router.post('/editing/:stream_name/deleteTrim', function (req, res, next) {
 
 router.post('/editing/:stream_name/downloadTrim', function (req, res, next) {
   let trimName = req.body.trimName
-  var file = './videos/cut-videos/' + outputName + '/' + trimName + '.mp4';
+  var file = './public/videos/cut-videos/' + outputName + '/' + trimName + '.mp4';
   res.download(file); // Set disposition and send it.
 })
 
@@ -825,6 +825,12 @@ router.post('/labeling/:stream_name/add_label', function (req, res, next) {
       })
     },500); 
   })
+})
+router.post('/labeling/:stream_name/deleteTrim', function (req, res, next) {
+  let trimToDelete = req.body.deleteTrim
+  let trimIdToDelete = req.body.deleteTrimId
+  db_trims.deleteTrim(trimToDelete, trimIdToDelete)
+  res.redirect('/labeling/' + outputName)
 })
 
 router.get('/labels/refresh', function (req, res, next) {

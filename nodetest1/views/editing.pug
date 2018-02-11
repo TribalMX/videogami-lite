@@ -4,9 +4,20 @@ block content
 
     h1 Edit your video: #{name}
 
-    <video width="640" height="264" controls>
-        <source src= 'big_buck_bunny.mp4' type="video/mp4">
-    </video>
+    body
+    video(id="my-video" class="video-js" controls preload="auto" width="640" height="264" poster="MY_VIDEO_POSTER.jpg" data-setup="{}")
+        source(src="/videos/output/" + name +".mp4" type='video/mp4')
+        p(class="vjs-no-js")
+        To view this video please enable JavaScript, and consider upgrading to a web browser that
+        a(href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video)
+
+    
+    script(src="http://vjs.zencdn.net/6.6.3/video.js")
+
+
+
+
+
     h2 Labels
         each labelName in label
             h4 #{(JSON.stringify(labelName)).substr(1).slice(41, -1).replace(/['"]+/g, '')}
@@ -48,6 +59,11 @@ block content
             h4 Trim: #{JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')}
             li Start Time: #{JSON.stringify(video.Video_trim.startTime).replace(/['"]+/g, '')}
             li End Time: #{JSON.stringify(video.Video_trim.endTime).replace(/['"]+/g, '')}
+            video(id="my-video" class="video-js" controls preload="auto" width="640" height="264" poster="MY_VIDEO_POSTER.jpg" data-setup="{}")
+                source(src="/videos/cut-videos/" + name + "/"+ JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '') + ".mp4" type='video/mp4')
+                p(class="vjs-no-js")
+                To view this video please enable JavaScript, and consider upgrading to a web browser that
+                a(href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video)
             form(action='/editing/'+ name +'/downloadTrim', method='post', id='input') 
                 input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='trimName', id='trimName')
                 button(type="submit") Download
@@ -55,7 +71,7 @@ block content
                 input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='deleteTrim', id='deleteTrim')
                 input(type='hidden', value=(JSON.stringify(video._id).replace(/['"]+/g, '')), name='deleteTrimId', id='deleteTrimId')
                 button(type="submit") Delete
-    
+            
     script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js') 
     script.
         $(window).scroll(function() {

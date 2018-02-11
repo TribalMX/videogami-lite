@@ -61,7 +61,7 @@ const insertTrim_ = function (db, callback, trimName, startTime, endTime) {
         console.log("Removed the document");
         callback(result);
       });
-      fs.unlink("./videos/cut-videos/" + documentName + "/" + trimToDelete + ".mp4", (err) => {
+      fs.unlink(".public/videos/cut-videos/" + documentName + "/" + trimToDelete + ".mp4", (err) => {
         if (err) {
             console.log("failed to delete local image:"+err);
         } else {

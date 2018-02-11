@@ -16,11 +16,11 @@ block content
   br
   h2 Make a trim
   form(action='/labeling/'+ name + '/trim_start', method='post', id='input')
-      label(for='startTime') Start trim
+      label(for='startTime') Give your trim a name
       input(type='text', value='', name='name', id='trimName')
-      button(type="submit") Submit
+      button(type="submit") Start recording
   form(action='/labeling/'+ name + '/trim_end', method='post', id='input')
-      label(for='startTime') End trim 
+      label(for='startTime') Stop recording
       button(type="submit") Submit
   p editing: #{trimStatus}
   h2 Labels
@@ -44,7 +44,7 @@ block content
         form(action='/editing/'+ name +'/downloadTrim', method='post', id='input') 
             input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='trimName', id='trimName')
             button(type="submit") Download
-        form(action='/editing/'+ name +'/deleteTrim', method='post', id='input') 
+        form(action='/labeling/'+ name +'/deleteTrim', method='post', id='input') 
             input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='deleteTrim', id='deleteTrim')
             input(type='hidden', value=(JSON.stringify(video._id).replace(/['"]+/g, '')), name='deleteTrimId', id='deleteTrimId')
             button(type="submit") Delete
