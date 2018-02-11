@@ -107,7 +107,7 @@ block content
       }
     }, 1);
     var streamCheck = setInterval(function() {
-      if (streamStatus.value === 'Live') {
+      if (streamStatus.value === 'Live' || streamStatus.value === 'Converting') {
         document.getElementById("goStreamingPageBtn").disabled = false;
         clearInterval(streamCheck);
       }

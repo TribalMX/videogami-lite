@@ -11,18 +11,39 @@ block content
     p #{destination.name}
   h4(id='timer')
     
-  iframe(width="560" height="349" src="https://www.youtube.com/embed/live_stream?channel=UCXwXlD9sodFJ59ghod7FIzg" frameborder="0" allowfullscreen)
+  <head>
+    <meta charset=utf-8 />
+
+    <link href="https://unpkg.com/video.js@5.16.0/dist/video-js.css" rel="stylesheet">
+    <script src="https://unpkg.com/video.js@5.16.0/dist/video.js"></script>
+    <script src="https://unpkg.com/videojs-contrib-hls@4.1.1/dist/videojs-contrib-hls.js"></script>
+
+    <link href="https://unpkg.com/video.js/dist/video-js.css" rel="stylesheet">
+    <script src="https://unpkg.com/video.js/dist/video.js"></script>
+    <script src="https://unpkg.com/videojs-contrib-hls/dist/videojs-contrib-hls.js"></script>
+    
+  </head>
+    <body>
+
+    video(id="my_video_1" class="video-js vjs-default-skin" controls preload="auto" width="640" height="268" data-setup='{}')
+        source(src=input type="application/x-mpegURL")
+
+    
+    <script>
+    </script>
+    
+    </body>
   br
   br
   h2 Make a trim
   form(action='/labeling/'+ name + '/trim_start', method='post', id='input')
       label(for='startTime') Give your trim a name
-      input(type='text', value='', name='name', id='trimName')
+      br
+      input(type='text', value='', name='name', id='trimName', placeholder='name')
       button(type="submit") Start recording
   form(action='/labeling/'+ name + '/trim_end', method='post', id='input')
-      label(for='startTime') Stop recording
-      button(type="submit") Submit
-  p editing: #{trimStatus}
+      button(type="submit") Stop recording
+  p Recording: #{inStreamEditName}
   h2 Labels
   h4(class='div-class' id='labels')
   br
@@ -41,6 +62,11 @@ block content
         h4 Trim: #{JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')}
         li Start Time: #{JSON.stringify(video.Video_trim.startTime).replace(/['"]+/g, '')}
         li End Time: #{JSON.stringify(video.Video_trim.endTime).replace(/['"]+/g, '')}
+        video(id="my-video" class="video-js" controls preload="auto" width="640" height="264" data-setup="{}")
+          source(src="/videos/cut-videos/" + name + "/"+ JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '') + ".mp4" type='video/mp4')
+          p(class="vjs-no-js")
+          To view this video please enable JavaScript, and consider upgrading to a web browser that
+          a(href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video)
         form(action='/editing/'+ name +'/downloadTrim', method='post', id='input') 
             input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='trimName', id='trimName')
             button(type="submit") Download

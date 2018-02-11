@@ -15,9 +15,6 @@ block content
     script(src="http://vjs.zencdn.net/6.6.3/video.js")
 
 
-
-
-
     h2 Labels
         each labelName in label
             h4 #{(JSON.stringify(labelName)).substr(1).slice(41, -1).replace(/['"]+/g, '')}

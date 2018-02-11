@@ -209,7 +209,7 @@ let outputMp4 = () => {
 let startTime = '00:00:00'
 let duration = "00:00:01"
 let trimName = "example"
-let inStreamEditName = null
+let inStreamEditName = "Not recording"
 
 let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./public/videos/output/' + outputName + '.mp4 -c copy ./public/videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
 let inStreamEdit = () => { 
@@ -772,6 +772,7 @@ router.post('/editing/:stream_name/downloadTrim', function (req, res, next) {
 
 // get labeling page
 
+
 router.get('/labeling/:stream_name', function (req, res, next) {
   outputName = req.params.stream_name
   db_trims.locateDoc(outputName)
@@ -792,7 +793,7 @@ router.get('/labeling/:stream_name', function (req, res, next) {
     db_trims.findTrims((err, trims_) => {
       if (err)
           return res.sendStatus(500);         
-      res.render('labeling', {name: outputName, label: labels, trims: trims_, date: streamStatus, terminate: stopSign, streamSTVDestinations: streamSTVDestinations,streamFBDestinations: streamFBDestinations, streamYTDestinations: streamYTDestinations})
+      res.render('labeling', {name: outputName, inStreamEditName: inStreamEditName,input: inputURL ,label: labels, trims: trims_, date: streamStatus, terminate: stopSign, streamSTVDestinations: streamSTVDestinations,streamFBDestinations: streamFBDestinations, streamYTDestinations: streamYTDestinations})
     }) 
   })   
   },1000); 
@@ -848,8 +849,6 @@ router.get('/labeling/:stream_name/refresh', function (req, res, next) {
   res.redirect('/labeling/' + outputName)
 })
 
-let inStreamEditStartTime = null
-
 router.post('/labeling/:stream_name/trim_start', function (req, res, next) {
   let time = stopwatch.ms/1000
   let minutes = Math.floor(time / 60);
@@ -866,9 +865,9 @@ router.post('/labeling/:stream_name/trim_start', function (req, res, next) {
   }
   console.log("the elapsed time: " + hours + ":" + minutes + ":" + seconds)
   inStreamEditStartTime = hours + ":" + minutes + ":" + seconds
-
   inStreamEditName = req.body.name.replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   inStreamEdit()
+  inStreamEditName = req.body.name
   res.redirect('/labeling/' + outputName)
 })
 
@@ -892,6 +891,7 @@ router.post('/labeling/:stream_name/trim_end', function (req, res, next) {
   inStreamEditEndTime = hours + ":" + minutes + ":" + seconds
   db_trims.insertTrim(inStreamEditName, inStreamEditStartTime, inStreamEditEndTime)
   killTrim()
+  inStreamEditName = "Not recording"
   res.redirect('/labeling/' + outputName)
 })
 
@@ -950,7 +950,7 @@ router.post('/logo_setup/logo_time', function (req, res, next) {
 // video settings
 
 router.get('/video_settings', function (req, res, next) {
-  res.render('video_settings', {currentResolution: resolution})
+  res.render('video_settings', {currentResolution: resolution, input: inputURL})
 })
 
 router.post('/change_resolution', function (req, res, next) {
