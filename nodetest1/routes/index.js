@@ -22,6 +22,7 @@ let streamStatus = "Not Streaming and no Scheduled streams"
 let streamFBDestinations = []
 let streamYTDestinations = []
 let streamSTVDestinations = []
+let streamJCDestinations = []
 let scheduledTime = null
 let scheduled = false
 
@@ -48,8 +49,6 @@ let outputName = 'stream'
 let displayName = 'displayName'
 let resolution = 720
 
-// this is for facebook only
-// let streamFB = (FBrtmp) => { console.log('Now streaming to Facebook'); cmd.run('ffmpeg -i ' + inputURL + ' -i ./public/images/ACE.png -i ./public/images/logo2.jpg -filter_complex "[1]scale=' + imgScale + '[ovrl1], [0:v][ovrl1] overlay=' + logoHorizontal + ':' + logoHeight + ':enable=\'between(t,1,5)\'[v1];[2]scale=' + imgScale + '[ovrl2], [v1][ovrl2] overlay=580:10:enable=\'between(t,5,15)\'[v2];[v2] drawtext=/System/Library/Fonts/Keyboard.ttf: text=\'VideoGami\':fontcolor=white: fontsize=24: x=(w-text_w)/2: y=(h-text_h)/1.05: enable=\'between(t,1,10)\'" -acodec aac -vcodec libx264 -f flv ' + '"' + FBrtmp + '"') }
 
 // this is for Youtube only
 let streamYT = (YTrtmpKey) => { 
@@ -124,6 +123,46 @@ if(formula !==  null){
   let streamFB2 = () => { console.log('Now streaming to Facebook'); cmd.run(command)}
   streamFB2()
 }
+
+// Joicaster
+
+// this is for Youtube only
+let streamJC = (JCrtmp) => { 
+  let L = logosInUse.length
+  let location = logoHorizontal + ":" + logoHeight
+  let scale = imgScale
+
+  let formula = null
+  let accr = altTime*2
+  let accr2 = accr
+  for(var i=0; i<(L + 1); i++) {
+      if(i === 1){
+          formula = "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
+      }
+      if(i === 2){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
+      }
+      if(i === 3){
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr +")'[v"+i+"];"
+      }
+      if(i > 3){
+          accr2 = accr2 + altTime
+          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr2 +")'[v"+i+"];"
+      }
+  }
+let listOfLogos = ''
+for(n in logosInUse){
+  listOfLogos = listOfLogos + "-i ./public/images/" + logosInUse[n] + " "
+}
+if(formula !==  null){
+  formula = formula.slice(0, -5)
+  }
+  let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv \"rtmp://ingest-us-east.a.switchboard.zone/live/' + JCrtmp +'\"'
+	console.log(command) 
+  let streamJC2 = (JCrtmp) => { console.log('Now streaming to Joicaster'); cmd.run(command)}
+  streamJC2()
+}
+
 // stream Snappy TV
 
 let streamSTV = (STVrtmpKey) => { 
@@ -289,10 +328,15 @@ router.get('/', function (req, res, next) {
         if (err) {
           return res.sendStatus(500);
       }
-      res.render('index', { name: outputName, streamStatus: streamStatus, STVoutlets: STVoutlets_, streamSTVDestinations: streamSTVDestinations, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
+        db_accounts.findJCoutlets((err, JCoutlets_) => {      
+          if (err) {
+            return res.sendStatus(500);
+        }
+      res.render('index', { name: outputName, JCoutlets: JCoutlets_, streamStatus: streamStatus, STVoutlets: STVoutlets_, streamSTVDestinations: streamSTVDestinations, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
       })
     }) 
   })
+})
 })
 
 // stream settings
@@ -342,8 +386,9 @@ router.post('/start_stream', function (req, res, next) {
   var YTcreds = req.body.YToutletCredentials
   var FBcreds = req.body.FBoutletCredentials
   var STVcreds = req.body.STVoutletCredentials
+  var JCcreds = req.body.JCoutletCredentials
 
-  if((YTcreds || FBcreds || STVcreds) && !scheduled){
+  if((YTcreds || FBcreds || STVcreds || JCcreds) && !scheduled){
     stopwatch.start()
     outputMp4()
     streamStatus = "Live"
@@ -362,6 +407,21 @@ router.post('/start_stream', function (req, res, next) {
     streamYT(parsed[0])
     streamYTDestinations.push(parsed[1])
   }
+
+  // Joicaster
+    if(typeof JCcreds === 'object'){
+      // console.log(YTcreds)
+      JCcreds.forEach(function(JCrtmpKey) {
+        let parsed = JSON.parse(JCrtmpKey)
+        streamJC(parsed[0])
+        streamJCDestinations.push(parsed[1])
+      });
+    }
+    if(typeof JCcreds === 'string'){
+      let parsed = JSON.parse(JCcreds)
+      streamJC(parsed[0])
+      streamJCDestinations.push(parsed[1])
+    }
   // Facebook
 
   if(typeof FBcreds === 'object'){
@@ -416,6 +476,17 @@ router.post('/start_stream', function (req, res, next) {
         let parsed = JSON.parse(YTcreds)
         streamYTDestinations.push(parsed[1])
       }
+      // Joicaster
+      if(typeof JCcreds === 'object'){
+        JCcreds.forEach(function(JCrtmpKey) {
+          let parsed = JSON.parse(JCrtmpKey)
+          streamJCDestinations.push(parsed[1])
+        });
+      }
+      if(typeof JCcreds === 'string'){
+        let parsed = JSON.parse(JCcreds)
+        streamJCDestinations.push(parsed[1])
+      }
       // Facebook
       if(typeof FBcreds === 'object'){
         FBcreds.forEach(function(FBrtmpKey) {
@@ -458,6 +529,20 @@ router.post('/start_stream', function (req, res, next) {
       if(typeof YTcreds === 'string'){
         let parsed = JSON.parse(YTcreds)
         streamYT(parsed[0])
+      }
+      // Joicaster
+      if(typeof JCcreds === 'object'){
+        // console.log(YTcreds)
+        JCcreds.forEach(function(JCrtmpKey) {
+          let parsed = JSON.parse(JCrtmpKey)
+          streamJC(parsed[0])
+          streamJCDestinations.push(parsed[1])
+        });
+      }
+      if(typeof JCcreds === 'string'){
+        let parsed = JSON.parse(JCcreds)
+        streamJC(parsed[0])
+        streamJCDestinations.push(parsed[1])
       }
       // Facebook
       if(typeof FBcreds === 'object'){
@@ -556,12 +641,17 @@ router.get('/setup_accounts', function (req, res, next) {
       db_accounts.findSTVoutlets((err, STVoutlets_) => {      
         if (err) {
           return res.sendStatus(500);
-      }   
-        res.render('accounts', {YToutlets: YToutlets_, FBoutlets: FBoutlets_, STVoutlets: STVoutlets_ })
+      }
+        db_accounts.findJCoutlets((err, JCoutlets_) => {      
+          if (err) {
+            return res.sendStatus(500);
+        }    
+        res.render('accounts', {YToutlets: YToutlets_, JCoutlets: JCoutlets_, FBoutlets: FBoutlets_, STVoutlets: STVoutlets_ })
     }) 
     }) 
   },500); 
   })
+})
 })  
 
 router.post('/setup_accounts/remove_outlet', function (req, res, next) {
@@ -577,6 +667,13 @@ router.post('/setup_accounts/setup_youtube', function (req, res, next) {
   YTrtmpKey = req.body.YTRtmpKey
   let YTstreamName = req.body.YTname
   db_accounts.insertYoutubeOutlet(YTstreamName, YTrtmpKey)
+  res.redirect('/setup_accounts')
+})
+
+router.post('/setup_accounts/setup_joicaster', function (req, res, next) {
+  JCrtmpKey = req.body.JCRtmpKey
+  let JCstreamName = req.body.JCname
+  db_accounts.insertJoicasterOutlet(JCstreamName, JCrtmpKey)
   res.redirect('/setup_accounts')
 })
 

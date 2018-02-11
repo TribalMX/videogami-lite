@@ -45,6 +45,12 @@ block content
         label(for='FBoutlet') Facebook: #{outlet.FBoutlets.name}  
         input(type='checkbox', value='', onchange="streamFB(" + outlet.FBoutlets.FBpageId + "," + JSON.stringify(outlet.FBoutlets.FBaccessToken) + "," + JSON.stringify(outlet.FBoutlets.name) + ")", name='FBoutletCredentials', id=JSON.stringify(outlet.FBoutlets.name))
     br
+    h4 Joicaster outlets:
+    each outlet in JCoutlets
+        br
+        label(for='Joicaster') Joicaster: #{outlet.JCoutlets.name}  
+        input(type='checkbox', value=[outlet.JCoutlets.JCrtmp, outlet.JCoutlets.name], name='JCoutletCredentials', id='JCoutlet')
+    br
     h4 SnappyTV outlets:
     each outlet in STVoutlets  
         br
@@ -144,8 +150,9 @@ block content
       let YTcreds = $('input[name="YToutletCredentials"]:checked').serialize()
       let FBcreds = $('input[name="FBoutletCredentials"]:checked').serialize()
       let STVcreds = $('input[name="STVoutletCredentials"]:checked').serialize()
+      let JCcreds = $('input[name="JCoutletCredentials"]:checked').serialize()
       let streamName = document.getElementById("streamName").value
-      if((YTcreds || FBcreds || STVcreds) && streamName){
+      if((YTcreds || FBcreds || STVcreds || JCcreds) && streamName){
         document.getElementById("streamSettings").addEventListener("click", function () {
           form.submit();
         })
