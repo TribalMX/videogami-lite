@@ -232,7 +232,7 @@ let outputMp4 = () => {
       if(formula !==  null){
         formula = formula.slice(0, -5)
         }
-        let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 ' + './public/videos/output/' + outputName + '.mp4'
+        let command = "ffmpeg -re -i " + '\"' + inputURL +  "\" -acodec copy -bsf:a aac_adtstoasc "  + './public/videos/output/' + outputName + '.mp4'
         let convert = () => { console.log('Now converting'); cmd.run(command)}
         console.log(command)
         convert()
@@ -281,7 +281,7 @@ let inStreamEdit = () => {
       if(formula !==  null){
         formula = formula.slice(0, -5)
         }
-        let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 ./public/videos/cut-videos/' + outputName + '/' + inStreamEditName + '.mp4'
+        let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec copy -bsf:a aac_adtstoasc ./public/videos/cut-videos/' + outputName + '/' + inStreamEditName + '.mp4'
         let convert = () => { console.log('Now converting'); cmd.run(command)}
         console.log(command)
         convert()
