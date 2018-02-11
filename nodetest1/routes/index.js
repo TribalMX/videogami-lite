@@ -30,7 +30,7 @@ let scheduled = false
 router.use(fileUpload());
 
 // input urls
-let inputURL = 'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8'
+let inputURL = 'https://d2zihajmogu5jn.cloudfront.net/bipbop-advanced/bipbop_16x9_variant.m3u8'
 
 // logo settings
 
@@ -193,7 +193,7 @@ let outputMp4 = () => {
       if(formula !==  null){
         formula = formula.slice(0, -5)
         }
-        let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -c:v libx264 -c:a copy -movflags +faststart ' + './public/videos/output/' + outputName + '.mp4'
+        let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 ' + './public/videos/output/' + outputName + '.mp4'
         let convert = () => { console.log('Now converting'); cmd.run(command)}
         console.log(command)
         convert()
@@ -242,7 +242,7 @@ let inStreamEdit = () => {
       if(formula !==  null){
         formula = formula.slice(0, -5)
         }
-        let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -c:v libx264 -c:a copy -movflags +faststart ./public/videos/cut-videos/' + outputName + '/' + inStreamEditName + '.mp4'
+        let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 ./public/videos/cut-videos/' + outputName + '/' + inStreamEditName + '.mp4'
         let convert = () => { console.log('Now converting'); cmd.run(command)}
         console.log(command)
         convert()

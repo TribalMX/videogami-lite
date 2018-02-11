@@ -42,7 +42,7 @@ block content
       input(type='text', value='', name='name', id='trimName', placeholder='name')
       button(type="submit") Start recording
   form(action='/labeling/'+ name + '/trim_end', method='post', id='input')
-      button(type="submit") Stop recording
+      button(type="submit" id="stopRecordingBtn") Stop recording
   p Recording: #{inStreamEditName}
   h2 Labels
   h4(class='div-class' id='labels')
@@ -51,7 +51,7 @@ block content
   form(action='/labeling/' + name + '/add_label', method='post', id='insertLabelForm')
     label(for='insertLabel ') Add label
     input(type='text', value='', name='label', id='insertLabel')
-    button(type="submit") submit
+    button(type="submit" ) submit
   br
   a(href="/editing/" + name)
     button(type="button" onclick='stopTimer()') #{terminate}
@@ -88,6 +88,11 @@ block content
               },
               error: function(error) { console.log(error)} 
             })
+    function checker(){
+      if(inStreamEditName !== "Recording: not recording"){
+        document.getElementById("stopRecordingBtn").disabled = "false"
+      }
+    }
     var countDownDate = localStorage.getItem('startDate');
     let counter = 0
     let resetTimer = function(){
