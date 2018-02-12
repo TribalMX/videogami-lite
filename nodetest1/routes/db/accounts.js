@@ -169,7 +169,7 @@ module.exports = {
     deleteStreamOutlet: (outletToDelete_) => MongoClient.connect(url, function (err, client) {
         outletForDeletion = outletToDelete_
         assert.equal(null, err)
-        console.log('Connected successfully to server')
+        // console.log('Connected successfully to server')
     
         const db = client.db(dbName)
     
@@ -179,7 +179,7 @@ module.exports = {
     }),
     insertYoutubeOutlet: (YToutletName_, YTrtmp_) => MongoClient.connect(url, function (err, client) {
         assert.equal(null, err)
-        console.log('Connected successfully to server')
+        // console.log('Connected successfully to server')
     
         const db = client.db(dbName)
     
@@ -192,7 +192,7 @@ module.exports = {
             if (err) {
             return cb(err)
             }
-            console.log('Connected successfully to server')
+            // console.log('Connected successfully to server')
 
             const db = client.db(dbName)
 

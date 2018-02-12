@@ -75,12 +75,12 @@ module.exports = {
   locateDoc: (docName) => MongoClient.connect(url, function (err, client) {
     documentName = docName
     assert.equal(null, err)
-    console.log('Connected successfully to server')
+    // console.log('Connected successfully to server')
     client.close()
   }),
   insertTrim: (trimName_, startTime, endTime) => MongoClient.connect(url, function (err, client) {
     assert.equal(null, err)
-    console.log('Connected successfully to server')
+    // console.log('Connected successfully to server')
 
     const db = client.db(dbName)
 
@@ -93,7 +93,7 @@ module.exports = {
       if (err) {
         return cb(err)
       }
-      console.log('Connected successfully to server')
+      // console.log('Connected successfully to server')
 
       const db = client.db(dbName)
 
@@ -109,8 +109,7 @@ module.exports = {
     trimToDelete = TrimToDelete_
     trimIdToDelete = trimIdToDelete_.toString()
     assert.equal(null, err)
-    console.log(">>>>>" + trimIdToDelete)
-    console.log('Connected successfully to server')
+    // console.log('Connected successfully to server')
 
     const db = client.db(dbName)
 

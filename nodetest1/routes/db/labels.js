@@ -83,7 +83,7 @@ module.exports = {
   insertDoc: (docName) => MongoClient.connect(url, function (err, client) {
     documentName = docName
     assert.equal(null, err)
-    console.log('Connected successfully to server')
+    // console.log('Connected successfully to server')
 
     const db = client.db(dbName)
 
@@ -95,7 +95,7 @@ module.exports = {
     labelName = labelName_
     time = time_
     assert.equal(null, err)
-    console.log('Connected successfully to server')
+    // console.log('Connected successfully to server')
 
     const db = client.db(dbName)
 
@@ -108,7 +108,7 @@ module.exports = {
       if (err) {
         return cb(err)
       }
-      console.log('Connected successfully to server')
+      // console.log('Connected successfully to server')
 
       const db = client.db(dbName)
 
@@ -125,7 +125,7 @@ module.exports = {
   locateDoc: (docName) => MongoClient.connect(url, function (err, client) {
     documentName = docName
     assert.equal(null, err)
-    console.log('Connected successfully to server')
+    // console.log('Connected successfully to server')
     client.close()
   }),
   deleteLabel: (id) => MongoClient.connect(url, function (err, client) {

@@ -70,7 +70,7 @@ module.exports = {
     insertLogo: (logo_) => MongoClient.connect(url, function (err, client) {
         logo = logo_
         assert.equal(null, err)
-        console.log('Connected successfully to server')
+        // console.log('Connected successfully to server')
     
         const db = client.db(dbName)
     
@@ -83,7 +83,7 @@ module.exports = {
           if (err) {
             return cb(err)
           }
-          console.log('Connected successfully to server')
+          // console.log('Connected successfully to server')
     
           const db = client.db(dbName)
     
@@ -100,7 +100,7 @@ module.exports = {
       deleteLogo: (logoToDelete_) => MongoClient.connect(url, function (err, client) {
         logoForDeletion = logoToDelete_
         assert.equal(null, err)
-        console.log('Connected successfully to server')
+        // console.log('Connected successfully to server')
     
         const db = client.db(dbName)
     

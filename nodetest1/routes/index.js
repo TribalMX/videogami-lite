@@ -31,6 +31,25 @@ let scheduled = false
 
 router.use(fileUpload());
 
+// this is to stop all ffmpeg activity
+
+let scheduleStream = null
+
+let stop = () => { 
+  if(scheduled){
+    streamStatus = 'Scheduled on stream at: ' + scheduledTime
+  } else {
+    streamStatus = "Not Streaming and no scheduled streams";
+    streamFBDestinations = [];
+    streamYTDestinations = [];
+    streamSTVDestinations = [];
+    streamJCDestinations = [];
+  }
+  stopwatch.stop();
+  stopwatch.reset();
+  cmd.run('killall ffmpeg') 
+}
+
 // input urls
 let inputURL = 'https://d2zihajmogu5jn.cloudfront.net/bipbop-advanced/bipbop_16x9_variant.m3u8'
 
@@ -51,12 +70,14 @@ let displayName = 'displayName'
 let resolution = 720
 
 // youtube
-let streamYT = (YTrtmpKey) => {
+let streamYT = (YTrtmp) => {
+  console.log("streaming to youtube")
   var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-crf', 26)
     .addOption('-aspect', '640:360')
+    .addOption('-f', 'flv')
     .withSize('640x360')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
@@ -64,124 +85,80 @@ let streamYT = (YTrtmpKey) => {
     .on('error', function(err) {
     console.log('Error: ' + err.message);
     })
-    .output('rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey, function(stdout, stderr) {
-    console.log('Convert complete' +stdout);
-  });
+    .output('rtmp://a.rtmp.youtube.com/live2/' + YTrtmp, function(stdout, stderr) {
+      console.log('Convert complete' +stdout)
+    })
+    .run()
   }
 
-let streamFB = (FBrtmp) => { 
-  let L = logosInUse.length
-  let location = logoHorizontal + ":" + logoHeight
-  let scale = imgScale
+// Facebook
 
-  let formula = null
-  let accr = altTime*2
-  let accr2 = accr
-  for(var i=0; i<(L + 1); i++) {
-      if(i === 1){
-          formula = "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
-      }
-      if(i === 2){
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
-      }
-      if(i === 3){
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr +")'[v"+i+"];"
-      }
-      if(i > 3){
-          accr2 = accr2 + altTime
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr2 +")'[v"+i+"];"
-      }
+let streamFB = (FBrtmp) => {
+  console.log("streaming to youtube")
+  var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
+    .addOption('-vcodec', 'libx264')
+    .addOption('-acodec', 'aac')
+    .addOption('-crf', 26)
+    .addOption('-aspect', '640:360')
+    .addOption('-f', 'flv')
+    .withSize('640x360')
+    .on('start', function(commandLine) {
+    console.log('Query : ' + commandLine);
+    })
+    .on('error', function(err) {
+    console.log('Error: ' + err.message);
+    })
+    .output(FBrtmp, function(stdout, stderr) {
+      console.log('Convert complete' +stdout)
+    })
+    .run()
   }
-  
-let listOfLogos = ''
-for(n in logosInUse){
-  listOfLogos = listOfLogos + "-i ./public/images/" + logosInUse[n] + " "
-}
-if(formula !==  null){
-  formula = formula.slice(0, -5)
-  }
-  let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv \"'+ FBrtmp +'\"'
-  console.log(command)
-  let streamFB2 = () => { console.log('Now streaming to Facebook'); cmd.run(command)}
-  streamFB2()
-}
 
 // Joicaster
 
-// this is for Joicaster
-let streamJC = (JCrtmp) => { 
-  let L = logosInUse.length
-  let location = logoHorizontal + ":" + logoHeight
-  let scale = imgScale
-
-  let formula = null
-  let accr = altTime*2
-  let accr2 = accr
-  for(var i=0; i<(L + 1); i++) {
-      if(i === 1){
-          formula = "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
-      }
-      if(i === 2){
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
-      }
-      if(i === 3){
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr +")'[v"+i+"];"
-      }
-      if(i > 3){
-          accr2 = accr2 + altTime
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr2 +")'[v"+i+"];"
-      }
+let streamJC = (JCrtmp) => {
+  console.log("streaming to youtube")
+  var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
+    .addOption('-vcodec', 'libx264')
+    .addOption('-acodec', 'aac')
+    .addOption('-crf', 26)
+    .addOption('-aspect', '640:360')
+    .addOption('-f', 'flv')
+    .withSize('640x360')
+    .on('start', function(commandLine) {
+    console.log('Query : ' + commandLine);
+    })
+    .on('error', function(err) {
+    console.log('Error: ' + err.message);
+    })
+    .output('rtmp://ingest-cn-tor.switchboard.zone/live/' + JCrtmp, function(stdout, stderr) {
+      console.log('Convert complete' +stdout)
+    })
+    .run()
   }
-let listOfLogos = ''
-for(n in logosInUse){
-  listOfLogos = listOfLogos + "-i ./public/images/" + logosInUse[n] + " "
-}
-if(formula !==  null){
-  formula = formula.slice(0, -5)
-  }
-  let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv \"rtmp://ingest-cn-tor.switchboard.zone/live/' + JCrtmp +'\"'
-	console.log(command) 
-  let streamJC2 = (JCrtmp) => { console.log('Now streaming to Joicaster'); cmd.run(command)}
-  streamJC2()
-}
 
 // stream Snappy TV
 
-let streamSTV = (STVrtmpKey) => { 
-  let L = logosInUse.length
-  let location = logoHorizontal + ":" + logoHeight
-  let scale = imgScale
-
-  let formula = null
-  let accr = altTime*2
-  let accr2 = accr
-  for(var i=0; i<(L + 1); i++) {
-      if(i === 1){
-          formula = "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
-      }
-      if(i === 2){
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
-      }
-      if(i === 3){
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr +")'[v"+i+"];"
-      }
-      if(i > 3){
-          accr2 = accr2 + altTime
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr2 +")'[v"+i+"];"
-      }
+let streamSTV = (STVrtmpKey) => {
+  console.log("streaming to youtube")
+  var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
+    .addOption('-vcodec', 'libx264')
+    .addOption('-acodec', 'aac')
+    .addOption('-crf', 26)
+    .addOption('-aspect', '640:360')
+    .addOption('-f', 'flv')
+    .withSize('640x360')
+    .on('start', function(commandLine) {
+    console.log('Query : ' + commandLine);
+    })
+    .on('error', function(err) {
+    console.log('Error: ' + err.message);
+    })
+    .output(STVrtmpKey, function(stdout, stderr) {
+      console.log('Convert complete' +stdout)
+    })
+    .run()
   }
-let listOfLogos = ''
-for(n in logosInUse){
-  listOfLogos = listOfLogos + "-i ./public/images/" + logosInUse[n] + " "
-}
-if(formula !==  null){
-  formula = formula.slice(0, -5)
-  }
-  let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv \"' + STVrtmpKey +'\"'
-	console.log(command) 
-  let streamSTV2 = (YTrtmpKey) => { console.log('Now streaming to SnappyTV'); cmd.run(command)}
-  streamSTV2()
-}
 
 //output mp4
 
@@ -199,8 +176,11 @@ var proc = new ffmpeg({ source: inputURL, timeout: 0 })
   console.log('Error: ' + err.message);
   })
   .saveToFile('./public/videos/output/' + outputName + '.mp4', function(stdout, stderr) {
-  console.log('Convert complete' +stdout);
-});
+  console.log('Convert complete' +stdout)
+})
+  .on('end', function(stdout, stderr) {
+    console.log('Transcoding succeeded !');
+  });
   dirPath = "./public/videos/cut-videos/" + outputName
   mkdirp(dirPath, function(err) { 
     console.log('directory made')
@@ -242,27 +222,10 @@ let killTrim = () => {
 }
 
 router.post('/test', function (req, res, next) {
-  streamYT("qq0e-tf5g-eg85-52te")
+  streamYT()
   res.redirect('/video_settings')
 })
-// this is to stop all ffmpeg activity
 
-let scheduleStream = null
-
-let stop = () => { 
-  if(scheduled){
-    streamStatus = 'Scheduled on stream at: ' + scheduledTime
-  } else {
-    streamStatus = "Not Streaming and no scheduled streams";
-    streamFBDestinations = [];
-    streamYTDestinations = [];
-    streamSTVDestinations = [];
-    streamJCDestinations = [];
-  }
-  stopwatch.stop();
-  stopwatch.reset();
-  cmd.run('killall ffmpeg') 
-}
 /* GET home page. */
 router.get('/', function (req, res, next) {
   labelStartTime = ''
@@ -707,7 +670,6 @@ let labelEndTime = ''
 
 router.get('/editing/:stream_name', function (req, res, next) {
   stop()
-  edit()
   db_trims.locateDoc(outputName)
   db_label.locateDoc(outputName)
   setTimeout(function(){db_label.findLabels((err, labels) => {
