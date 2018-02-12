@@ -16,6 +16,7 @@ const fileUpload = require('express-fileupload');
 const cmd = require('node-cmd')
 const mkdirp = require('mkdirp');
 const fs = require('fs');
+var ffmpeg = require('fluent-ffmpeg');
 // stream status
 
 let streamStatus = "Not Streaming and no Scheduled streams"
@@ -49,43 +50,24 @@ let outputName = 'stream'
 let displayName = 'displayName'
 let resolution = 720
 
-
-// this is for Youtube only
-let streamYT = (YTrtmpKey) => { 
-  let L = logosInUse.length
-  let location = logoHorizontal + ":" + logoHeight
-  let scale = imgScale
-
-  let formula = null
-  let accr = altTime*2
-  let accr2 = accr
-  for(var i=0; i<(L + 1); i++) {
-      if(i === 1){
-          formula = "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
-      }
-      if(i === 2){
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
-      }
-      if(i === 3){
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr +")'[v"+i+"];"
-      }
-      if(i > 3){
-          accr2 = accr2 + altTime
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr2 +")'[v"+i+"];"
-      }
+// youtube
+let streamYT = (YTrtmpKey) => {
+  var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
+    .addOption('-vcodec', 'libx264')
+    .addOption('-acodec', 'aac')
+    .addOption('-crf', 26)
+    .addOption('-aspect', '640:360')
+    .withSize('640x360')
+    .on('start', function(commandLine) {
+    console.log('Query : ' + commandLine);
+    })
+    .on('error', function(err) {
+    console.log('Error: ' + err.message);
+    })
+    .output('rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey, function(stdout, stderr) {
+    console.log('Convert complete' +stdout);
+  });
   }
-let listOfLogos = ''
-for(n in logosInUse){
-  listOfLogos = listOfLogos + "-i ./public/images/" + logosInUse[n] + " "
-}
-if(formula !==  null){
-  formula = formula.slice(0, -5)
-  }
-  let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv \"rtmp://a.rtmp.youtube.com/live2/' + YTrtmpKey +'\"'
-	console.log(command) 
-  let streamYT2 = (YTrtmpKey) => { console.log('Now streaming to Youtube'); cmd.run(command)}
-  streamYT2()
-}
 
 let streamFB = (FBrtmp) => { 
   let L = logosInUse.length
@@ -126,7 +108,7 @@ if(formula !==  null){
 
 // Joicaster
 
-// this is for Youtube only
+// this is for Joicaster
 let streamJC = (JCrtmp) => { 
   let L = logosInUse.length
   let location = logoHorizontal + ":" + logoHeight
@@ -157,7 +139,7 @@ for(n in logosInUse){
 if(formula !==  null){
   formula = formula.slice(0, -5)
   }
-  let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv \"rtmp://ingest-us-east.a.switchboard.zone/live/' + JCrtmp +'\"'
+  let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec aac -vcodec libx264 -f flv \"rtmp://ingest-cn-tor.switchboard.zone/live/' + JCrtmp +'\"'
 	console.log(command) 
   let streamJC2 = (JCrtmp) => { console.log('Now streaming to Joicaster'); cmd.run(command)}
   streamJC2()
@@ -201,46 +183,28 @@ if(formula !==  null){
   streamSTV2()
 }
 
-// this is for output mp4
-let outputMp4 = () => { 
-  let L = logosInUse.length
-  let location = logoHorizontal + ":" + logoHeight
-  let scale = imgScale
+//output mp4
 
-  let formula = null
-  let accr = altTime*2
-  let accr2 = accr
-  for(var i=0; i<(L + 1); i++) {
-      if(i === 1){
-          formula = "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
-      }
-      if(i === 2){
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
-      }
-      if(i === 3){
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr +")'[v"+i+"];"
-      }
-      if(i > 3){
-          accr2 = accr2 + altTime
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr2 +")'[v"+i+"];"
-      }
-        }
-      let listOfLogos = ''
-      for(n in logosInUse){
-        listOfLogos = listOfLogos + "-i ./public/images/" + logosInUse[n] + " "
-      }
-      if(formula !==  null){
-        formula = formula.slice(0, -5)
-        }
-        let command = "ffmpeg -re -i " + '\"' + inputURL +  "\" -acodec copy -bsf:a aac_adtstoasc "  + './public/videos/output/' + outputName + '.mp4'
-        let convert = () => { console.log('Now converting'); cmd.run(command)}
-        console.log(command)
-        convert()
-
-        dirPath = "./public/videos/cut-videos/" + outputName
-        mkdirp(dirPath, function(err) { 
-          console.log('directory made')
-        });
+let outputMp4 = () => {
+var proc = new ffmpeg({ source: inputURL, timeout: 0 })
+  .addOption('-vcodec', 'libx264')
+  .addOption('-acodec', 'aac')
+  .addOption('-crf', 26)
+  .addOption('-aspect', '640:360')
+  .withSize('640x360')
+  .on('start', function(commandLine) {
+  console.log('Query : ' + commandLine);
+  })
+  .on('error', function(err) {
+  console.log('Error: ' + err.message);
+  })
+  .saveToFile('./public/videos/output/' + outputName + '.mp4', function(stdout, stderr) {
+  console.log('Convert complete' +stdout);
+});
+  dirPath = "./public/videos/cut-videos/" + outputName
+  mkdirp(dirPath, function(err) { 
+    console.log('directory made')
+});
 }
 
 // this is for trimming the video with start and end time
@@ -248,51 +212,39 @@ let outputMp4 = () => {
 let startTime = '00:00:00'
 let duration = "00:00:01"
 let trimName = "example"
-let inStreamEditName = "Not recording"
+let inStreamMsg = 'not recording'
 
 let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./public/videos/output/' + outputName + '.mp4 -c copy ./public/videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
-let inStreamEdit = () => { 
-  let L = logosInUse.length
-  let location = logoHorizontal + ":" + logoHeight
-  let scale = imgScale
 
-  let formula = null
-  let accr = altTime*2
-  let accr2 = accr
-  for(var i=0; i<(L + 1); i++) {
-      if(i === 1){
-          formula = "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
-      }
-      if(i === 2){
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
-      }
-      if(i === 3){
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr +")'[v"+i+"];"
-      }
-      if(i > 3){
-          accr2 = accr2 + altTime
-          formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"], [v"+ (i - 1) +"][ovrl" + i + "] overlay=" + location +":enable='gt(mod(t,"+ (L * altTime)+"),"+ accr2 +")'[v"+i+"];"
-      }
-        }
-      let listOfLogos = ''
-      for(n in logosInUse){
-        listOfLogos = listOfLogos + "-i ./public/images/" + logosInUse[n] + " "
-      }
-      if(formula !==  null){
-        formula = formula.slice(0, -5)
-        }
-        let command = "ffmpeg -re -i " + '\"' + inputURL + '\" ' + listOfLogos + "-filter_complex " + '\"' + formula + '\"' + ' -acodec copy -bsf:a aac_adtstoasc ./public/videos/cut-videos/' + outputName + '/' + inStreamEditName + '.mp4'
-        let convert = () => { console.log('Now converting'); cmd.run(command)}
-        console.log(command)
-        convert()
-}
+// instream edit
+let inStreamEdit = () => {
+  var proc2 = new ffmpeg({ source: inputURL, timeout: 0 })
+    .addOption('-vcodec', 'libx264')
+    .addOption('-acodec', 'aac')
+    .addOption('-crf', 26)
+    .addOption('-aspect', '640:360')
+    .withSize('640x360')
+    .on('start', function(commandLine) {
+    console.log('Query : ' + commandLine);
+    })
+    .on('error', function(err) {
+    console.log('Error: ' + err.message);
+    })
+    .saveToFile('./public/videos/cut-videos/' + outputName + '/' + trimName + '.mp4', function(stdout, stderr) {
+    console.log('Convert complete' +stdout);
+  });
+  }
 
 let killTrim = () => {
-  inStreamEditName = null
-  console.log('kill "$(pgrep -f ' + inStreamEditName + '.mp4)"')
-  cmd.run('kill "$(pgrep -f ' + inStreamEditName + '.mp4)"')
+  console.log('kill "$(pgrep -f ' + trimName + '.mp4)"')
+  cmd.run('kill "$(pgrep -f ' + trimName + '.mp4)"')
+  trimName = null
 }
 
+router.post('/test', function (req, res, next) {
+  streamYT("qq0e-tf5g-eg85-52te")
+  res.redirect('/video_settings')
+})
 // this is to stop all ffmpeg activity
 
 let scheduleStream = null
@@ -305,12 +257,12 @@ let stop = () => {
     streamFBDestinations = [];
     streamYTDestinations = [];
     streamSTVDestinations = [];
+    streamJCDestinations = [];
   }
   stopwatch.stop();
   stopwatch.reset();
   cmd.run('killall ffmpeg') 
 }
-
 /* GET home page. */
 router.get('/', function (req, res, next) {
   labelStartTime = ''
@@ -332,7 +284,7 @@ router.get('/', function (req, res, next) {
           if (err) {
             return res.sendStatus(500);
         }
-      res.render('index', { name: outputName, JCoutlets: JCoutlets_, streamStatus: streamStatus, STVoutlets: STVoutlets_, streamSTVDestinations: streamSTVDestinations, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
+      res.render('index', { name: outputName, JCoutlets: JCoutlets_, streamStatus: streamStatus, STVoutlets: STVoutlets_, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
       })
     }) 
   })
@@ -395,7 +347,6 @@ router.post('/start_stream', function (req, res, next) {
 
   // youtube
   if(typeof YTcreds === 'object'){
-    // console.log(YTcreds)
     YTcreds.forEach(function(YTrtmpKey) {
       let parsed = JSON.parse(YTrtmpKey)
       streamYT(parsed[0])
@@ -890,7 +841,7 @@ router.get('/labeling/:stream_name', function (req, res, next) {
     db_trims.findTrims((err, trims_) => {
       if (err)
           return res.sendStatus(500);         
-      res.render('labeling', {name: outputName, inStreamEditName: inStreamEditName,input: inputURL ,label: labels, trims: trims_, date: streamStatus, terminate: stopSign, streamSTVDestinations: streamSTVDestinations,streamFBDestinations: streamFBDestinations, streamYTDestinations: streamYTDestinations})
+      res.render('labeling', {name: outputName, inStreamEditName: inStreamMsg,input: inputURL ,label: labels, trims: trims_, date: streamStatus, terminate: stopSign, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations,streamFBDestinations: streamFBDestinations, streamYTDestinations: streamYTDestinations})
     }) 
   })   
   },1000); 
@@ -962,9 +913,9 @@ router.post('/labeling/:stream_name/trim_start', function (req, res, next) {
   }
   console.log("the elapsed time: " + hours + ":" + minutes + ":" + seconds)
   inStreamEditStartTime = hours + ":" + minutes + ":" + seconds
-  inStreamEditName = req.body.name.replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
+  trimName = req.body.name.replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   inStreamEdit()
-  inStreamEditName = req.body.name
+  inStreamMsg = trimName
   res.redirect('/labeling/' + outputName)
 })
 
@@ -986,9 +937,9 @@ router.post('/labeling/:stream_name/trim_end', function (req, res, next) {
   }
   console.log("the elapsed time: " + hours + ":" + minutes + ":" + seconds)
   inStreamEditEndTime = hours + ":" + minutes + ":" + seconds
-  db_trims.insertTrim(inStreamEditName, inStreamEditStartTime, inStreamEditEndTime)
+  db_trims.insertTrim(trimName, inStreamEditStartTime, inStreamEditEndTime)
   killTrim()
-  inStreamEditName = "Not recording"
+  inStreamMsg = "Not recording"
   res.redirect('/labeling/' + outputName)
 })
 
