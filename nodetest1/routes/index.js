@@ -194,7 +194,23 @@ let duration = "00:00:01"
 let trimName = "example"
 let inStreamMsg = 'not recording'
 
-let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./public/videos/output/' + outputName + '.mp4 -c copy ./public/videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
+// let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./public/videos/output/' + outputName + '.mp4 -c copy ./public/videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
+let edit = () => {
+  console.log(duration)
+  var proc2 = new ffmpeg({ source: './public/videos/output/' + outputName + '.mp4', timeout: 0 })
+    .addOption('-ss', startTime)
+    .addOption('-t', duration)
+    .addOption('-c', 'copy')
+    .on('start', function(commandLine) {
+    console.log('Query : ' + commandLine);
+    })
+    .on('error', function(err) {
+    console.log('Error: ' + err.message);
+    })
+    .saveToFile('./public/videos/cut-videos/' + outputName + '/' + trimName + '.mp4', function(stdout, stderr) {
+    console.log('Convert complete' +stdout);
+  });
+  }
 
 // instream edit
 let inStreamEdit = () => {
@@ -222,7 +238,7 @@ let killTrim = () => {
 }
 
 router.post('/test', function (req, res, next) {
-  streamYT()
+  streamYT("qq0e-tf5g-eg85-52te")
   res.redirect('/video_settings')
 })
 
@@ -691,17 +707,20 @@ router.post('/editing/:stream_name/trim', function (req, res, next) {
   endTimeInput = req.body.endTime
   trimName = req.body.cutName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
 
-  let cutDurationHour = endTimeInput.slice(0,-6)
-  let cutDurationMinute = endTimeInput.slice(3,-3)
-  let cutDurationSeconds = endTimeInput.slice(6)
+  let cutDurationHour = parseInt(endTimeInput.slice(0,-6))
+  let cutDurationMinute = parseInt(endTimeInput.slice(3,-3))
+  let cutDurationSeconds = parseInt(endTimeInput.slice(6))
   let durationInSeconds =  (cutDurationHour * 3600) + (cutDurationMinute * 60) + cutDurationSeconds
 
-  let cutStartHour = startTime.slice(0,-6)
-  let cutStartMinute = startTime.slice(3,-3)
-  let cutStartSeconds = startTime.slice(6)
+  let cutStartHour = parseInt(startTime.slice(0,-6))
+  let cutStartMinute = parseInt(startTime.slice(3,-3))
+  let cutStartSeconds = parseInt(startTime.slice(6))
   let startTimeInSeconds =  (cutStartHour * 3600) + (cutStartMinute * 60) + cutStartSeconds
 
   let inputDuration = durationInSeconds - startTimeInSeconds 
+  console.log("inputDuration"+inputDuration)
+  console.log("duration in seconds:"+durationInSeconds)
+  console.log("startTime in seconds:" + startTimeInSeconds)
   inputDuration = inputDuration.toString()
   
   String.prototype.toHHMMSS = function () {
@@ -861,9 +880,12 @@ router.get('/labeling/:stream_name/refresh', function (req, res, next) {
 
 router.post('/labeling/:stream_name/trim_start', function (req, res, next) {
   let time = stopwatch.ms/1000
-  let minutes = Math.floor(time / 60);
-  let seconds = Math.floor(time - minutes * 60);
   let hours = Math.floor(time / 3600);
+  let minutes = Math.floor(time / 60);
+  if(hours > 0){
+    minutes = minutes - hours * 60
+  }
+  let seconds = Math.floor(time - minutes * 60);
   if(seconds < 10){
       seconds = "0" + seconds
     }
@@ -885,9 +907,12 @@ let inStreamEditEndTime = null
 
 router.post('/labeling/:stream_name/trim_end', function (req, res, next) {
   let time = stopwatch.ms/1000
-  let minutes = Math.floor(time / 60);
-  let seconds = Math.floor(time - minutes * 60);
   let hours = Math.floor(time / 3600);
+  let minutes = Math.floor(time / 60);
+  if(hours > 0){
+    minutes = minutes - hours * 60
+  }
+  let seconds = Math.floor(time - minutes * 60);
   if(seconds < 10){
       seconds = "0" + seconds
     }

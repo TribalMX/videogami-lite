@@ -5,7 +5,7 @@ block content
     h1 Edit your video: #{name}
 
     body
-    video(id="my-video" class="video-js" controls preload="auto" width="640" height="264" poster="MY_VIDEO_POSTER.jpg" data-setup="{}")
+    video(id="my-video" class="video-js" controls preload="auto" width="640" height="264" data-setup="{}")
         source(src="/videos/output/" + name +".mp4" type='video/mp4')
         p(class="vjs-no-js")
         To view this video please enable JavaScript, and consider upgrading to a web browser that
@@ -56,7 +56,7 @@ block content
             h4 Trim: #{JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')}
             li Start Time: #{JSON.stringify(video.Video_trim.startTime).replace(/['"]+/g, '')}
             li End Time: #{JSON.stringify(video.Video_trim.endTime).replace(/['"]+/g, '')}
-            video(id="my-video" class="video-js" controls preload="auto" width="640" height="264" poster="MY_VIDEO_POSTER.jpg" data-setup="{}")
+            video(id="my-video" class="video-js" controls preload="auto" width="640" height="264" data-setup="{}")
                 source(src="/videos/cut-videos/" + name + "/"+ JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '') + ".mp4" type='video/mp4')
                 p(class="vjs-no-js")
                 To view this video please enable JavaScript, and consider upgrading to a web browser that
