@@ -67,7 +67,7 @@ let stopwatch = new Stopwatch()
 // stream name
 let outputName = 'stream'
 let displayName = 'displayName'
-let resolution = 720
+let resolution = "1280:720"
 
 // youtube
 let streamYT = (YTrtmp) => {
@@ -76,9 +76,10 @@ let streamYT = (YTrtmp) => {
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-crf', 26)
-    .addOption('-aspect', '640:360')
+    // .addOption('-aspect', '640:360')
     .addOption('-f', 'flv')
-    .withSize('640x360')
+    .addOption('-vf', "scale=" +  resolution)
+    // .withSize('640x360')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
     })
@@ -99,9 +100,10 @@ let streamFB = (FBrtmp) => {
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-crf', 26)
-    .addOption('-aspect', '640:360')
+    // .addOption('-aspect', '640:360')
     .addOption('-f', 'flv')
-    .withSize('640x360')
+    .addOption('-vf', "scale=" +  resolution)
+    // .withSize('640x360')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
     })
@@ -122,9 +124,10 @@ let streamJC = (JCrtmp) => {
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-crf', 26)
-    .addOption('-aspect', '640:360')
+    // .addOption('-aspect', '640:360')
     .addOption('-f', 'flv')
-    .withSize('640x360')
+    .addOption('-vf', "scale=" +  resolution)
+    // .withSize('640x360')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
     })
@@ -145,9 +148,10 @@ let streamSTV = (STVrtmpKey) => {
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-crf', 26)
-    .addOption('-aspect', '640:360')
+    // .addOption('-aspect', '640:360')
     .addOption('-f', 'flv')
-    .withSize('640x360')
+    .addOption('-vf', "scale=" +  resolution)
+    // .withSize('640x360')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
     })
@@ -167,8 +171,9 @@ var proc = new ffmpeg({ source: inputURL, timeout: 0 })
   .addOption('-vcodec', 'libx264')
   .addOption('-acodec', 'aac')
   .addOption('-crf', 26)
-  .addOption('-aspect', '640:360')
-  .withSize('640x360')
+  // .addOption('-aspect', '640:360')
+  // .withSize('640x360')
+  .addOption('-vf', "scale=" +  resolution)
   .on('start', function(commandLine) {
   console.log('Query : ' + commandLine);
   })
@@ -218,8 +223,9 @@ let inStreamEdit = () => {
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-crf', 26)
-    .addOption('-aspect', '640:360')
-    .withSize('640x360')
+    // .addOption('-aspect', '640:360')
+    // .withSize('640x360')
+    .addOption('-vf', "scale=" +  resolution)
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
     })
