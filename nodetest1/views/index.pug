@@ -17,7 +17,7 @@ block content
 
   h2 Step 1: Enter Your Input source 
   form(action='/input', method='post', id='input')
-    label(for='input ') Enter your HLS input 
+    label(for='input ') Enter your HLS/rtmp input 
     input(type='text', value='', name='input', id='input', placeholder="https://example.m3u8")
     p current #{currentUrl}
     button(type="submit") submit
@@ -98,8 +98,6 @@ block content
     input(type='hidden', value= streamStatus, name='streamStatus', id='streamStatus')
   
 
-
-
   script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js') 
   script.
     let accr = 0
@@ -178,7 +176,7 @@ block content
         {access_token: accessToken,
         description: document.getElementById("streamDescription").value,
         title: document.getElementById("streamName").value,
-        targeting:{geo_locations:{countries:["CA"]}}
+        targeting:{geo_locations:{countries:["CA","KR"]}}
         },
         function(response) {
             let rtmp = response.stream_url
@@ -231,3 +229,5 @@ block content
               $select.append($('<option></option>').val(i).html(i))
           }
       });
+
+

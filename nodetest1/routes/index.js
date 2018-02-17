@@ -17,6 +17,7 @@ const cmd = require('node-cmd')
 const mkdirp = require('mkdirp');
 const fs = require('fs');
 var ffmpeg = require('fluent-ffmpeg');
+
 // stream status
 
 let streamStatus = "Not Streaming and no Scheduled streams"
@@ -69,17 +70,49 @@ let outputName = 'stream'
 let displayName = 'displayName'
 let resolution = "1280:720"
 
+// formula for logo input
+let formula = null
+let listOfLogos = ''
+
+let makeFormula = () => {
+  let L = logosInUse.length
+  let location = logoHorizontal + ":" + logoHeight
+  let scale = imgScale
+
+  let accr = altTime*2
+  let accr2 = accr
+  if(typeof logosInUse === 'string'){
+    formula =  "scale=1290:720,setsar=1[ovrl0];[1]scale="+ scale+"[ovrl1]; [ovrl0][ovrl1] overlay=x=(main_w-overlay_w)/1.025:y=(main_h-overlay_h)/18"
+    listOfLogos = ".input('./public/images/" + logosInUse
+    console.log(logosInUse)
+  } else {
+    for(var i=0; i<(L + 1); i++) {
+        if(i === 1){
+            formula = "scale=1290:720,setsar=1[ovrl0];["+ i +"]scale="+ scale+"[ovrl" + i +"]; [ovrl0][ovrl" + i + "] overlay=x=(main_w-overlay_w)/1.025:y=(main_h-overlay_h)/18:enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
+        }
+        if(i === 2){
+            formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"]; [v"+ (i - 1) +"][ovrl" + i + "] overlay=x=(main_w-overlay_w)/1.025:y=(main_h-overlay_h)/18:enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
+        }
+        if(i === 3){
+            formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"]; [v"+ (i - 1) +"][ovrl" + i + "] overlay=x=(main_w-overlay_w)/1.025:y=(main_h-overlay_h)/18:enable='gt(mod(t,"+ (L * altTime)+"),"+ accr +")'[v"+i+"];"
+        }
+        if(i > 3){
+            accr2 = accr2 + altTime
+            formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"]; [v"+ (i - 1) +"][ovrl" + i + "] overlay=x=(main_w-overlay_w)/1.025:y=(main_h-overlay_h)/18:enable='gt(mod(t,"+ (L * altTime)+"),"+ accr2 +")'[v"+i+"];"
+        }
+    }
+      formula = formula.slice(0, -5)
+  }
+}
+
 // youtube
 let streamYT = (YTrtmp) => {
+
   console.log("streaming to youtube")
   var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
-    .addOption('-crf', 26)
-    // .addOption('-aspect', '640:360')
     .addOption('-f', 'flv')
-    .addOption('-vf', "scale=" +  resolution)
-    // .withSize('640x360')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
     })
@@ -89,21 +122,31 @@ let streamYT = (YTrtmp) => {
     .output('rtmp://a.rtmp.youtube.com/live2/' + YTrtmp, function(stdout, stderr) {
       console.log('Convert complete' +stdout)
     })
-    .run()
+
+  if(logosInUse){
+    if(typeof logosInUse === 'string'){
+      proc3 = proc3.input('./public/images/' + logosInUse)
+    } else {
+      for(n in logosInUse){
+        proc3 = proc3.input('./public/images/' + logosInUse[n])
+      }
+    }
+      proc3 = proc3.complexFilter(formula)
+    } else {
+      proc3 = proc3.addOption('-vf', "scale=" +  resolution)
+    }
+    proc3.run()
   }
 
 // Facebook
 
 let streamFB = (FBrtmp) => {
-  console.log("streaming to youtube")
+  
+  console.log("streaming to Facebook")
   var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
-    .addOption('-crf', 26)
-    // .addOption('-aspect', '640:360')
     .addOption('-f', 'flv')
-    .addOption('-vf', "scale=" +  resolution)
-    // .withSize('640x360')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
     })
@@ -113,21 +156,31 @@ let streamFB = (FBrtmp) => {
     .output(FBrtmp, function(stdout, stderr) {
       console.log('Convert complete' +stdout)
     })
-    .run()
+
+    if(logosInUse){
+      if(typeof logosInUse === 'string'){
+        proc3 = proc3.input('./public/images/' + logosInUse)
+      } else {
+        for(n in logosInUse){
+          proc3 = proc3.input('./public/images/' + logosInUse[n])
+        }
+      }
+        proc3 = proc3.complexFilter(formula)
+      } else {
+        proc3 = proc3.addOption('-vf', "scale=" +  resolution)
+      }
+      proc3.run()
   }
 
 // Joicaster
 
 let streamJC = (JCrtmp) => {
-  console.log("streaming to youtube")
+
+  console.log("streaming to Joicaster")
   var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
-    .addOption('-crf', 26)
-    // .addOption('-aspect', '640:360')
     .addOption('-f', 'flv')
-    .addOption('-vf', "scale=" +  resolution)
-    // .withSize('640x360')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
     })
@@ -137,21 +190,31 @@ let streamJC = (JCrtmp) => {
     .output('rtmp://ingest-cn-tor.switchboard.zone/live/' + JCrtmp, function(stdout, stderr) {
       console.log('Convert complete' +stdout)
     })
-    .run()
+
+    if(logosInUse){
+      if(typeof logosInUse === 'string'){
+        proc3 = proc3.input('./public/images/' + logosInUse)
+      } else {
+        for(n in logosInUse){
+          proc3 = proc3.input('./public/images/' + logosInUse[n])
+        }
+      }
+        proc3 = proc3.complexFilter(formula)
+      } else {
+        proc3 = proc3.addOption('-vf', "scale=" +  resolution)
+      }
+      proc3.run()
   }
+
 
 // stream Snappy TV
 
 let streamSTV = (STVrtmpKey) => {
-  console.log("streaming to youtube")
+  console.log("streaming to Facebook")
   var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
-    .addOption('-crf', 26)
-    // .addOption('-aspect', '640:360')
     .addOption('-f', 'flv')
-    .addOption('-vf', "scale=" +  resolution)
-    // .withSize('640x360')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
     })
@@ -161,7 +224,20 @@ let streamSTV = (STVrtmpKey) => {
     .output(STVrtmpKey, function(stdout, stderr) {
       console.log('Convert complete' +stdout)
     })
-    .run()
+
+    if(logosInUse){
+      if(typeof logosInUse === 'string'){
+        proc3 = proc3.input('./public/images/' + logosInUse)
+      } else {
+        for(n in logosInUse){
+          proc3 = proc3.input('./public/images/' + logosInUse[n])
+        }
+      }
+        proc3 = proc3.complexFilter(formula)
+      } else {
+        proc3 = proc3.addOption('-vf', "scale=" +  resolution)
+      }
+      proc3.run()
   }
 
 //output mp4
@@ -171,27 +247,36 @@ var proc = new ffmpeg({ source: inputURL, timeout: 0 })
   .addOption('-vcodec', 'libx264')
   .addOption('-acodec', 'aac')
   .addOption('-crf', 26)
-  // .addOption('-aspect', '640:360')
-  // .withSize('640x360')
-  .addOption('-vf', "scale=" +  resolution)
   .on('start', function(commandLine) {
   console.log('Query : ' + commandLine);
   })
   .on('error', function(err) {
   console.log('Error: ' + err.message);
   })
-  .saveToFile('./public/videos/output/' + outputName + '.mp4', function(stdout, stderr) {
+  .output('./public/videos/output/' + outputName + '.mp4', function(stdout, stderr) {
   console.log('Convert complete' +stdout)
 })
   .on('end', function(stdout, stderr) {
     console.log('Transcoding succeeded !');
   });
+  if(logosInUse){
+    if(typeof logosInUse === 'string'){
+      proc = proc.input('./public/images/' + logosInUse)
+    } else {
+    for(n in logosInUse){
+      proc = proc.input('./public/images/' + logosInUse[n])
+    }
+  }
+      proc = proc.complexFilter(formula)
+    } else {
+      proc = proc.addOption('-vf', "scale=" +  resolution)
+    }
+    proc.run()
   dirPath = "./public/videos/cut-videos/" + outputName
   mkdirp(dirPath, function(err) { 
     console.log('directory made')
 });
 }
-
 // this is for trimming the video with start and end time
 
 let startTime = '00:00:00'
@@ -199,7 +284,6 @@ let duration = "00:00:01"
 let trimName = "example"
 let inStreamMsg = 'not recording'
 
-// let edit = () => { cmd.run('ffmpeg -ss ' + startTime + ' -t ' + duration + ' -i ./public/videos/output/' + outputName + '.mp4 -c copy ./public/videos/cut-videos/' + outputName + '/' + trimName + '.mp4') }
 let edit = () => {
   console.log(duration)
   var proc2 = new ffmpeg({ source: './public/videos/output/' + outputName + '.mp4', timeout: 0 })
@@ -242,11 +326,6 @@ let killTrim = () => {
   cmd.run('kill "$(pgrep -f ' + trimName + '.mp4)"')
   trimName = null
 }
-
-router.post('/test', function (req, res, next) {
-  streamYT("qq0e-tf5g-eg85-52te")
-  res.redirect('/video_settings')
-})
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -327,6 +406,9 @@ router.post('/start_stream', function (req, res, next) {
 
   if((YTcreds || FBcreds || STVcreds || JCcreds) && !scheduled){
     stopwatch.start()
+    if(logosInUse){
+    makeFormula()
+    }
     outputMp4()
     streamStatus = "Live"
 
@@ -454,6 +536,7 @@ router.post('/start_stream', function (req, res, next) {
         console.log(err)
       }
       console.log('stream started')
+      makeFormula()
       outputMp4()
       // Youtube
       if(typeof YTcreds === 'object'){
@@ -517,6 +600,9 @@ router.post('/convert', function (req, res, next) {
   displayName = req.body.name
   outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   db_label.insertDoc(outputName)
+  if(logosInUse){
+    makeFormula()
+  }
   outputMp4()
   streamStatus = "Converting"
   let stopSign = null
@@ -546,21 +632,6 @@ router.post('/cancelstream', function (req, res, next) {
   scheduleStream.cancel()
   stop()
   res.redirect('/')
-})
-
-// logo size
-
-router.post('/imgScale', function (req, res, next) {
-  imgScale = req.body.logoSize
-  res.redirect('/logo_setup')
-})
-
-// logo placements
-
-router.post('/logoInput', function (req, res, next) {
-  logoHeight = req.body.logoHei
-  logoHorizontal = req.body.logoHor
-  res.redirect('/logo_setup')
 })
 
 // Outlet setup
@@ -632,7 +703,6 @@ router.post('/setup_accounts/setup_snappyTV', function (req, res, next) {
 
 router.post('/input', function (req, res, next) {
   inputURL = req.body.input
-  console.log('inputURl >>>>>' + inputURL)
   res.redirect('/')
 })
 
@@ -986,6 +1056,17 @@ router.post('/logo_setup/use_logos', function (req, res, next) {
 router.post('/logo_setup/logo_time', function (req, res, next) {
   altTime = req.body.time
   res.redirect("/logo_setup")
+})
+
+router.post('/logo_setup/imgScale', function (req, res, next) {
+  imgScale = req.body.logoSize
+  res.redirect('/logo_setup')
+})
+
+router.post('/logo_setup/logo_placement', function (req, res, next) {
+  logoHeight = req.body.logoHei
+  logoHorizontal = req.body.logoHor
+  res.redirect('/logo_setup')
 })
 
 // video settings

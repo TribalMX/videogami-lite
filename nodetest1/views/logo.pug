@@ -29,7 +29,7 @@ block content
     button(type="submit") submit
 
   h2 Logo size
-  form(action='/imgScale', method='post', id='imgScaleForm')
+  form(action='/logo_setup/imgScale', method='post', id='imgScaleForm')
     label(for='logoSize') Adust size (higher - the larger) 
     input(type='text', value='', name='logoSize', id='logoSize', placeholder='40:40')
     p current: #{size}
@@ -38,7 +38,7 @@ block content
 
   
   h2 Logo placements
-  form(action='/logo_placement', method='post', id='logoForm')
+  form(action='/logo_setup/logo_placement', method='post', id='logoForm')
     label(for='logoHor') Adust horizontal (higher - left, lower right) 
     input(type='text', value='', name='logoHor', id='logoHor', placeholder='580')
     p current: #{horizontal}
