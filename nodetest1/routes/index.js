@@ -621,12 +621,14 @@ router.post('/start_stream', function (req, res, next) {
       if(typeof FBcreds === 'object'){
         FBcreds.forEach(function(FBrtmpKey) {
           let parsed = JSON.parse(FBrtmpKey)
-          streamYTDestinations.push(parsed[1].slice(1,-1))
+          slicedNamed = parsed[1].slice(1,-1)
+          streamFBDestinations.push({name: slicedNamed, id: parsed[2]})
         });
       }
       if(typeof FBcreds === 'string'){
         let parsed = JSON.parse(FBcreds)
-        streamFBDestinations.push(parsed[1].slice(1,-1))
+        slicedNamed = parsed[1].slice(1,-1)
+        streamFBDestinations.push({name: slicedNamed, id: parsed[2]})
       }
       // Snappy TV
       if(typeof STVcreds === 'object'){
@@ -648,7 +650,6 @@ router.post('/start_stream', function (req, res, next) {
         console.log(err)
       }
       console.log('stream started')
-      makeFormula()
       outputMp4()
       // Youtube
       if(typeof YTcreds === 'object'){
@@ -713,7 +714,7 @@ router.post('/start_stream', function (req, res, next) {
       scheduleStream.cancel()
       scheduled = false
     })
-    res.redirect('/')
+    res.redirect('/streaming/' + outputName)
   }
 })
 
@@ -794,6 +795,7 @@ router.get('/setup_accounts', function (req, res, next) {
 router.post('/setup_accounts/remove_outlet', function (req, res, next) {
 
   let removeID = req.body.outletID
+  console.log(removeID)
   db_accounts.deleteStreamOutlet(removeID)
   
     res.redirect('/setup_accounts')
