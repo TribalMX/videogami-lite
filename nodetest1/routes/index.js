@@ -86,11 +86,10 @@ let makeFormula = () => {
   if(typeof logosInUse === 'string'){
     formula =  "scale=1290:720,setsar=1[ovrl0];[1]scale="+ scale+"[ovrl1]; [ovrl0][ovrl1] overlay=x=(main_w-overlay_w)/1.025:y=(main_h-overlay_h)/18"
     listOfLogos = ".input('./public/images/" + logosInUse
-    console.log(logosInUse)
   } else {
     for(var i=0; i<(L + 1); i++) {
         if(i === 1){
-            formula = "scale="+ resolution + ",setsar=1[ovrl0];["+ i +"]scale=x=(main_w-overlay_w)/1.025:y=(main_h-overlay_h)/18:x=(main_w-overlay_w)/1.025:y=(main_h-overlay_h)/18[ovrl" + i +"]; [ovrl0][ovrl" + i + "] overlay=x=(main_w-overlay_w)/1.025:y=(main_h-overlay_h)/18:enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
+            formula = "scale="+ resolution + ",setsar=1[ovrl0];"+"["+ i +"]scale="+ scale+"[ovrl" + i +"]; [ovrl0][ovrl" + i + "] overlay=x=(main_w-overlay_w)/1.025:y=(main_h-overlay_h)/18:enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
         }
         if(i === 2){
             formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"]; [v"+ (i - 1) +"][ovrl" + i + "] overlay=x=(main_w-overlay_w)/1.025:y=(main_h-overlay_h)/18:enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
@@ -362,6 +361,7 @@ let duration = "00:00:01"
 let trimName = "example"
 let inStreamMsg = 'not recording'
 let editOutputName = null
+
 let edit = () => {
   console.log(duration)
   var proc2 = new ffmpeg({ source: './public/videos/output/' + editOutputName + '.mp4', timeout: 0 })
