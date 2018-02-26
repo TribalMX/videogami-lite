@@ -48,9 +48,9 @@ block content
     div(class="stepper-content" id="form-step2" style="display: none")
         h2(class="page-label" style="text-align: center") When would you like to stream?
             br
-            button(class="btn btn-primary" type="submit" onclick="streamNow()") <i class="fa fa-play" aria-hidden="true"></i> immediately 
-            button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseSchedule") <i class="fas fa-calendar-alt"></i> Schedule a time
-            button(class="btn btn-primary" type="submit" href="#collapseConvert" data-toggle="collapse") <i class="fas fa-exchange-alt"></i> Convert to MP4
+            button(class="btn btn-primary" type="button" onclick="streamNow()") <i class="fa fa-play" aria-hidden="true"></i> immediately 
+            button(class="btn btn-primary" type="button" data-toggle="collapse" href="#collapseSchedule") <i class="fas fa-calendar-alt"></i> Schedule a time
+            button(class="btn btn-primary" type="button" href="#collapseConvert" data-toggle="collapse") <i class="fas fa-exchange-alt"></i> Convert to MP4
         div(class="collapse" id="collapseSchedule")
             div(class="card card-body")
                 h4 Schedule a time

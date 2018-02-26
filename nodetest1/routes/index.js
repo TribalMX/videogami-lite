@@ -316,6 +316,28 @@ let streamSTV = (STVrtmpKey) => {
       }
       proc3.run()
   }
+//  output screenshot
+
+let outputScreenShot = () => {
+  var proc = new ffmpeg({ source: './public/videos/output/' + outputName + '.mp4', timeout: 0 })
+  .seekInput(5.0)
+  .addOption('-vframes', '1')
+  .addOption('-q:v', '2')
+  .on('start', function(commandLine) {
+    console.log('Query : ' + commandLine);
+    })
+  .on('error', function(err) {
+    console.log('Error: ' + err.message);
+  })
+  .output("./public/videos/screenshots/"+ outputName +'.jpg', function(stdout, stderr) {
+  console.log('Convert complete' +stdout)
+  })
+  .on('end', function(stdout, stderr) {
+    console.log('Transcoding succeeded !');
+  });
+  cmd.run("ffmpeg -ss 00:00:05 -i " + './public/videos/output/' + outputName + '.mp4' +" -vframes 1 -q:v 2 ./public/videos/screenshots/"+ outputName +'.jpg"')
+  proc.run()
+} 
 
 //output mp4
 
@@ -328,12 +350,14 @@ var proc = new ffmpeg({ source: inputURL, timeout: 0 })
   console.log('Query : ' + commandLine);
   })
   .on('error', function(err) {
-  console.log('Error: ' + err.message);
+    console.log('Error: ' + err.message);
+    outputScreenShot()
   })
   .output('./public/videos/output/' + outputName + '.mp4', function(stdout, stderr) {
   console.log('Convert complete' +stdout)
 })
   .on('end', function(stdout, stderr) {
+    outputScreenShot()
     console.log('Transcoding succeeded !');
   });
   if(logosInUse){
@@ -354,6 +378,7 @@ var proc = new ffmpeg({ source: inputURL, timeout: 0 })
     console.log('directory made')
 });
 }
+
 // this is for trimming the video with start and end time
 
 let startTime = '00:00:00'
@@ -799,13 +824,10 @@ router.get('/setup_accounts', function (req, res, next) {
 })  
 
 router.post('/setup_accounts/remove_outlet', function (req, res, next) {
-
   let removeID = req.body.outletID
   console.log(removeID)
   db_accounts.deleteStreamOutlet(removeID)
-  
-    res.redirect('/setup_accounts')
-
+  res.redirect('/setup_accounts')
 })
 
 router.post('/setup_accounts/setup_youtube', function (req, res, next) {
@@ -1250,5 +1272,10 @@ router.get('/', function (req, res, next) {
 router.get('/goToStreamingPage', function (req, res, next) {
   res.redirect('/streaming/' + outputName)
 })
+
+// router.get('/test', function (req, res, next) {
+//   outputScreenShot()
+//   res.redirect('/streaming')
+// })
 
 module.exports = router

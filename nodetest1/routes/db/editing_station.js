@@ -70,6 +70,13 @@ module.exports = {
     })
     fs.unlink("./public/videos/output/" + collectionName + ".mp4", (err) => {
       if (err) {
+          console.log("failed to delete local video:"+err);
+      } else {
+          console.log('successfully deleted local image');                                
+      }
+    })
+    fs.unlink("./public/videos/screenshots/" + collectionName + ".jpg", (err) => {
+      if (err) {
           console.log("failed to delete local image:"+err);
       } else {
           console.log('successfully deleted local image');                                
