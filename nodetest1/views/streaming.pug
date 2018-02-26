@@ -1,0 +1,153 @@
+extends layout
+
+block content
+  meta(charset=utf-8)
+  //- jquery
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js')  
+  //- stylesheet
+  link(rel='stylesheet', href='/stylesheets/streaming.css')
+  link(href='https://fonts.googleapis.com/css?family=Roboto:600,500,400,100' rel='stylesheet' type='text/css')
+  link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css")
+  //- font awesome
+  script(defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js")
+  //- bootstrap
+  link(rel='stylesheet prefetch' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css')
+  link(rel='stylesheet prefetch' href='https://utm-link-manager.firebaseapp.com/app.min.css')
+  //- videojs
+  link(href="https://unpkg.com/video.js@5.16.0/dist/video-js.css" rel="stylesheet")
+  script(src="https://unpkg.com/video.js@5.16.0/dist/video.js")
+  script(src="https://unpkg.com/videojs-contrib-hls@4.1.1/dist/videojs-contrib-hls.js")
+
+  div(class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true")
+    div(class="modal-dialog")
+        div(class="modal-content")
+        
+            div(class="modal-header")
+                <h4 style="margin-right: 25%;" class="modal-title" id="myModalLabel">Confirm Termination</h4>
+
+        
+            div(class="modal-body")
+                <p>Are you sure you want to stop the stream?</p>
+            
+            div(class="modal-footer")
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button onclick="stop()" class="btn btn-danger">stop</a>
+
+  h1 streaming: #{name}
+  h4 Scheduled Stream Time: #{date}
+  h4 Streaming to:
+  each destination in streamFBDestinations
+        a(href='https://www.facebook.com/913878858767085/videos/' + JSON.stringify(destination.id).slice(1, -1)) #{JSON.stringify(destination.name).slice(1, -1)} 
+  p #{streamYTDestinations}
+  each destination in streamSTVDestinations
+    p #{destination.name}
+  p #{streamJCDestinations}
+  h4(id='timer')
+  div(class='videoDiv')
+    video(id="my_video_1" class="video-js vjs-default-skin" controls preload="auto" width="640" height="268" data-setup='{}')
+        source(src=input type="application/x-mpegURL")
+  br
+  div(class="btns2" style="text-align: center")
+    form(action="/editing/" + name, method='get', id='stop')
+      button(class="btn btn-danger" data-toggle="modal" data-target="#confirm-delete" type='button') <i class="fas fa-ban"></i> #{terminate}
+  br
+  div(class="btns2" style="text-align: center")
+            button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseLabel") <i class="fas fa-plus" aria-hidden="true"></i> add labels
+            button(class="btn btn-primary" data-toggle="collapse" href="#collapseTrim" type="submit") <i class="fas fa-video"></i>  record a moment
+            button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseEditedVideos") <i class="fas fa-file-video"></i> Edited Videos
+  div(class="collapse" id="collapseTrim")
+      div(class="card card-body")
+        h2 Make a trim
+        form(action='/streaming/'+ name + '/trim_start', method='post', id='input')
+            label(for='startTime') Give your trim a name
+            br
+            input(type='text', value='', name='name', id='trimName', placeholder='name' required)
+            button(style="margin-left: 10px" class="btn btn-success" type="submit") <i class="fas fa-stop-circle"></i> Start recording
+        form(action='/streaming/'+ name + '/trim_end', method='post', id='input')
+            button(class="btn btn-danger" type="submit" id="stopRecordingBtn") Stop recording
+        p Recording: #{inStreamEditName}
+  
+  div(class="collapse" id="collapseEditedVideos")
+            div(class="card card-body")
+                h2 Your edited videos
+                    each video in trims
+                        h4 Trim: #{JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')}
+                        li Start Time: #{JSON.stringify(video.Video_trim.startTime).replace(/['"]+/g, '')}
+                        li End Time: #{JSON.stringify(video.Video_trim.endTime).replace(/['"]+/g, '')}
+                        video(id="my-video" class="video-js" controls preload="auto" width="640" height="264" data-setup="{}")
+                            source(src="/videos/cut-videos/" + name + "/"+ JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '') + ".mp4" type='video/mp4')
+                            p(class="vjs-no-js")
+                            To view this video please enable JavaScript, and consider upgrading to a web browser that
+                            a(href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video)
+                        form(action='/editing/'+ name +'/downloadTrim', method='post', id='input') 
+                            input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='trimName', id='trimName')
+                            button(class="btn btn-primary" type="submit") <i class="fa fa-download" aria-hidden="true"></i> Download
+                        form(action='/editing/'+ name +'/deleteTrim', method='post', id=JSON.stringify(video._id).replace(/['"]+/g, '')) 
+                            input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='deleteTrim', id='deleteTrim')
+                            input(type='hidden', value=(JSON.stringify(video._id).replace(/['"]+/g, '')), name='deleteTrimId', id='deleteTrimId')
+                            button(class="btn btn-primary" onclick="getName("+JSON.stringify(video._id)+")" data-toggle="modal" data-target="#confirm-delete" type="button") <i class="fa fa-trash" aria-hidden="true"></i> Delete
+  div(class="collapse" id="collapseLabel")
+        div(class="card card-body")
+          h2 Labels
+          h4(class='div-class' id='labels')
+          br
+          h2 Add a label 
+          form(action='/streaming/' + name + '/add_label', method='post', id='insertLabelForm')
+            label(for='insertLabel ') Add label
+            input(type='text', value='', name='label', id='insertLabel')
+            button(class="btn btn-primary" type="submit" ) Add label
+
+  script.
+      $.get({ url: '/labels/refresh', 
+              success: function(data){
+                $("#labels").html("");  
+                $.each(data,function(label) { // loop over result         
+                  $("#labels").append(data[label].label + '<br/>');
+               })
+              },
+              error: function(error) { console.log(error)} 
+            })
+
+    var countDownDate = localStorage.getItem('startDate');
+    let counter = 0
+    let resetTimer = function(){
+      counter = + 1
+      if(counter === 1){
+        countDownDate = new Date(); localStorage.setItem('startDate', countDownDate);
+      }
+    }
+    let stop = function(){
+      form = document.getElementById('stop')
+      form.submit()
+    }
+
+
+    //- timer
+    window.onload = resetTimer()
+    if (countDownDate) {
+        countDownDate = new Date(countDownDate);
+    } else {
+        countDownDate = new Date();
+        localStorage.setItem('startDate', countDownDate);
+    }
+
+    // Update the count down every 1 second
+    var x = setInterval(function() {
+
+        // Get todays date and time
+        var now = new Date().getTime();
+
+        // Find the distance between now an the count down date
+        var distance = now - countDownDate.getTime();
+
+        // Time calculations for days, hours, minutes and seconds
+        var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        // Output the result in an element with id="demo"
+        document.getElementById("timer").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+    }, 1000);
+    
+

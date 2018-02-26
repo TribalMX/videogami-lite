@@ -575,7 +575,7 @@ router.post('/start_stream', function (req, res, next) {
       streamSTVDestinations.push({name: parsed[0]})
       console.log(">>>>>" + JSON.stringify(streamSTVDestinations))
   }
-  res.redirect('/labeling/' + outputName)
+  res.redirect('/streaming/' + outputName)
 }
 
   if (scheduled) {
@@ -742,7 +742,7 @@ router.post('/convert', function (req, res, next) {
     if (err) {
       return res.sendStatus(500)
     }
-    res.redirect('/labeling/' + outputName)
+    res.redirect('/streaming/' + outputName)
   })   
   },500); 
 })
@@ -1017,10 +1017,10 @@ router.post('/editing/:stream_name/downloadTrim', function (req, res, next) {
 
 // label stuff
 
-// get labeling page
+// get streaming page
 
 
-router.get('/labeling/:stream_name', function (req, res, next) {
+router.get('/streaming/:stream_name', function (req, res, next) {
   outputName = req.params.stream_name
   db_trims.locateDoc(outputName)
   db_label.locateDoc(outputName)
@@ -1040,13 +1040,13 @@ router.get('/labeling/:stream_name', function (req, res, next) {
     db_trims.findTrims((err, trims_) => {
       if (err)
           return res.sendStatus(500);         
-      res.render('labeling', {name: outputName, inStreamEditName: inStreamMsg,input: inputURL ,label: labels, trims: trims_, date: streamStatus, terminate: stopSign, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations,streamFBDestinations: streamFBDestinations, streamYTDestinations: streamYTDestinations})
+      res.render('streaming', {name: outputName, inStreamEditName: inStreamMsg,input: inputURL ,label: labels, trims: trims_, date: streamStatus, terminate: stopSign, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations,streamFBDestinations: streamFBDestinations, streamYTDestinations: streamYTDestinations})
     }) 
   })   
   },1000); 
 })
 
-router.post('/labeling/:stream_name/add_label', function (req, res, next) {
+router.post('/streaming/:stream_name/add_label', function (req, res, next) {
   let time = stopwatch.ms/1000
   let minutes = Math.floor(time / 60);
   let seconds = Math.floor(time - minutes * 60);
@@ -1063,6 +1063,7 @@ router.post('/labeling/:stream_name/add_label', function (req, res, next) {
   console.log("the elapsed time: " + hours + ":" + minutes + ":" + seconds)
   let overallTime = hours + ":" + minutes + ":" + seconds
   labelName = req.body.label
+  db_label.insertLabel(labelName, overallTime)
   
   setTimeout(function(){db_label.findLabels((err, labels) => {
       db_label.findLabels((err, labels) => {
@@ -1074,15 +1075,14 @@ router.post('/labeling/:stream_name/add_label', function (req, res, next) {
     },500); 
   })
 })
-router.post('/labeling/:stream_name/deleteTrim', function (req, res, next) {
+router.post('/streaming/:stream_name/deleteTrim', function (req, res, next) {
   let trimToDelete = req.body.deleteTrim
   let trimIdToDelete = req.body.deleteTrimId
   db_trims.deleteTrim(trimToDelete, trimIdToDelete)
-  res.redirect('/labeling/' + outputName)
+  res.redirect('/streaming/' + outputName)
 })
 
 router.get('/labels/refresh', function (req, res, next) {
-  console.log("refreshed!")
     db_label.findLabels((err, labels) => {
       if (err) {
         return res.sendStatus(500)
@@ -1092,11 +1092,11 @@ router.get('/labels/refresh', function (req, res, next) {
 })
 
 
-router.get('/labeling/:stream_name/refresh', function (req, res, next) {
-  res.redirect('/labeling/' + outputName)
+router.get('/streaming/:stream_name/refresh', function (req, res, next) {
+  res.redirect('/streaming/' + outputName)
 })
 
-router.post('/labeling/:stream_name/trim_start', function (req, res, next) {
+router.post('/streaming/:stream_name/trim_start', function (req, res, next) {
   let time = stopwatch.ms/1000
   let hours = Math.floor(time / 3600);
   let minutes = Math.floor(time / 60);
@@ -1118,12 +1118,12 @@ router.post('/labeling/:stream_name/trim_start', function (req, res, next) {
   trimName = req.body.name.replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   inStreamEdit()
   inStreamMsg = trimName
-  res.redirect('/labeling/' + outputName)
+  res.redirect('/streaming/' + outputName)
 })
 
 let inStreamEditEndTime = null
 
-router.post('/labeling/:stream_name/trim_end', function (req, res, next) {
+router.post('/streaming/:stream_name/trim_end', function (req, res, next) {
   let time = stopwatch.ms/1000
   let hours = Math.floor(time / 3600);
   let minutes = Math.floor(time / 60);
@@ -1145,7 +1145,7 @@ router.post('/labeling/:stream_name/trim_end', function (req, res, next) {
   db_trims.insertTrim(trimName, inStreamEditStartTime, inStreamEditEndTime)
   killTrim()
   inStreamMsg = "Not recording"
-  res.redirect('/labeling/' + outputName)
+  res.redirect('/streaming/' + outputName)
 })
 
 // logo stuff
