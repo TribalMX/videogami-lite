@@ -42,7 +42,7 @@ html
       <li class="nav-item">
         <a class="nav-link" href="/setup_accounts">Add/change Outlets</a>
       <li class="nav-item">
-        a(class="nav-link" id="signal_" style="pointerEvents: none" href="/goToStreamingPage") <i class="fas fa-signal"></i> #{signal}
+        a(class="nav-link" id="signal_" style="pointer-events: none" href="/goToStreamingPage") <i class="fas fa-signal"></i> #{signal}
         input(hidden id="signalInput" value=signal)
       </li>
       <li class="nav-item">
@@ -73,10 +73,13 @@ html
     });
     $(function() {
         let signals = document.getElementById('signalInput')
+        let signalBtn = document.getElementById('signal_')
         console.log(signals.value)
-        if(signals.value === "Live"){
-          signals.style.pointerEvents = "auto";
-          console.log("goofy")
+        if(signals.value === "Live" || "Converting"){
+          signalBtn.style['pointer-events'] = 'auto'
+        }
+        if(signals.value === "offline"){
+          signalBtn.style['pointer-events'] = 'none'
         }
     })
 

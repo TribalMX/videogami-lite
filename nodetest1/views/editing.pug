@@ -41,8 +41,8 @@ block content
         br
         div(class="btns2" style="text-align: center")
             button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseLabel") <i class="fa fa-plus" aria-hidden="true"></i> add labels
-            button(class="btn btn-primary" data-toggle="collapse" href="#collapseTrim" type="submit") <i class="fa fa-scissors" aria-hidden="true"></i>  Make a trim
-            button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseEditedVideos") <i class="fa fa-file-video-o" aria-hidden="true"></i> Edited Videos
+            button(class="btn btn-primary" data-toggle="collapse" href="#collapseTrim" type="submit") <i class="fas fa-cut"></i>  Make a trim
+            button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseEditedVideos") <i class="fas fa-file-video"></i> Edited Videos
         div(class="collapse" id="collapseLabel")
             div(class="card card-body")
                 h2 Labels
@@ -73,7 +73,7 @@ block content
                     input(type='text', value=endTime, name='endTime', id='endTime', placeholder="00:02:15")
                     span(for='endTime') cut name 
                     input(type='text', value='', name='cutName', id='cutName', placeholder="cut1")
-                    button(class="btn btn-primary" type="submit") <i class="fa fa-scissors" aria-hidden="true"></i> Trim
+                    button(class="btn btn-primary" type="submit") <i class="fas fa-cut"></i> Trim
         div(class="collapse" id="collapseEditedVideos")
             div(class="card card-body")
                 h2 Your edited videos

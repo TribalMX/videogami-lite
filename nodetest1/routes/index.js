@@ -361,10 +361,10 @@ let startTime = '00:00:00'
 let duration = "00:00:01"
 let trimName = "example"
 let inStreamMsg = 'not recording'
-
+let editOutputName = null
 let edit = () => {
   console.log(duration)
-  var proc2 = new ffmpeg({ source: './public/videos/output/' + outputName + '.mp4', timeout: 0 })
+  var proc2 = new ffmpeg({ source: './public/videos/output/' + editOutputName + '.mp4', timeout: 0 })
     .addOption('-ss', startTime)
     .addOption('-t', duration)
     .addOption('-c', 'copy')
@@ -374,7 +374,7 @@ let edit = () => {
     .on('error', function(err) {
     console.log('Error: ' + err.message);
     })
-    .saveToFile('./public/videos/cut-videos/' + outputName + '/' + trimName + '.mp4', function(stdout, stderr) {
+    .saveToFile('./public/videos/cut-videos/' + editOutputName + '/' + trimName + '.mp4', function(stdout, stderr) {
     console.log('Convert complete' +stdout);
   });
   }
@@ -726,6 +726,7 @@ router.post('/start_stream', function (req, res, next) {
 
 router.post('/convert', function (req, res, next) {
   stopwatch.start()
+  signalStatus = "Converting"
   req.params.name = req.body.name
   displayName = req.body.name
   outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
@@ -879,7 +880,6 @@ router.get('/editing_station', function (req, res, next) {
 
 router.get('/editing_station/:collection_name', function (req, res, next) {
   let collectionName = req.params.collection_name
-  outputName = collectionName
 
   db_trims.locateDoc(collectionName)
   db_label.locateDoc(collectionName)
@@ -913,8 +913,9 @@ let labelEndTime = ''
 router.get('/editing/:stream_name', function (req, res, next) {
   stop()
   signalStatus = "offline"
-  db_trims.locateDoc(outputName)
-  db_label.locateDoc(outputName)
+  db_trims.locateDoc(req.params.stream_name)
+  db_label.locateDoc(req.params.stream_name)
+  let editName = req.params.stream_name
   setTimeout(function(){db_label.findLabels((err, labels) => {
     if (err) {
       return res.sendStatus(500)
@@ -923,7 +924,25 @@ router.get('/editing/:stream_name', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('editing', {signal: signalStatus, name: outputName, label: labels, trims: trims_, startTime: labelStartTime, endTime: labelEndTime})
+      res.render('editing', {signal: signalStatus, name: editName, label: labels, trims: trims_, startTime: labelStartTime, endTime: labelEndTime})
+    }) 
+  })   
+  },500);
+})
+
+router.get('/editing_station/:stream_name', function (req, res, next) {
+  db_trims.locateDoc(req.params.stream_name)
+  db_label.locateDoc(req.params.stream_name)
+  let editName = req.params.stream_name
+  setTimeout(function(){db_label.findLabels((err, labels) => {
+    if (err) {
+      return res.sendStatus(500)
+    }
+    db_trims.findTrims((err, trims_) => {
+      if (err) {
+        return res.sendStatus(500)
+      }
+      res.render('editing', {signal: signalStatus, name: editName, label: labels, trims: trims_, startTime: labelStartTime, endTime: labelEndTime})
     }) 
   })   
   },500);
@@ -963,6 +982,7 @@ router.post('/editing/:stream_name/trim', function (req, res, next) {
 }
   duration = inputDuration.toHHMMSS()
   db_trims.insertTrim(trimName, startTime, endTimeInput)
+  editOutputName = req.params.stream_name
   edit()
 
   setTimeout(function(){db_label.findLabels((err, labels) => {
@@ -973,7 +993,7 @@ router.post('/editing/:stream_name/trim', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.redirect('/editing/' + outputName)
+      res.redirect('/editing_station/' + req.params.stream_name)
     }) 
   })   
 },2000);
@@ -989,44 +1009,44 @@ router.post('/editing/:stream_name/addLabel', function (req, res, next) {
   let newLabel = req.body.newLabel
   let newLabelTime = req.body.newLabelTime
   db_label.insertLabel(newLabel, newLabelTime)
-  res.redirect('/editing/' + outputName)
+  console.log(req.params.stream_name)
+  res.redirect('/editing_station/' + req.params.stream_name)
 })
 
 router.post('/editing/:stream_name/delete_label', function (req, res, next) {
   let id = req.body.labelName
   db_label.deleteLabel(id)
-  res.redirect('/editing/'+ outputName)  
+  res.redirect('/editing_station/'+ req.params.stream_name)  
 })
 
 router.post('/editing/:stream_name/add_start_time', function (req, res, next) {
   let unCutLabelStartTime = req.body.startTime.substr(1).slice(41, -1).replace(/['"]+/g, '')
   let sliceLength = unCutLabelStartTime.length - 8
   labelStartTime = unCutLabelStartTime.slice(sliceLength)
-  res.redirect('/editing/' + outputName)  
+  res.redirect('/editing_station/' + req.params.stream_name)  
 })
 router.post('/editing/:stream_name/add_end_time', function (req, res, next) {
   let unCutLabelEndTime = req.body.endTime.substr(1).slice(41, -1).replace(/['"]+/g, '')
   let sliceLength = unCutLabelEndTime.length - 8
   labelEndTime = unCutLabelEndTime.slice(sliceLength)
-      res.redirect('/editing/' + outputName)  
+      res.redirect('/editing_station/' + req.params.stream_name)  
 })
 
 router.post('/editing/:stream_name/deleteTrim', function (req, res, next) {
   let trimToDelete = req.body.deleteTrim
   let trimIdToDelete = req.body.deleteTrimId
   db_trims.deleteTrim(trimToDelete, trimIdToDelete)
-  res.redirect('/editing/' + outputName)
+  res.redirect('/editing_station/' + req.params.stream_name)
 })
 
 router.post('/editing/:stream_name/downloadTrim', function (req, res, next) {
   let trimName = req.body.trimName
-  var file = './public/videos/cut-videos/' + outputName + '/' + trimName + '.mp4';
+  var file = './public/videos/cut-videos/' + req.params.stream_name + '/' + trimName + '.mp4';
   res.download(file); // Set disposition and send it.
 })
 
-// label stuff
 
-// get streaming page
+// streaming page
 
 
 router.get('/streaming/:stream_name', function (req, res, next) {
