@@ -5,22 +5,10 @@ block content
     title Videogami-Lite: stream
     meta(name="viewport" content="width=device-width, initial-scale=1")
 
-    //- font awesome
-    script(src="https://use.fontawesome.com/14b78b6b78.js")
-
     //- stylesheet
     link(rel='stylesheet', href='/stylesheets/index.css')
     link(href='https://fonts.googleapis.com/css?family=Roboto:600,500,400,100' rel='stylesheet' type='text/css')
     link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css")
-
-    //- bootstrap
-    link(rel='stylesheet prefetch' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css')
-    link(rel='stylesheet prefetch' href='https://utm-link-manager.firebaseapp.com/app.min.css')
-    
-    //- videojs
-    link(href="https://unpkg.com/video.js@5.16.0/dist/video-js.css" rel="stylesheet")
-    script(src="https://unpkg.com/video.js@5.16.0/dist/video.js")
-    script(src="https://unpkg.com/videojs-contrib-hls@4.1.1/dist/videojs-contrib-hls.js")
     
     <body>
     <div class="container">
@@ -61,8 +49,8 @@ block content
         h2(class="page-label" style="text-align: center") When would you like to stream?
             br
             button(class="btn btn-primary" type="submit" onclick="streamNow()") <i class="fa fa-play" aria-hidden="true"></i> immediately 
-            button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseSchedule") <i class="fa fa-calendar-check-o" aria-hidden="true"></i> Schedule a time
-            button(class="btn btn-primary" type="submit" href="#collapseConvert" data-toggle="collapse") <i class="fa fa-video-camera" aria-hidden="true"></i> Convert to MP4
+            button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseSchedule") <i class="fas fa-calendar-alt"></i> Schedule a time
+            button(class="btn btn-primary" type="submit" href="#collapseConvert" data-toggle="collapse") <i class="fas fa-exchange-alt"></i> Convert to MP4
         div(class="collapse" id="collapseSchedule")
             div(class="card card-body")
                 h4 Schedule a time
@@ -238,31 +226,6 @@ block content
             document.getElementById("hour2").value = document.getElementById("hour").value
             document.getElementById("minute2").value = document.getElementById("minute").value
         }
-
-        //- var scheduleCheck = setInterval(function() {
-        //- if (streamStatus.value && streamStatus.value !== 'Live' && streamStatus.value !== "Not Streaming and no scheduled streams") {
-        //-     document.getElementById("cancelStreamBtn").disabled = false;
-        //-     clearInterval(scheduleCheck);
-        //- }
-        //- }, 1);
-        //- var streamCheck = setInterval(function() {
-        //- if (streamStatus.value === 'Live' || streamStatus.value === 'Converting') {
-        //-     document.getElementById("goStreamingPageBtn").disabled = false;
-        //-     clearInterval(streamCheck);
-        //- }
-        //- }, 1);
-
-        //- var scheduleInputCheck = setInterval(function() {
-        //- let month = document.getElementById("month").value
-        //- let day = document.getElementById("day").value
-        //- let hour = document.getElementById("hour").value
-        //- let minute = document.getElementById("minute").value
-
-        //- if (month && day && hour && minute) {
-        //-     document.getElementById("scheduleStreamBtn").disabled = false;
-        //-     clearInterval(scheduleCheck);
-        //- }
-        //- }, 1);
 
         function checkNameChange(){
         document.getElementById("convertName").value = document.getElementById("streamName").value

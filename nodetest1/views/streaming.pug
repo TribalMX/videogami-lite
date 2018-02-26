@@ -2,21 +2,12 @@ extends layout
 
 block content
   meta(charset=utf-8)
-  //- jquery
-  script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js')  
+
   //- stylesheet
   link(rel='stylesheet', href='/stylesheets/streaming.css')
   link(href='https://fonts.googleapis.com/css?family=Roboto:600,500,400,100' rel='stylesheet' type='text/css')
   link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css")
-  //- font awesome
-  script(defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js")
-  //- bootstrap
-  link(rel='stylesheet prefetch' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css')
-  link(rel='stylesheet prefetch' href='https://utm-link-manager.firebaseapp.com/app.min.css')
-  //- videojs
-  link(href="https://unpkg.com/video.js@5.16.0/dist/video-js.css" rel="stylesheet")
-  script(src="https://unpkg.com/video.js@5.16.0/dist/video.js")
-  script(src="https://unpkg.com/videojs-contrib-hls@4.1.1/dist/videojs-contrib-hls.js")
+
 
   div(class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true")
     div(class="modal-dialog")
@@ -47,9 +38,12 @@ block content
     video(id="my_video_1" class="video-js vjs-default-skin" controls preload="auto" width="640" height="268" data-setup='{}')
         source(src=input type="application/x-mpegURL")
   br
-  div(class="btns2" style="text-align: center")
+  div(class="btns2" style="text-align: center; display: block" id='stopDiv')
     form(action="/editing/" + name, method='get', id='stop')
       button(class="btn btn-danger" data-toggle="modal" data-target="#confirm-delete" type='button') <i class="fas fa-ban"></i> #{terminate}
+  div(class="btns3" style="text-align: center; display: none" id='cancelDiv')  
+    form(action='/cancelstream', method='post', id='CancelStream')
+        button(class="btn btn-danger" type="submit" id='cancelStreamBtn') <i class="fas fa-ban"></i> Cancel scheduled stream 
   br
   div(class="btns2" style="text-align: center")
             button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseLabel") <i class="fas fa-plus" aria-hidden="true"></i> add labels
@@ -96,17 +90,42 @@ block content
             label(for='insertLabel ') Add label
             input(type='text', value='', name='label', id='insertLabel')
             button(class="btn btn-primary" type="submit" ) Add label
+        input(hidden value=date id="dateInput")
 
   script.
-      $.get({ url: '/labels/refresh', 
-              success: function(data){
-                $("#labels").html("");  
-                $.each(data,function(label) { // loop over result         
-                  $("#labels").append(data[label].label + '<br/>');
-               })
-              },
-              error: function(error) { console.log(error)} 
+    $.get({ url: '/labels/refresh', 
+            success: function(data){
+            $("#labels").html("");  
+            $.each(data,function(label) { // loop over result         
+                $("#labels").append(data[label].label + '<br/>');
             })
+            },
+            error: function(error) { console.log(error)} 
+        })
+    $(function() {
+        date = document.getElementById('dateInput')
+        console.log(date.value)
+        let date_ = date.value
+        stopDiv = document.getElementById('stopDiv')
+        cancelDiv = document.getElementById('cancelDiv')
+        if(date_ === "Not Streaming and no scheduled streams"){
+            stopDiv.style.display = 'none'
+            cancelDiv.style.display = 'none'
+        } else if (date_ === "Live"){
+            stopDiv.style.display = 'block'
+            cancelDiv.style.display = 'none'
+        } else{
+            stopDiv.style.display = 'none'
+            cancelDiv.style.display = 'block'
+        }
+
+    })
+
+    let stop = function(){
+      form = document.getElementById('stop')
+      form.submit()
+    }
+    //- timer
 
     var countDownDate = localStorage.getItem('startDate');
     let counter = 0
@@ -116,13 +135,7 @@ block content
         countDownDate = new Date(); localStorage.setItem('startDate', countDownDate);
       }
     }
-    let stop = function(){
-      form = document.getElementById('stop')
-      form.submit()
-    }
 
-
-    //- timer
     window.onload = resetTimer()
     if (countDownDate) {
         countDownDate = new Date(countDownDate);

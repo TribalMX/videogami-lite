@@ -3,23 +3,18 @@ extends layout
 block content
   title Videogami-lite: Outlets
 
-  //- font awesome
-  script(src="https://use.fontawesome.com/14b78b6b78.js")
-
   //- stylesheet
   link(rel='stylesheet', href='/stylesheets/editing.css')
-  //- bootstrap
-  link(rel='stylesheet prefetch' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css')
-  link(rel='stylesheet prefetch' href='https://utm-link-manager.firebaseapp.com/app.min.css')
+
   
   div(class="btns")
     h2(class="page-label" style="text-align: center") Which outlet would you like to add or edit?
     br
     div(class="btns2" style="text-align: center")
-        button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseYoutube") <i class="fa fa-youtube" aria-hidden="true"></i> Youtube
-        button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseFacebook" ) <i class="fa fa-facebook-official" aria-hidden="true"></i> Facebook
+        button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseYoutube") <i class="fab fa-youtube"></i> Youtube
+        button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseFacebook" ) <i class="fab fa-facebook-square"></i> Facebook
         button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseJoicaster") <i class="fa fa-plus" aria-hidden="true"></i> Joicaster
-        button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseSnappyTV") <i class="fa fa-twitter" aria-hidden="true"></i> SnappyTV
+        button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseSnappyTV") <i class="fab fa-twitter-square"></i> SnappyTV
         button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseAkamai") <i class="fa fa-plus" aria-hidden="true"></i> Akamai
   div(class="collapse" id="collapseAkamai")
     div(class="card card-body")

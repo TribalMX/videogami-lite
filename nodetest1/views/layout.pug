@@ -4,9 +4,26 @@ html
     //- videoJS
     link(href="http://vjs.zencdn.net/6.6.3/video-js.css" rel="stylesheet")
     script(src="http://vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js")
-    
+    //- font awesome
+    <script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+    //- style sheet
     link(rel='stylesheet', href='/stylesheets/style.css')
+
+    //- bootstrap
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    link(rel='stylesheet prefetch' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css')
+    link(rel='stylesheet prefetch' href='https://utm-link-manager.firebaseapp.com/app.min.css')
+    script(src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous")
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous")
+    script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous")
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js')  
+    //- jquery
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js')
+    //- videojs HLS
+    link(href="https://unpkg.com/video.js@5.16.0/dist/video-js.css" rel="stylesheet")
+    script(src="https://unpkg.com/video.js@5.16.0/dist/video.js")
+    script(src="https://unpkg.com/videojs-contrib-hls@4.1.1/dist/videojs-contrib-hls.js") 
+  
   //- bootstrap navbar
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,10 +42,14 @@ html
       <li class="nav-item">
         <a class="nav-link" href="/setup_accounts">Add/change Outlets</a>
       <li class="nav-item">
-        <a class="nav-link" href="/video_settings"> <i class="fa fa-cog" aria-hidden="true"></i> Change video settings</a>
+        a(class="nav-link" id="signal_" style="pointerEvents: none" href="/goToStreamingPage") <i class="fas fa-signal"></i> #{signal}
+        input(hidden id="signalInput" value=signal)
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/stop"> stop</a>
+        a(class="nav-link" href="/stop") <i class="fas fa-ban"></i> Emergency stop button
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/video_settings"> <i class="fa fa-cog" aria-hidden="true"></i> Change video settings</a>
       </li>
     </ul>
   </div>
@@ -36,16 +57,10 @@ html
 
   body
     block content
-  script(src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous")
-  script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous")
-  script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous")
-  script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js')  
   script.
     $(function() {
       $("#insertLabelForm").on("submit",function(e) { 
         e.preventDefault(); // stop submission
-        // sending all form data - you can also do { "label": $("#insertLabel").val(); 
-        // instead of $(this).serialize()
          
         $.post(this.action,$(this).serialize(),function(data) {
           $("#labels").html(""); 
@@ -56,3 +71,12 @@ html
         });  
       });   
     });
+    $(function() {
+        let signals = document.getElementById('signalInput')
+        console.log(signals.value)
+        if(signals.value === "Live"){
+          signals.style.pointerEvents = "auto";
+          console.log("goofy")
+        }
+    })
+

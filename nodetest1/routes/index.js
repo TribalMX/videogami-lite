@@ -28,6 +28,7 @@ let streamJCDestinations = []
 let streamAKDestinations = []
 let scheduledTime = null
 let scheduled = false
+let signalStatus = "offline"
 
 // upload
 
@@ -429,7 +430,7 @@ router.get('/streaming', function (req, res, next) {
             if (err) {
               return res.sendStatus(500);
           }  
-            res.render('index', { name: outputName, AKoutlets: AKoutlets_,JCoutlets: JCoutlets_, streamStatus: streamStatus, STVoutlets: STVoutlets_, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
+            res.render('index', { signal: signalStatus, name: outputName, AKoutlets: AKoutlets_,JCoutlets: JCoutlets_, streamStatus: streamStatus, STVoutlets: STVoutlets_, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
           })
       })
     }) 
@@ -471,6 +472,7 @@ router.post('/start_stream', function (req, res, next) {
 
   if(month && day && hour && minute){
     scheduled = true
+    signalStatus = "scheduled"
   }
 
   let stopSign = null
@@ -498,6 +500,7 @@ router.post('/start_stream', function (req, res, next) {
     }
     outputMp4()
     streamStatus = "Live"
+    signalStatus = "Live"
 
   // youtube
   if(typeof YTcreds === 'object'){
@@ -583,7 +586,7 @@ router.post('/start_stream', function (req, res, next) {
     console.log('Scheduled on ' + req.body.hour + ':' + req.body.minute)
     scheduledTime = req.body.hour + ':' + req.body.minute
     streamStatus = "schedule for " + prettyDay + "/" + prettyMonth + "/2018 at " + prettyHour + ":" + prettyMinute
-
+    
     // setting destinations
     if(typeof YTcreds === 'object'){
         YTcreds.forEach(function(YTrtmpKey) {
@@ -645,6 +648,7 @@ router.post('/start_stream', function (req, res, next) {
     scheduleStream = schedule.scheduleJob(date, function (err) {
       db_label.insertDoc(outputName)
       streamStatus = "Live"
+      signalStatus = "Live"
       stopwatch.start()
       if(err){
         console.log(err)
@@ -757,6 +761,7 @@ router.post('/cancelstream', function (req, res, next) {
   db_edit.removeCollection(outputName)
   scheduleStream.cancel()
   stop()
+  signalStatus = "offline"
   res.redirect('/')
 })
 
@@ -783,7 +788,7 @@ router.get('/setup_accounts', function (req, res, next) {
             if (err) {
               return res.sendStatus(500);
           }      
-        res.render('accounts', {YToutlets: YToutlets_, AKoutlets: AKoutlets_, JCoutlets: JCoutlets_, FBoutlets: FBoutlets_, STVoutlets: STVoutlets_ })
+        res.render('accounts', {signal: signalStatus, YToutlets: YToutlets_, AKoutlets: AKoutlets_, JCoutlets: JCoutlets_, FBoutlets: FBoutlets_, STVoutlets: STVoutlets_ })
         })
       }) 
     }) 
@@ -854,6 +859,7 @@ router.post('/input', function (req, res, next) {
 
 router.get('/stop', function (req, res, next) {
   stop()
+  signalStatus = "offline"
   console.log("all ffmpeg processes aborted")
   res.redirect('/')
 })
@@ -866,7 +872,7 @@ router.get('/editing_station', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('editing_station', {collections: collectionNames})
+      res.render('editing_station', {signal: signalStatus, collections: collectionNames})
     })
   }) },500);   
 })
@@ -885,7 +891,7 @@ router.get('/editing_station/:collection_name', function (req, res, next) {
     db_trims.findTrims((err, trims_) => {
         if (err)
             return res.sendStatus(500);         
-        res.render('editing', {name: collectionName, label: labels, trims: trims_, startTime: labelStartTime, endTime: labelEndTime})
+        res.render('editing', {signal: signalStatus, name: collectionName, label: labels, trims: trims_, startTime: labelStartTime, endTime: labelEndTime})
     }) 
   }) },500);
 })
@@ -906,6 +912,7 @@ let labelEndTime = ''
 
 router.get('/editing/:stream_name', function (req, res, next) {
   stop()
+  signalStatus = "offline"
   db_trims.locateDoc(outputName)
   db_label.locateDoc(outputName)
   setTimeout(function(){db_label.findLabels((err, labels) => {
@@ -916,7 +923,7 @@ router.get('/editing/:stream_name', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('editing', {name: outputName, label: labels, trims: trims_, startTime: labelStartTime, endTime: labelEndTime})
+      res.render('editing', {signal: signalStatus, name: outputName, label: labels, trims: trims_, startTime: labelStartTime, endTime: labelEndTime})
     }) 
   })   
   },500);
@@ -1042,7 +1049,7 @@ router.get('/streaming/:stream_name', function (req, res, next) {
     db_trims.findTrims((err, trims_) => {
       if (err)
           return res.sendStatus(500);         
-      res.render('streaming', {name: outputName, inStreamEditName: inStreamMsg,input: inputURL ,label: labels, trims: trims_, date: streamStatus, terminate: stopSign, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations,streamFBDestinations: streamFBDestinations, streamYTDestinations: streamYTDestinations})
+      res.render('streaming', {signal: signalStatus, name: outputName, inStreamEditName: inStreamMsg,input: inputURL ,label: labels, trims: trims_, date: streamStatus, terminate: stopSign, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations,streamFBDestinations: streamFBDestinations, streamYTDestinations: streamYTDestinations})
     }) 
   })   
   },1000); 
@@ -1202,7 +1209,7 @@ router.get('/video_settings', function (req, res, next) {
         if (err) {
           return res.sendStatus(500)
         }
-        res.render('video_settings', {currentResolution: resolution, input: inputURL, name: outputName, logo_: logo, logosInUse: logosInUse, logoAltTime: altTime, horizontal: logoHorizontal, height: logoHeight, size: imgScale})
+        res.render('video_settings', {signal: signalStatus, currentResolution: resolution, input: inputURL, name: outputName, logo_: logo, logosInUse: logosInUse, logoAltTime: altTime, horizontal: logoHorizontal, height: logoHeight, size: imgScale})
       })
     });
   },500);
@@ -1216,7 +1223,12 @@ router.post('/video_settings/change_resolution', function (req, res, next) {
 })
 
 router.get('/', function (req, res, next) {
-  res.render('frontpage')
+  res.render('frontpage', {signal: signalStatus})
 })    
+
+
+router.get('/goToStreamingPage', function (req, res, next) {
+  res.redirect('/streaming/' + outputName)
+})
 
 module.exports = router
