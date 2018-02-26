@@ -1,0 +1,135 @@
+.stepper {
+    background-color: #fff;
+    margin-bottom: 90px;
+    border-radius: 3px;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+  }
+   
+  .stepper-steps {
+    height: 72px;
+    background-color: #fff;
+    border-radius: 3px;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+  }
+   
+  .stepper-steps-isOffset {
+    position: relative;
+    top: -30px;
+    margin: 0 15px -30px 15px;
+  }
+   
+  .stepper-content {
+    padding: 24px;
+  }
+   
+  .stepper-step {
+    float: left;
+    width: 33.333333333333%;
+    padding: 24px;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.87);
+    position: relative;
+    text-align: center;
+  }
+  .stepper-step:not(.stepper-step-isDisabled):hover, .stepper-step:not(.stepper-step-isDisabled):hover .stepper-stepContent {
+    background-color: #F5F5F5;
+  }
+  .stepper-step:first-child {
+    text-align: left;
+  }
+  .stepper-step:last-child {
+    text-align: right;
+  }
+   
+  .stepper-step::after {
+    content: '';
+    position: absolute;
+    bottom: 36px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #BDBDBD;
+  }
+  .stepper-step:first-child::after {
+    left: 24px;
+  }
+  .stepper-step:last-child::after {
+    right: 24px;
+  }
+   
+  .stepper-step-isActive {
+    font-weight: 600;
+  }
+   
+  .stepper-step-isValid {
+    font-weight: 600;
+  }
+   
+  .stepper-step-isDisabled {
+    color: rgba(0, 0, 0, 0.38);
+    cursor: default;
+  }
+   
+  .stepper-stepMarker {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    text-align: center;
+    color: white;
+    line-height: 24px;
+    background-color: rgba(0, 0, 0, 0.38);
+    border-radius: 24px;
+    font-weight: 100;
+    font-size: 12px;
+  }
+   
+  .stepper-step-isActive .stepper-stepMarker {
+    background-color: #2196F3;
+  }
+   
+  .stepper-step-isValid .stepper-stepMarker {
+    text-indent: -10000px;
+    background: url('data:image/svg+xml;charset=utf8,<svg fill="#FFFFFF" height="20" viewBox="0 0 24 24" width="19" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/> <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>') no-repeat #2196F3;
+    background-position: 2px 1px;
+    background-color: #2196F3;
+  }
+   
+  .stepper-stepContent {
+    display: inline-block;
+    position: relative;
+    z-index: 2;
+    padding: 0 8px;
+    background-color: #fff;
+  }
+   
+  body {
+    background-color: #EEEEEE;
+    padding: 0 0 0 0px;
+    font-family: 'Roboto';
+    font-size: 14px;
+    font-weight: 400;
+  }
+   
+  img {
+    max-width: 100%;
+  }
+
+  .step1Video{
+    padding-left: 200px;
+  }
+  #next{
+    display: block;
+    margin-top: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    bottom: 50px
+  }
+  #back{
+    display: block;
+    margin-top: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    bottom: 35px;
+    right: 500px
+  }

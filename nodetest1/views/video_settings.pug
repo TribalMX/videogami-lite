@@ -1,47 +1,95 @@
 extends layout
 
 block content
-    br
-    h4 Select the resolution you want to use
-    form(action='/change_resolution', method='post', id='resolutionForm')
-        label(for='resolution') change resolution 
-        select(class="resolution" , name="resolution", id="resolution")
-        p current resolution: #{currentResolution}
-        button(type="submit") submit
-    br
 
-    form(action='/test', method='post', id='test')
-        button(type="submit") test
-    script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js')
+    //- font awesome
+    script(src="https://use.fontawesome.com/14b78b6b78.js")
 
-    <head>
+    //- bootstrap
+    title Videogami-Lite: settings
     <meta charset=utf-8 />
-    <title>Live signal checker</title>
-
-
+    link(rel='stylesheet', href='/stylesheets/video_settings.css')
+    link(rel='stylesheet prefetch' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css')
+    link(rel='stylesheet prefetch' href='https://utm-link-manager.firebaseapp.com/app.min.css')
+  
+    //- videoJS
     <link href="https://unpkg.com/video.js@5.16.0/dist/video-js.css" rel="stylesheet">
     <script src="https://unpkg.com/video.js@5.16.0/dist/video.js"></script>
     <script src="https://unpkg.com/videojs-contrib-hls@4.1.1/dist/videojs-contrib-hls.js"></script>
 
-    <link href="https://unpkg.com/video.js/dist/video-js.css" rel="stylesheet">
-    <script src="https://unpkg.com/video.js/dist/video.js"></script>
-    <script src="https://unpkg.com/videojs-contrib-hls/dist/videojs-contrib-hls.js"></script>
-    
-    </head>
-    <body>
-    <h1>Live signal checker</h1>
+    //- jquery
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js')
 
-    video(id="my_video_1" class="video-js vjs-default-skin" controls preload="auto" width="640" height="268" data-setup='{}')
-        source(src=input type="application/x-mpegURL")
-    p (rtmp sources will not be shown)
-    
-    </body>
+    br
+    h1 Live signal checker
+    div(class="videoDiv")
+        video(id="my_video_1" class="video-js vjs-default-skin" controls preload="auto" width="640" height="268" data-setup='{}')
+            source(src=input type="application/x-mpegURL")
+        p(style="margin-left: 200px") (rtmp sources will not be shown)
 
-      script.
+    h3 Select the resolution you want to use
+    form(action='/video_settings/change_resolution', method='post', id='resolutionForm')
+        label(for='resolution') change resolution 
+        select(class="resolution" , name="resolution", id="resolution")
+        p current resolution: #{currentResolution}
+        button(class="btn btn-primary" type="submit") Change resolution
+    br
+    h2 Current logos
+        each logos in logo_
+            h4 #{(JSON.stringify(logos)).substr(1).slice(0, -1).replace(/['"]+/g, '')}
+            img.image(src=("/images/" + (JSON.stringify(logos)).substr(1).slice(9, -1).replace(/['"]+/g, '')) alt="logo" height="42" width="42")
+            form(action='/video_settings/delete_logo', method='post', id='deleteLogoForm')
+                input(type="hidden", name='logoName', value=JSON.stringify(logos) ,id='logoDeleteInput')
+                button(class="btn btn-danger" type="submit") <i class="fa fa-trash" aria-hidden="true"></i> delete
+    br
+    br
+    h2 Choose the logos to use
+    form(action='/video_settings/use_logos', method='post', id='useLogoForm')
+        each logos in logo_
+            span(for='logoUse')  #{JSON.stringify(logos.logo).slice(2, -1)}   
+            input(type="checkbox", name="logo", value=JSON.stringify(logos.logo).slice(2, -1) ,id='logoUse')
+            br
+        span(for='logoUse')  Don't use logos   
+        input(type="checkbox", name="noLogo", value="none" ,id='logoUse') 
+    p Currently in use: (#{logosInUse})
+    button(class="btn btn-primary" type="button" id="useLogoFormBtn" onclick="useFormSubmit()") submit
+
+    h2 Upload Logo
+    form(id='uploadForm', action='/video_settings/upload', method='post', encType="multipart/form-data")
+        input(type='file', value='', name='logoUpload', id='logoUpform')
+        br
+        button(class="btn btn-primary" type="submit") <i class="fa fa-plus" aria-hidden="true"></i>  Add Logo
+
+    h2 Logo size
+    form(action='/video_settings/imgScale', method='post', id='imgScaleForm')
+        span(for='logoSize') Adust size (higher - the larger) 
+        input(type='text', value='', name='logoSize', id='logoSize', placeholder='40:40')
+        p current: #{size}
+        br
+        button(class="btn btn-primary" type="submit") submit
+
+    h2 Logo alternation time
+    form(action='/video_settings/logo_time', method='post', id='logoAltForm')
+        span(for='altTime') Time between alternation 
+        input(type='text', value='', name='time', id='altTime', placeholder='10')
+        br
+        p current alternation time: #{logoAltTime}
+        button(class="btn btn-primary" type='submit') Submit
+
+    br
+
+    script.
+        function useFormSubmit(){
+        let form = document.getElementById("useLogoForm")
+        form.submit();
+        }
+
+    script.
         $(function(){
             var $select = $(".resolution");
             $select.append($('<option></option>').val('').html('-'))
                 $select.append($('<option></option>').val("640x360").html("360p"))
+                $select.append($('<option></option>').val("854x480").html("480p"))
                 $select.append($('<option></option>').val("1280x720").html("720p"))
                 $select.append($('<option></option>').val("1920x1080").html("1080p"))
         });

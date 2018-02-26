@@ -1,74 +1,108 @@
 extends layout
 
 block content
+    //- font awesome
+    script(src="https://use.fontawesome.com/14b78b6b78.js")
+    //- style sheets
+    <script data-require="jquery@*" data-semver="2.0.3" src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+    link(rel='stylesheet', href='/stylesheets/editing.css')
+    link(rel='stylesheet prefetch' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css')
+    link(rel='stylesheet prefetch' href='https://utm-link-manager.firebaseapp.com/app.min.css')
 
     h1 Edit your video: #{name}
 
     body
-    video(id="my-video" class="video-js" controls preload="auto" width="640" height="264" data-setup="{}")
-        source(src="/videos/output/" + name +".mp4" type='video/mp4')
-        p(class="vjs-no-js")
-        To view this video please enable JavaScript, and consider upgrading to a web browser that
-        a(href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video)
+    div(class="videoDiv")
+        video(id="my-video" class="video-js" controls preload="auto" width="640" height="264" data-setup="{}")
+            source(src="/videos/output/" + name +".mp4" type='video/mp4')
+            p(class="vjs-no-js")
+            To view this video please enable JavaScript, and consider upgrading to a web browser that
+            a(href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video)
 
-    
-    script(src="http://vjs.zencdn.net/6.6.3/video.js")
+        p(style="padding-left: 70px") large files may take more time to process (refresh after a minute if the video doesn't properly load)
+        script(src="http://vjs.zencdn.net/6.6.3/video.js")
 
+    //- alert
 
-    h2 Labels
-        each labelName in label
-            h4 #{(JSON.stringify(labelName)).substr(1).slice(41, -1).replace(/['"]+/g, '')}
-            form(action='/editing/'+ name + '/add_start_time', method='post', id='startInput')
-                input(type='hidden', value=JSON.stringify(labelName), name='startTime', id='startInputValue')
-                button(type="submit") Start Time 
-            form(action='/editing/'+ name + '/add_end_time', method='post', id='endInput')
-                input(type='hidden', value=JSON.stringify(labelName), name='endTime', id='endInputValue')    
-                button(type="submit") End Time
-            form(action='/editing/'+ name + '/delete_label', method='post', id='deletelabelForm')
-                input(type='hidden', value=labelName._id name='labelName')    
-                button(type="submit") Delete Label
-                br
-    br
-    form(action='/editing/'+ name +'/addLabel', method='post', id='EditAddLabel')
-        label(for='startTime') add label  
-        input(type='text', value='', name='newLabel', id='editinglabelTime', placeholder="Label Name")
-        input(type='text', value='', name='newLabelTime', id='editinglabelTime', placeholder="00:01:00")
-        button(type="submit") submit
-    h2 Trim your video
-    form(action='/editing/'+ name + '/trim', method='post', id='input')
-        label(for='startTime') start time 
-        input(type='text', value=startTime, name='startTime', id='startTime', placeholder="00:01:00")
-        label(for='endTime') End Time 
-        input(type='text', value=endTime, name='endTime', id='endTime', placeholder="00:02:15")
-        label(for='endTime') cut name 
-        input(type='text', value='', name='cutName', id='cutName', placeholder="cut1")
-        button(type="submit") submit
-    br
-    a(href="/")
-        button(type="button") Home page
-    br
-    h2 Your edited videos
-        h4 Download #{name}
-        form(action='/editing/'+ name +'/downloadWhole', method='post', id='wholeStreamForm') 
-                input(type='hidden', value=''+ name +'', name='wholeStream', id='wholeStream')
-                button(type="submit") Download whole stream
-        each video in trims
-            h4 Trim: #{JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')}
-            li Start Time: #{JSON.stringify(video.Video_trim.startTime).replace(/['"]+/g, '')}
-            li End Time: #{JSON.stringify(video.Video_trim.endTime).replace(/['"]+/g, '')}
-            video(id="my-video" class="video-js" controls preload="auto" width="640" height="264" data-setup="{}")
-                source(src="/videos/cut-videos/" + name + "/"+ JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '') + ".mp4" type='video/mp4')
-                p(class="vjs-no-js")
-                To view this video please enable JavaScript, and consider upgrading to a web browser that
-                a(href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video)
-            form(action='/editing/'+ name +'/downloadTrim', method='post', id='input') 
-                input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='trimName', id='trimName')
-                button(type="submit") Download
-            form(action='/editing/'+ name +'/deleteTrim', method='post', id='input') 
-                input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='deleteTrim', id='deleteTrim')
-                input(type='hidden', value=(JSON.stringify(video._id).replace(/['"]+/g, '')), name='deleteTrimId', id='deleteTrimId')
-                button(type="submit") Delete
+    div(class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true")
+        div(class="modal-dialog")
+            div(class="modal-content")
             
+                div(class="modal-header")
+                    <h4 style="margin-right: 25%;" class="modal-title" id="myModalLabel">Confirm Delete</h4>
+
+            
+                div(class="modal-body")
+                    <p>You are about to this video, this procedure is irreversible.</p>
+                    <p>Do you want to proceed?</p>
+
+                
+                div(class="modal-footer")
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button onclick="delete_()" class="btn btn-danger">Delete</a>
+
+    div(class="btns")
+        h2(class="page-label" style="text-align: center") What would you like to do?
+        br
+        div(class="btns2" style="text-align: center")
+            button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseLabel") <i class="fa fa-plus" aria-hidden="true"></i> add labels
+            button(class="btn btn-primary" data-toggle="collapse" href="#collapseTrim" type="submit") <i class="fa fa-scissors" aria-hidden="true"></i>  Make a trim
+            button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseEditedVideos") <i class="fa fa-file-video-o" aria-hidden="true"></i> Edited Videos
+        div(class="collapse" id="collapseLabel")
+            div(class="card card-body")
+                h2 Labels
+                each labelName in label
+                    h4 #{(JSON.stringify(labelName)).substr(1).slice(41, -1).replace(/['"]+/g, '')}
+                    form(action='/editing/'+ name + '/add_start_time', method='post', id='startInput')
+                        input(type='hidden', value=JSON.stringify(labelName), name='startTime', id='startInputValue')
+                        button(type="submit") Start Time 
+                    form(action='/editing/'+ name + '/add_end_time', method='post', id='endInput')
+                        input(type='hidden', value=JSON.stringify(labelName), name='endTime', id='endInputValue')    
+                        button(type="submit") End Time
+                    form(action='/editing/'+ name + '/delete_label', method='post', id='deletelabelForm')
+                        input(type='hidden', value=labelName._id name='labelName')    
+                        button(type="submit") Delete Label
+                        br
+                form(action='/editing/'+ name +'/addLabel', method='post', id='EditAddLabel')
+                    span(for='startTime') Add label  
+                    input(style='padding-right: 10px' type='text', value='', name='newLabel', id='editinglabelTime', placeholder="Label Name")
+                    input(type='text', value='', name='newLabelTime', id='editinglabelTime', placeholder="00:01:00")
+                    button(class="btn btn-primary" type="submit") <i class="fa fa-plus" aria-hidden="true"></i> Add Label
+        div(class="collapse" id="collapseTrim")
+            div(class="card card-body")
+                h2 Trim your video
+                form(action='/editing/'+ name + '/trim', method='post', id='input')
+                    span(for='startTime') Start time 
+                    input(type='text', value=startTime, name='startTime', id='startTime', placeholder="00:01:00")
+                    span(for='endTime') End Time 
+                    input(type='text', value=endTime, name='endTime', id='endTime', placeholder="00:02:15")
+                    span(for='endTime') cut name 
+                    input(type='text', value='', name='cutName', id='cutName', placeholder="cut1")
+                    button(class="btn btn-primary" type="submit") <i class="fa fa-scissors" aria-hidden="true"></i> Trim
+        div(class="collapse" id="collapseEditedVideos")
+            div(class="card card-body")
+                h2 Your edited videos
+                    h4 Download #{name}
+                    form(action='/editing/'+ name +'/downloadWhole', method='post', id='wholeStreamForm') 
+                            input(type='hidden', value=''+ name +'', name='wholeStream', id='wholeStream')
+                            button(class="btn btn-primary" type="submit") <i class="fa fa-download" aria-hidden="true"></i> Download whole stream
+                    each video in trims
+                        h4 Trim: #{JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')}
+                        li Start Time: #{JSON.stringify(video.Video_trim.startTime).replace(/['"]+/g, '')}
+                        li End Time: #{JSON.stringify(video.Video_trim.endTime).replace(/['"]+/g, '')}
+                        video(id="my-video" class="video-js" controls preload="auto" width="640" height="264" data-setup="{}")
+                            source(src="/videos/cut-videos/" + name + "/"+ JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '') + ".mp4" type='video/mp4')
+                            p(class="vjs-no-js")
+                            To view this video please enable JavaScript, and consider upgrading to a web browser that
+                            a(href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video)
+                        form(action='/editing/'+ name +'/downloadTrim', method='post', id='input') 
+                            input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='trimName', id='trimName')
+                            button(class="btn btn-primary" type="submit") <i class="fa fa-download" aria-hidden="true"></i> Download
+                        form(action='/editing/'+ name +'/deleteTrim', method='post', id=JSON.stringify(video._id).replace(/['"]+/g, '')) 
+                            input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='deleteTrim', id='deleteTrim')
+                            input(type='hidden', value=(JSON.stringify(video._id).replace(/['"]+/g, '')), name='deleteTrimId', id='deleteTrimId')
+                            button(class="btn btn-primary" onclick="getName("+JSON.stringify(video._id)+")" data-toggle="modal" data-target="#confirm-delete" type="button") <i class="fa fa-trash" aria-hidden="true"></i> Delete
+        
     script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js') 
     script.
         $(window).scroll(function() {
@@ -80,8 +114,17 @@ block content
                 $(window).scrollTop(sessionStorage.scrollTop);
             }
         });
+    script.
+        let name = null
+        function getName(trimName){
+            name = trimName
+            console.log(name)
+        }
+        function delete_(){
+            form = document.getElementById(name)
+            form.submit()
+        }
 
-
-                
+            
 
 

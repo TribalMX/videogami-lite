@@ -25,6 +25,7 @@ let streamFBDestinations = []
 let streamYTDestinations = []
 let streamSTVDestinations = []
 let streamJCDestinations = []
+let streamAKDestinations = []
 let scheduledTime = null
 let scheduled = false
 
@@ -88,7 +89,7 @@ let makeFormula = () => {
   } else {
     for(var i=0; i<(L + 1); i++) {
         if(i === 1){
-            formula = "scale=1290:720,setsar=1[ovrl0];["+ i +"]scale="+ scale+"[ovrl" + i +"]; [ovrl0][ovrl" + i + "] overlay=x=(main_w-overlay_w)/1.025:y=(main_h-overlay_h)/18:enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
+            formula = "scale="+ resolution + ",setsar=1[ovrl0];["+ i +"]scale=x=(main_w-overlay_w)/1.025:y=(main_h-overlay_h)/18:x=(main_w-overlay_w)/1.025:y=(main_h-overlay_h)/18[ovrl" + i +"]; [ovrl0][ovrl" + i + "] overlay=x=(main_w-overlay_w)/1.025:y=(main_h-overlay_h)/18:enable='lt(mod(t,"+ (L * altTime)+"),"+ altTime+")'[v"+i+"];"
         }
         if(i === 2){
             formula = formula + "["+ i +"]scale="+ scale+"[ovrl" + i +"]; [v"+ (i - 1) +"][ovrl" + i + "] overlay=x=(main_w-overlay_w)/1.025:y=(main_h-overlay_h)/18:enable='between(mod(t,"+ (L * altTime)+"),"+ altTime+","+accr+")'[v"+i+"];"
@@ -206,6 +207,82 @@ let streamJC = (JCrtmp) => {
       proc3.run()
   }
 
+// Akamai
+let streamAK = (AKrtmp) => {
+
+  console.log("streaming to Akamai")
+  var proc1 = new ffmpeg({ source: inputURL, timeout: 0 })
+    .addOption('-vcodec', 'libx264')
+    .addOption('-acodec', 'aac')
+    .addOption('-f', 'flv')
+
+    .withAudioBitrate('128k')
+    .on('start', function(commandLine) {
+    console.log('Query : ' + commandLine);
+    })
+    .on('error', function(err) {
+    console.log('Error: ' + err.message);
+    })
+    .output("rtmp://459272:wR0wkA@p.ep412420.i.akamaientrypoint.net/EntryPoint/cbcsportsevents_1_bitrate@412420", function(stdout, stderr) {
+      console.log('Convert complete' +stdout)
+    })
+    .withVideoBitrate('2.5k')
+    .size("1280x720")
+    proc1.run()
+
+  var proc2 = new ffmpeg({ source: inputURL, timeout: 0 })
+    .addOption('-vcodec', 'libx264')
+    .addOption('-acodec', 'aac')
+    .addOption('-f', 'flv')
+
+    .withAudioBitrate('128k')
+    .on('start', function(commandLine) {
+    console.log('Query : ' + commandLine);
+    })
+    .on('error', function(err) {
+    console.log('Error: ' + err.message);
+    })
+    .output("rtmp://459272:wR0wkA@p.ep412676.i.akamaientrypoint.net/EntryPoint/cbcsportsevents_2_bitrate@412676", function(stdout, stderr) {
+      console.log('Convert complete' +stdout)
+    })
+    .withVideoBitrate('1.2k')
+    .size("852x480")
+    proc2.run()
+
+  var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
+    .addOption('-vcodec', 'libx264')
+    .addOption('-acodec', 'aac')
+    .addOption('-f', 'flv')
+
+    .withAudioBitrate('128k')
+    .on('start', function(commandLine) {
+    console.log('Query : ' + commandLine);
+    })
+    .on('error', function(err) {
+    console.log('Error: ' + err.message);
+    })
+    .output("rtmp://459272:wR0wkA@p.ep412677.i.akamaientrypoint.net/EntryPoint/cbcsportsevents_3_bitrate@412677", function(stdout, stderr) {
+      console.log('Convert complete' +stdout)
+    })
+    .withVideoBitrate('.7')
+    .size("640x360")
+    proc3.run()
+    
+
+  // if(logosInUse){
+  //   if(typeof logosInUse === 'string'){
+  //     proc3 = proc3.input('./public/images/' + logosInUse)
+  //   } else {
+  //     for(n in logosInUse){
+  //       proc3 = proc3.input('./public/images/' + logosInUse[n])
+  //     }
+  //   }
+  //     proc3 = proc3.complexFilter(formula)
+  //   } else {
+  //     proc3 = proc3.addOption('-vf', "scale=" +  resolution)
+  //   }
+  //   proc3.run()
+  }
 
 // stream Snappy TV
 
@@ -328,7 +405,7 @@ let killTrim = () => {
 }
 
 /* GET home page. */
-router.get('/', function (req, res, next) {
+router.get('/streaming', function (req, res, next) {
   labelStartTime = ''
   labelEndTime = ''
 
@@ -348,7 +425,12 @@ router.get('/', function (req, res, next) {
           if (err) {
             return res.sendStatus(500);
         }
-      res.render('index', { name: outputName, JCoutlets: JCoutlets_, streamStatus: streamStatus, STVoutlets: STVoutlets_, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
+          db_accounts.findAKoutlets((err, AKoutlets_) => {      
+            if (err) {
+              return res.sendStatus(500);
+          }  
+            res.render('index', { name: outputName, AKoutlets: AKoutlets_,JCoutlets: JCoutlets_, streamStatus: streamStatus, STVoutlets: STVoutlets_, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
+          })
       })
     }) 
   })
@@ -403,8 +485,13 @@ router.post('/start_stream', function (req, res, next) {
   var FBcreds = req.body.FBoutletCredentials
   var STVcreds = req.body.STVoutletCredentials
   var JCcreds = req.body.JCoutletCredentials
+  var AKcreds = req.body.AKoutletCredentials  
 
-  if((YTcreds || FBcreds || STVcreds || JCcreds) && !scheduled){
+  if(!YTcreds && !FBcreds && !STVcreds && !JCcreds && !AKcreds){
+    outputMp4()
+  }
+
+  if((YTcreds || FBcreds || STVcreds || JCcreds || AKcreds) && !scheduled){
     stopwatch.start()
     if(logosInUse){
     makeFormula()
@@ -425,6 +512,20 @@ router.post('/start_stream', function (req, res, next) {
     streamYT(parsed[0])
     streamYTDestinations.push(parsed[1])
   }
+
+    // Akamai
+    if(typeof AKcreds === 'object'){
+      AKcreds.forEach(function(AKrtmp) {
+        let parsed = JSON.parse(AKrtmp)
+        streamAK(parsed[0])
+        streamAKDestinations.push(parsed[1])
+      });
+    }
+    if(typeof AKcreds === 'string'){
+      let parsed = JSON.parse(AKcreds)
+      streamAK(parsed[0])
+      streamAKDestinations.push(parsed[1])
+    }
 
   // Joicaster
     if(typeof JCcreds === 'object'){
@@ -494,6 +595,17 @@ router.post('/start_stream', function (req, res, next) {
         let parsed = JSON.parse(YTcreds)
         streamYTDestinations.push(parsed[1])
       }
+      // Akamai
+      if(typeof AKcreds === 'object'){
+        AKcreds.forEach(function(AKrtmp) {
+          let parsed = JSON.parse(AKrtmp)
+          streamAKDestinations.push(parsed[1])
+        });
+      }
+      if(typeof AKcreds === 'string'){
+        let parsed = JSON.parse(AKcreds)
+        streamAKDestinations.push(parsed[1])
+      }
       // Joicaster
       if(typeof JCcreds === 'object'){
         JCcreds.forEach(function(JCrtmpKey) {
@@ -548,6 +660,19 @@ router.post('/start_stream', function (req, res, next) {
       if(typeof YTcreds === 'string'){
         let parsed = JSON.parse(YTcreds)
         streamYT(parsed[0])
+      }
+      // Akamai
+      if(typeof AKcreds === 'object'){
+        AKcreds.forEach(function(AKrtmpKey) {
+          let parsed = JSON.parse(AKrtmpKey)
+          streamAK(parsed[0])
+          streamAKDestinations.push(parsed[1])
+        });
+      }
+      if(typeof AKcreds === 'string'){
+        let parsed = JSON.parse(AKcreds)
+        streamAK(parsed[0])
+        streamAKDestinations.push(parsed[1])
       }
       // Joicaster
       if(typeof JCcreds === 'object'){
@@ -652,9 +777,14 @@ router.get('/setup_accounts', function (req, res, next) {
         db_accounts.findJCoutlets((err, JCoutlets_) => {      
           if (err) {
             return res.sendStatus(500);
-        }    
-        res.render('accounts', {YToutlets: YToutlets_, JCoutlets: JCoutlets_, FBoutlets: FBoutlets_, STVoutlets: STVoutlets_ })
-    }) 
+        }
+          db_accounts.findAKoutlets((err, AKoutlets_) => {      
+            if (err) {
+              return res.sendStatus(500);
+          }      
+        res.render('accounts', {YToutlets: YToutlets_, AKoutlets: AKoutlets_, JCoutlets: JCoutlets_, FBoutlets: FBoutlets_, STVoutlets: STVoutlets_ })
+        })
+      }) 
     }) 
   },500); 
   })
@@ -698,12 +828,24 @@ router.post('/setup_accounts/setup_snappyTV', function (req, res, next) {
   db_accounts.insertSnappyTVOutlet(STVname, STVpublishP, STVstreamName)
   res.redirect('/setup_accounts')
 })
+router.post('/setup_accounts/setup_akamai', function (req, res, next) {
+  let AKurl = req.body.AKurl
+  let AKstreamName = req.body.AKstreamName
+  let AKuserNumber = req.body.AKuserNumber
+  let AKpassword = req.body.AKpassword
+  let AKoutletName = req.body.AKname
 
+  let AKrtmp = "rtmp://"+AKuserNumber+":"+AKpassword+"@"+AKurl.slice(7)+"/"+AKstreamName
+  console.log(AKrtmp)
+
+  db_accounts.insertAkamaiOutlet(AKoutletName, AKrtmp, AKurl, AKstreamName, AKuserNumber, AKpassword)
+  res.redirect('/setup_accounts')
+})
 // Hls input
 
 router.post('/input', function (req, res, next) {
   inputURL = req.body.input
-  res.redirect('/')
+  res.redirect('/streaming')
 })
 
 // stop all ffmpeg tasks
@@ -1008,7 +1150,47 @@ router.post('/labeling/:stream_name/trim_end', function (req, res, next) {
 
 // logo stuff
 
-router.get('/logo_setup', function (req, res, next) {
+router.post('/video_settings/upload', function(req, res) {
+  let logo = req.files.logoUpload;
+  console.log(req.files.logoUpload); // the uploaded file object
+  logo.mv('./public/images/' + logo.name, function(err) {
+    if (err)
+      return res.status(500).send(err);
+    db_logo.insertLogo(logo.name)
+      res.redirect('/video_settings')
+  });
+})
+
+router.post('/video_settings/delete_logo', function (req, res, next) {
+  let logoObj = req.body.logoName
+  let logoObjParsed = JSON.parse(logoObj)
+  let logoString = logoObjParsed.logo
+  console.log(logoString)
+  db_logo.deleteLogo(logoString)
+  res.redirect('/video_settings')
+})
+
+router.post('/video_settings/use_logos', function (req, res, next) {
+  logosInUse = req.body.logo
+  if(req.body.noLogo){
+    logosInUse = 0
+  }
+  res.redirect('/video_settings')
+})
+
+router.post('/video_settings/logo_time', function (req, res, next) {
+  altTime = req.body.time
+  res.redirect("/video_settings")
+})
+
+router.post('/video_settings/imgScale', function (req, res, next) {
+  imgScale = req.body.logoSize
+  res.redirect('/video_settings')
+})
+
+// video settings
+
+router.get('/video_settings', function (req, res, next) {
   setTimeout(function(){db_label.findLabels((err, labels) => {
     db_logo.findLogos((err, logo) => {
       if (err) {
@@ -1018,68 +1200,21 @@ router.get('/logo_setup', function (req, res, next) {
         if (err) {
           return res.sendStatus(500)
         }
-        res.render('logo', {name: outputName, logo_: logo, logosInUse: logosInUse, logoAltTime: altTime, horizontal: logoHorizontal, height: logoHeight, size: imgScale})
+        res.render('video_settings', {currentResolution: resolution, input: inputURL, name: outputName, logo_: logo, logosInUse: logosInUse, logoAltTime: altTime, horizontal: logoHorizontal, height: logoHeight, size: imgScale})
       })
     });
   },500);
   })
 })
 
-router.post('/upload', function(req, res) {
-  let logo = req.files.logoUpload;
-  console.log(req.files.logoUpload); // the uploaded file object
-  logo.mv('./public/images/' + logo.name, function(err) {
-    if (err)
-      return res.status(500).send(err);
-    db_logo.insertLogo(logo.name)
-      res.redirect('/logo_setup')
-  });
-})
-
-router.post('/delete_logo', function (req, res, next) {
-  let logoObj = req.body.logoName
-  let logoObjParsed = JSON.parse(logoObj)
-  let logoString = logoObjParsed.logo
-  console.log(logoString)
-  db_logo.deleteLogo(logoString)
-  res.redirect('/logo_setup')
-})
-
-router.post('/logo_setup/use_logos', function (req, res, next) {
-  logosInUse = req.body.logo
-  if(req.body.noLogo){
-    logosInUse = 0
-  }
-  res.redirect('/logo_setup')
-})
-
-router.post('/logo_setup/logo_time', function (req, res, next) {
-  altTime = req.body.time
-  res.redirect("/logo_setup")
-})
-
-router.post('/logo_setup/imgScale', function (req, res, next) {
-  imgScale = req.body.logoSize
-  res.redirect('/logo_setup')
-})
-
-router.post('/logo_setup/logo_placement', function (req, res, next) {
-  logoHeight = req.body.logoHei
-  logoHorizontal = req.body.logoHor
-  res.redirect('/logo_setup')
-})
-
-// video settings
-
-router.get('/video_settings', function (req, res, next) {
-  res.render('video_settings', {currentResolution: resolution, input: inputURL})
-})
-
-router.post('/change_resolution', function (req, res, next) {
+router.post('/video_settings/change_resolution', function (req, res, next) {
   resolution = req.body.resolution
   console.log(resolution)
-  res.redirect('video_settings')
+  res.redirect('/video_settings')
 })
 
+router.get('/', function (req, res, next) {
+  res.render('frontpage')
+})    
 
 module.exports = router

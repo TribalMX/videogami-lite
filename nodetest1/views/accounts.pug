@@ -1,95 +1,154 @@
 extends layout
 
 block content
+  title Videogami-lite: Outlets
 
-  p To add an outlet, fill in the required information below
-  br
+  //- font awesome
+  script(src="https://use.fontawesome.com/14b78b6b78.js")
 
-  h2 Add a Youtube outlet
+  //- stylesheet
+  link(rel='stylesheet', href='/stylesheets/editing.css')
+  //- bootstrap
+  link(rel='stylesheet prefetch' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css')
+  link(rel='stylesheet prefetch' href='https://utm-link-manager.firebaseapp.com/app.min.css')
+  
+  div(class="btns")
+    h2(class="page-label" style="text-align: center") Which outlet would you like to add or edit?
+    br
+    div(class="btns2" style="text-align: center")
+        button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseYoutube") <i class="fa fa-youtube" aria-hidden="true"></i> Youtube
+        button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseFacebook" ) <i class="fa fa-facebook-official" aria-hidden="true"></i> Facebook
+        button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseJoicaster") <i class="fa fa-plus" aria-hidden="true"></i> Joicaster
+        button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseSnappyTV") <i class="fa fa-twitter" aria-hidden="true"></i> SnappyTV
+        button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseAkamai") <i class="fa fa-plus" aria-hidden="true"></i> Akamai
+  div(class="collapse" id="collapseAkamai")
+    div(class="card card-body")
+        h2 Add an Akamai outlet
+        form(action='/setup_accounts/setup_akamai', method='post', id='AKform')
+          input(type='text', style="width:400px", placeholder='name',value='', name='AKname', id='AKname')
+          span(for='AKname') Enter your Akamai outlet Name 
+          br
+          input(type='text', style="width:400px", value='', name='AKurl', id='AKurl', placeholder="rtmp://p.ep222222.i.akamaientrypoint.net/EntryPoint")
+          span(for='AKurl') Enter the Url
+          br
+          input(type='text', style="width:400px", value='', name='AKstreamName', id='AKstreamName', placeholder="parafeed_1_bitrate@622222")
+          span(for='AKstreamName') Enter the Stream Name
+          br
+          input(type='text', style="width:400px", value='', name='AKuserNumber', id='AKuserNumber', placeholder="94444")
+          span(for='AKuserNumber') User Number
+          br
+          input(type='text', style="width:400px", value='', name='AKpassword', id='AKpassword', placeholder="password")
+          span(for='AKpassword') password
+          br
+          button(class="btn btn-primary" type="submit") <i class="fa fa-plus" aria-hidden="true"></i> Add outlet
+          br
+          h2 Akamai outlets
+          each outlet in AKoutlets
+            p Name: #{outlet.AKoutlets.name}
+            p RTMP Key: #{outlet.AKoutlets.AKrtmp}
+            p Url: #{outlet.AKoutlets.AKrtmp}
+            p Stream Name: #{outlet.AKoutlets.AKstreamName}
+            p User Number: #{outlet.AKoutlets.AKuserNumber}
+            p password: #{outlet.AKoutlets.AKpassword}
+            form(action='/setup_accounts/remove_outlet', method='post', id='AKRtmpKey')
+              input(type='hidden', value=outlet._id, name='outletID', id='AKoutlet')
+              button(class="btn btn-danger" type="submit") <i class="fa fa-trash" aria-hidden="true"></i> Remove Outlet
+          br
+  div(class="collapse" id="collapseYoutube")
+    div(class="card card-body")
+        h2 Add a Youtube outlet
+        form(action='/setup_accounts/setup_youtube', method='post', id='YTRtmpKey')
+          label(for='YTname') Enter your Youtube outlet Name 
+          input(type='text', value='', name='YTname', id='YTname')
+          br
+          label(for='YTRtmpKey') Enter your RTMP Key 
+          input(type='text', value='', name='YTRtmpKey', id='YTRtmpKey')
+          br
+          button(class="btn btn-primary" type="submit") <i class="fa fa-plus" aria-hidden="true"></i> Add outlet
+        br
+        h2 Youtube outlets
+        each outlet in YToutlets
+          p Name: #{outlet.YToutlets.name}
+          p RTMP Key: #{outlet.YToutlets.YTrtmp}
+          form(action='/setup_accounts/remove_outlet', method='post', id='YTRtmpKey')
+            input(type='hidden', value=outlet._id, name='outletID', id='YToutlet')
+            button(class="btn btn-danger" type="submit") <i class="fa fa-trash" aria-hidden="true"></i> Remove Outlet
+        br
 
-  form(action='/setup_accounts/setup_youtube', method='post', id='YTRtmpKey')
-    label(for='YTname') Enter your Youtube outlet Name 
-    input(type='text', value='', name='YTname', id='YTname')
-    br
-    label(for='YTRtmpKey') Enter your RTMP Key 
-    input(type='text', value='', name='YTRtmpKey', id='YTRtmpKey')
-    br
-    button(type="submit") Add outlet
-  br
-  h2 Youtube outlets
-  each outlet in YToutlets
-    p Name: #{outlet.YToutlets.name}
-    p RTMP Key: #{outlet.YToutlets.YTrtmp}
-    form(action='/setup_accounts/remove_outlet', method='post', id='YTRtmpKey')
-      input(type='hidden', value=outlet._id, name='outletID', id='YToutlet')
-      button(type="submit") Remove Outlet
-  br
-  h2 Add a Joicaster outlet
+  div(class="collapse" id="collapseFacebook")
+      div(class="card card-body")
+        h2 Add a Facebook outlet
 
-  form(action='/setup_accounts/setup_joicaster', method='post', id='JCRtmpKey')
-    label(for='JCname') Enter your Youtube outlet Name 
-    input(type='text', value='', name='JCname', id='JCname')
-    br
-    label(for='JCRtmpKey') Enter your RTMP Key 
-    input(type='text', value='', name='JCRtmpKey', id='JCRtmpKey')
-    br
-    button(type="submit") Add outlet
-  br
-  h2 Joicaster outlets
-  each outlet in JCoutlets
-    p Name: #{outlet.JCoutlets.name}
-    p RTMP Key: #{outlet.JCoutlets.JCrtmp}
-    form(action='/setup_accounts/remove_outlet', method='post', id='JCRtmpKey')
-      input(type='hidden', value=outlet._id, name='outletID', id='JCoutlet')
-      button(type="submit") Remove Outlet
-  br
-  h2 Add a Facebook outlet
+        form(action='/setup_accounts/setup_facebook', method='post', id='FBRtmpKey')
+          label(for='FBname') Enter your Facebook outlet Name 
+          input(type='text', value='', name='FBname', id='FBname')
+          br
+          label(for='FBpageId') Page ID 
+          input(type='text', value='', name='FBpageId', id='FBpageId')
+          br
+          label(for='FBAppId') Permanent Access Token 
+          input(type='text', value='', name='FBaccessToken', id='FBaccessToken')
+          br
+          button(class="btn btn-primary" type="submit") <i class="fa fa-plus" aria-hidden="true"></i> Add outlet
+        br
+        br
+        h2 Facebook outlets
+        each outlet in FBoutlets
+          p Name: #{outlet.FBoutlets.name}
+          p Page-ID: #{outlet.FBoutlets.FBpageId}
+          p Access Token: #{outlet.FBoutlets.FBaccessToken}
+          form(action='/setup_accounts/remove_outlet', method='post', id='FBRtmpKey')
+            input(type='hidden', value=outlet._id, name='outletID', id='FBoutlet')
+            button(class="btn btn-danger" type="submit") <i class="fa fa-trash" aria-hidden="true"></i> Remove outlet
+        br   
 
-  form(action='/setup_accounts/setup_facebook', method='post', id='FBRtmpKey')
-    label(for='FBname') Enter your Facebook outlet Name 
-    input(type='text', value='', name='FBname', id='FBname')
-    br
-    label(for='FBpageId') Page ID 
-    input(type='text', value='', name='FBpageId', id='FBpageId')
-    br
-    label(for='FBAppId') Permanent Access Token 
-    input(type='text', value='', name='FBaccessToken', id='FBaccessToken')
-    br
-    button(type="submit") Add outlet
-  br
-  br
-  h2 Facebook outlets
-  each outlet in FBoutlets
-    p Name: #{outlet.FBoutlets.name}
-    p Page-ID: #{outlet.FBoutlets.FBpageId}
-    p Access Token: #{outlet.FBoutlets.FBaccessToken}
-    form(action='/setup_accounts/remove_outlet', method='post', id='FBRtmpKey')
-      input(type='hidden', value=outlet._id, name='outletID', id='FBoutlet')
-      button(type="submit") Remove outlet
-  br    
-  h2 Add a SnappyTV outlet
-  br
-  form(action='/setup_accounts/setup_snappyTV', method='post', id='FBRtmpKey')
-    label(for='FBname') Enter your SnappyTV outlet Name 
-    input(type='text', value='', name='STVname', id='FBname')
-    br
-    label(for='FBpageId') Publishing Point
-    input(type='text', value='', name='STVpublishP', id='FBpageId')
-    br
-    label(for='FBAppId') Stream Name
-    input(type='text', value='', name='STVstreamName', id='FBaccessToken')
-    br
-    button(type="submit") Add outlet
-    br
-    br
-    h2 SnappyTV outlets
-    each outlet in STVoutlets
-      p Name: #{outlet.STVoutlets.name}
-      p Publishing Point: #{outlet.STVoutlets.STVpublishingPoint}
-      p stream Name: #{outlet.STVoutlets.STVstreamName}
-      form(action='/setup_accounts/remove_outlet', method='post', id='FBRtmpKey')
-        input(type='hidden', value=outlet._id, name='outletID', id='FBoutlet')
-        button(type="submit") Remove Outlet
-    br
-    
+  div(class="collapse" id="collapseJoicaster")
+      div(class="card card-body")
+        h2 Add a Joicaster outlet
+
+        form(action='/setup_accounts/setup_joicaster', method='post', id='JCRtmpKey')
+          label(for='JCname') Enter your Youtube outlet Name 
+          input(type='text', value='', name='JCname', id='JCname')
+          br
+          label(for='JCRtmpKey') Enter your RTMP Key 
+          input(type='text', value='', name='JCRtmpKey', id='JCRtmpKey')
+          br
+          button(class="btn btn-primary" type="submit") <i class="fa fa-plus" aria-hidden="true"></i> Add outlet
+        br
+        h2 Joicaster outlets
+        each outlet in JCoutlets
+          p Name: #{outlet.JCoutlets.name}
+          p RTMP Key: #{outlet.JCoutlets.JCrtmp}
+          form(action='/setup_accounts/remove_outlet', method='post', id='JCRtmpKey')
+            input(type='hidden', value=outlet._id, name='outletID', id='JCoutlet')
+            button(class="btn btn-danger" type="submit") <i class="fa fa-trash" aria-hidden="true"></i> Remove Outlet
+        br
+
+  div(class="collapse" id="collapseSnappyTV")
+    div(class="card card-body")
+        h2 Add a SnappyTV outlet
+        br
+        form(action='/setup_accounts/setup_snappyTV', method='post', id='FBRtmpKey')
+          label(for='FBname') Enter your SnappyTV outlet Name 
+          input(type='text', value='', name='STVname', id='FBname')
+          br
+          label(for='FBpageId') Publishing Point
+          input(type='text', value='', name='STVpublishP', id='FBpageId')
+          br
+          label(for='FBAppId') Stream Name
+          input(type='text', value='', name='STVstreamName', id='FBaccessToken')
+          br
+          button(class="btn btn-primary" type="submit") <i class="fa fa-plus" aria-hidden="true"></i> Add outlet
+          br
+          br
+          h2 SnappyTV outlets
+          each outlet in STVoutlets
+            p Name: #{outlet.STVoutlets.name}
+            p Publishing Point: #{outlet.STVoutlets.STVpublishingPoint}
+            p stream Name: #{outlet.STVoutlets.STVstreamName}
+            form(action='/setup_accounts/remove_outlet', method='post', id='FBRtmpKey')
+              input(type='hidden', value=outlet._id, name='outletID', id='FBoutlet')
+              button(class="btn btn-danger" type="submit") <i class="fa fa-trash" aria-hidden="true"></i> Remove Outlet
+          br
+
 

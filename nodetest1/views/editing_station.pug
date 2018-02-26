@@ -1,12 +1,48 @@
 extends layout
 
 block content
+    head.
+        <script data-require="jquery@*" data-semver="2.0.3" src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+        <script data-require="bootstrap@*" data-semver="3.1.1" src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+        <link data-require="bootstrap-css@3.1.1" data-semver="3.1.1" rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" />
 
     h1 Streams
+
+    div(class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true")
+        div(class="modal-dialog")
+            div(class="modal-content")
+            
+                div(class="modal-header")
+                    <button style="margin-left: 0px;" type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 style="margin-right: 35%;" class="modal-title" id="myModalLabel">Confirm Delete</h4>
+
+            
+                div(class="modal-body")
+                    <p>You are about to this stream, this procedure is irreversible.</p>
+                    <p>Do you want to proceed?</p>
+
+                
+                div(class="modal-footer")
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button onclick="delete_()" class="btn btn-danger">Delete</a>
+
+
     br
     each collection in collections
         a(href='/editing_station/' + JSON.stringify(collection.name).slice(1, -1)) #{JSON.stringify(collection.name).slice(1, -1)}
-        form(action='/editing_station/' + JSON.stringify(collection.name).slice(1, -1) + '/remove_stream', method='post', id='removeStreamForm')
+        form(action='/editing_station/' + JSON.stringify(collection.name).slice(1, -1) + '/remove_stream', method='post', id=JSON.stringify(collection.name).slice(1, -1))
             input(type='hidden', value=JSON.stringify(collection.name).slice(1, -1), name='collectionName', id='removeStream')
-            button(type="submit") Remove Stream
+            button(type="button" data-toggle="modal" data-target="#confirm-delete" onclick="getName("+JSON.stringify(collection.name)+")") Remove Stream
         br
+
+    script.
+        let name = "moo"
+        function getName(name_){
+            name = name_
+            console.log(name)
+        }
+        function delete_(){
+            form = document.getElementById(name)
+            form.submit()
+        }
+        

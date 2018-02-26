@@ -164,6 +164,41 @@ const findSTVoutlets = (db, cb) => {
     return cb(null, docs);
   });
 }
+// akamai
+
+const insertAkamai = function (db, callback, AKoutletName_, AKrtmp_, AKurl_, AKstreamName_, AKuserNumber_, AKpassword_) {
+  // Get the documents collection
+  const collection = db.collection("outlets")
+  // Insert some documents
+  collection.insertOne(
+    {AKoutlets: {name: AKoutletName_, AKrtmp: AKrtmp_, AKurl: AKurl_, AKstreamName: AKstreamName_, AKuserNumber: AKuserNumber_, AKpassword: AKpassword_}},
+    function (err, result) {
+      assert.equal(err, null)
+      assert.equal(1, result.result.n)
+      assert.equal(1, result.ops.length)
+      console.log('Inserted a Akamai streaming info into the Streams collection')
+      callback(result)
+    })
+}
+const findAKoutlets = (db, cb) => {
+  // Get the documents collection
+  const collection = db.collection('outlets');
+
+  // Find some documents
+  collection.find({"AKoutlets": { $exists: true } }).toArray((err, docs) => {
+    // An error occurred we need to return that to the given 
+    // callback function
+    if (err) {
+      return cb(err);
+    }
+
+    assert.equal(err, null);
+    // console.log("Found the following records for Youtube outlets");
+    // console.log(docs)
+
+    return cb(null, docs);
+  });
+}
 
 module.exports = {
     deleteStreamOutlet: (outletToDelete_) => MongoClient.connect(url, function (err, client) {
@@ -183,7 +218,7 @@ module.exports = {
     
         const db = client.db(dbName)
     
-        insertYoutube(db, function (YToutletName, YTrtmp) {
+        insertYoutube(db, function () {
           client.close()
         }, YToutletName_, YTrtmp_)
       }),
@@ -212,7 +247,7 @@ module.exports = {
   
       const db = client.db(dbName)
   
-      insertJoicaster(db, function (JCoutletName, JCrtmp) {
+      insertJoicaster(db, function () {
         client.close()
       }, JCoutletName_, JCrtmp_)
     }),
@@ -294,5 +329,34 @@ module.exports = {
           return cb(null, docs)
           })
       })
-  }  
+    },
+    insertAkamaiOutlet: (AKoutletName_, AKrtmp_, AKurl_, AKstreamName_, AKuserNumber_, AKpassword_) => MongoClient.connect(url, function (err, client) {
+      assert.equal(null, err)
+      // console.log('Connected successfully to server')
+
+      const db = client.db(dbName)
+
+      insertAkamai(db, function () {
+          client.close()
+      }, AKoutletName_, AKrtmp_, AKurl_, AKstreamName_, AKuserNumber_, AKpassword_)
+    }),
+    findAKoutlets: cb => {
+        MongoClient.connect(url, (err, client) => {
+            if (err) {
+            return cb(err)
+            }
+            // console.log('Connected successfully to server')
+
+            const db = client.db(dbName)
+
+            findAKoutlets(db, (err, docs) => {
+            if (err) {
+                return cb(err)
+            }
+
+            // return your documents back to the given callback
+            return cb(null, docs)
+            })
+        })
+    }
 }

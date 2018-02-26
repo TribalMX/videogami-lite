@@ -1,0 +1,82 @@
+body {
+    background-image: url("/system-images/background.jpg");
+
+    /* Full height */
+    height: 100%; 
+    /* Center and scale the image nicely */
+    /* background-position: center; */
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.logo{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 10%;
+}
+.title{
+    margin-top: 10px;
+}
+.logoTitle{
+    text-align: center;
+    vertical-align: middle;
+    margin-top: 230px;
+    height: 200px;
+    line-height: 400px;
+    color: white;
+    font-family: 'Arvo', serif;
+}
+.btn {
+    padding: 14px 24px;
+    margin-right: 10px;
+    margin-left: 10px;
+    border: 0 none;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.btn.sharp {
+    background: white;
+    color: black;
+    border-color: white;
+  }
+ 
+.btn:focus, .btn:active:focus, .btn.active:focus {
+    outline: 0 none;
+}
+ 
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open > .dropdown-toggle.btn-primary {
+    background: #33a6cc;
+}
+ 
+.btn-primary:active, .btn-primary.active {
+    background: #007299;
+    box-shadow: none;
+}
+
+.btn.outline {
+	background: none;
+	padding: 12px 22px;
+}
+.btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active, .btn-outline-primary.active, .open > .dropdown-toggle.btn-primary {
+	color: white;
+	border-color: white;
+}
+.btn-primary.outline {
+	border: 2px solid white;
+	color: white;
+}
+.btn-primary.outline:hover, .btn-primary.outline:focus, .btn-primary.outline:active, .btn-primary.outline.active, .open > .dropdown-toggle.btn-primary {
+	color: white;
+	border-color: white;
+}
+.btn-primary.outline:active, .btn-primary.outline.active {
+	border-color: white;
+	color: white;
+	box-shadow: none;
+}
+
+.button-div{
+    text-align:center
+}
+
