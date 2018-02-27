@@ -116,6 +116,13 @@ block content
                     br
                     span(for='STVoutlet') SnappyTV: #{outlet.STVoutlets.name}  
                     input(type='checkbox',value=[outlet.STVoutlets.name, outlet.STVoutlets.STVpublishingPoint + '/' + outlet.STVoutlets.STVstreamName], name='STVoutletCredentials', id=JSON.stringify(outlet.STVoutlets.name))
+                br
+                h4 Custom outlets:
+                each outlet in CSoutlets
+                    br
+                    span(for='CustomInput') Custom: #{outlet.CSoutlets.name}  
+                    input(type='checkbox', value=[outlet.CSoutlets.CSrtmp, outlet.CSoutlets.name], name='CSoutletCredentials', id='CustomInput')
+                br
                 select(class="month" id="month2" hidden value='' name="month")
                 select(class="day" id="day2" hidden value='' name="day")
                 select(class="hour" id="hour2" hidden value='' name="hour")

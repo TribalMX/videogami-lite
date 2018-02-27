@@ -16,6 +16,7 @@ block content
         button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseJoicaster") <i class="fa fa-plus" aria-hidden="true"></i> Joicaster
         button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseSnappyTV") <i class="fab fa-twitter-square"></i> SnappyTV
         button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseAkamai") <i class="fa fa-plus" aria-hidden="true"></i> Akamai
+        button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseCustom") <i class="fa fa-plus" aria-hidden="true"></i> Custom
   div(class="collapse" id="collapseAkamai")
     div(class="card card-body")
         h2 Add an Akamai outlet
@@ -102,7 +103,7 @@ block content
         h2 Add a Joicaster outlet
 
         form(action='/setup_accounts/setup_joicaster', method='post', id='JCRtmpKey')
-          label(for='JCname') Enter your Youtube outlet Name 
+          label(for='JCname') Enter your Joicaster outlet Name 
           input(type='text', value='', name='JCname', id='JCname' required)
           br
           label(for='JCRtmpKey') Enter your RTMP Key 
@@ -145,5 +146,27 @@ block content
               input(type='hidden', value=outlet._id, name='outletID', id='FBoutlet')
               button(class="btn btn-danger" type="submit") <i class="fa fa-trash" aria-hidden="true"></i> Remove Outlet
           br
+  div(class="collapse" id="collapseCustom")
+    div(class="card card-body")
+      h2 Add a custom outlet
+
+      form(action='/setup_accounts/setup_Custom', method='post', id='CSRtmpKey')
+        label(for='CSname') Enter your Custom outlet Name 
+        input(type='text', value='', name='CSname', id='CSname' required)
+        br
+        label(for='JCRtmpKey') Enter your RTMP link 
+        input(type='text', value='', name='CSRtmp', id='CSRtmpKey' required)
+        br
+        button(class="btn btn-primary" type="submit") <i class="fa fa-plus" aria-hidden="true"></i> Add outlet
+      br
+      h2 Custom outlets
+      each outlet in CSoutlets
+        p Name: #{outlet.CSoutlets.name}
+        p RTMP: #{outlet.CSoutlets.CSrtmp}
+        form(action='/setup_accounts/remove_outlet', method='post', id='CSRtmpKey')
+          input(type='hidden', value=outlet._id, name='outletID', id='CSoutlet')
+          button(class="btn btn-danger" type="submit") <i class="fa fa-trash" aria-hidden="true"></i> Remove Outlet
+      br
+      
 
 

@@ -26,6 +26,7 @@ let streamYTDestinations = []
 let streamSTVDestinations = []
 let streamJCDestinations = []
 let streamAKDestinations = []
+let streamCSDestinations = []
 let scheduledTime = null
 let scheduled = false
 let signalStatus = "offline"
@@ -222,14 +223,14 @@ let streamAK = (AKrtmp) => {
     .on('error', function(err) {
     console.log('Error: ' + err.message);
     })
-    .output("rtmp://459272:wR0wkA@p.ep412420.i.akamaientrypoint.net/EntryPoint/cbcsportsevents_1_bitrate@412420", function(stdout, stderr) {
+    .output("rtmp://196803:vOfNfOiY77@p.ep21989.i.akamaientrypoint.net/EntryPoint/webremote1_1_4000@21989", function(stdout, stderr) {
       console.log('Convert complete' +stdout)
     })
-    .withVideoBitrate('2.5k')
-    .size("1280x720")
+    .withVideoBitrate('4k')
+    .size("1920x1080")
     proc1.run()
 
-  var proc2 = new ffmpeg({ source: inputURL, timeout: 0 })
+    var proc2 = new ffmpeg({ source: inputURL, timeout: 0 })
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
@@ -241,31 +242,50 @@ let streamAK = (AKrtmp) => {
     .on('error', function(err) {
     console.log('Error: ' + err.message);
     })
-    .output("rtmp://459272:wR0wkA@p.ep412676.i.akamaientrypoint.net/EntryPoint/cbcsportsevents_2_bitrate@412676", function(stdout, stderr) {
+    .output("rtmp://196803:vOfNfOiY77@b.ep21989.i.akamaientrypoint.net/EntryPoint/webremote1_1_4000@21989", function(stdout, stderr) {
       console.log('Convert complete' +stdout)
     })
-    .withVideoBitrate('1.2k')
-    .size("852x480")
+    .withVideoBitrate('4k')
+    .size("1920x1080")
     proc2.run()
 
-  var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
-    .addOption('-vcodec', 'libx264')
-    .addOption('-acodec', 'aac')
-    .addOption('-f', 'flv')
+  // var proc2 = new ffmpeg({ source: inputURL, timeout: 0 })
+  //   .addOption('-vcodec', 'libx264')
+  //   .addOption('-acodec', 'aac')
+  //   .addOption('-f', 'flv')
 
-    .withAudioBitrate('128k')
-    .on('start', function(commandLine) {
-    console.log('Query : ' + commandLine);
-    })
-    .on('error', function(err) {
-    console.log('Error: ' + err.message);
-    })
-    .output("rtmp://459272:wR0wkA@p.ep412677.i.akamaientrypoint.net/EntryPoint/cbcsportsevents_3_bitrate@412677", function(stdout, stderr) {
-      console.log('Convert complete' +stdout)
-    })
-    .withVideoBitrate('.7')
-    .size("640x360")
-    proc3.run()
+  //   .withAudioBitrate('128k')
+  //   .on('start', function(commandLine) {
+  //   console.log('Query : ' + commandLine);
+  //   })
+  //   .on('error', function(err) {
+  //   console.log('Error: ' + err.message);
+  //   })
+  //   .output("rtmp://459272:wR0wkA@p.ep412676.i.akamaientrypoint.net/EntryPoint/cbcsportsevents_2_bitrate@412676", function(stdout, stderr) {
+  //     console.log('Convert complete' +stdout)
+  //   })
+  //   .withVideoBitrate('1.2k')
+  //   .size("852x480")
+  //   proc2.run()
+
+  // var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
+  //   .addOption('-vcodec', 'libx264')
+  //   .addOption('-acodec', 'aac')
+  //   .addOption('-f', 'flv')
+
+  //   .withAudioBitrate('128k')
+  //   .on('start', function(commandLine) {
+  //   console.log('Query : ' + commandLine);
+  //   })
+  //   .on('error', function(err) {
+  //   console.log('Error: ' + err.message);
+  //   })
+  //   .output("rtmp://459272:wR0wkA@p.ep412677.i.akamaientrypoint.net/EntryPoint/cbcsportsevents_3_bitrate@412677", function(stdout, stderr) {
+  //     console.log('Convert complete' +stdout)
+  //   })
+  //   .withVideoBitrate('.7')
+  //   .size("640x360")
+  //   proc3.run()
     
 
   // if(logosInUse){
@@ -282,6 +302,31 @@ let streamAK = (AKrtmp) => {
   //   }
   //   proc3.run()
   }
+
+  // custom outlet
+let streamCS = (rtmp) => {
+
+  console.log("streaming to custom Outlet")
+  var proc1 = new ffmpeg({ source: inputURL, timeout: 0 })
+    .addOption('-vcodec', 'libx264')
+    .addOption('-acodec', 'aac')
+    .addOption('-f', 'flv')
+
+    .withAudioBitrate('128k')
+    .on('start', function(commandLine) {
+    console.log('Query : ' + commandLine);
+    })
+    .on('error', function(err) {
+    console.log('Error: ' + err.message);
+    })
+    .output(rtmp, function(stdout, stderr) {
+      console.log('Convert complete' +stdout)
+    })
+    .withVideoBitrate('4k')
+    .size("1280x720")
+    proc1.run()  
+
+}
 
 // stream Snappy TV
 
@@ -462,8 +507,13 @@ router.get('/streaming', function (req, res, next) {
               for (var i = 0; i < collectionNames.length; i++) {
                 nameArray.push(collectionNames[i].name)
               }
+                db_accounts.findCSoutlets((err, CSoutlets_) => {      
+                  if (err) {
+                    return res.sendStatus(500);
+                }      
               console.log(nameArray)
-            res.render('index', { collectionName: nameArray, signal: signalStatus, name: outputName, AKoutlets: AKoutlets_,JCoutlets: JCoutlets_, streamStatus: streamStatus, STVoutlets: STVoutlets_, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
+            res.render('index', { collectionName: nameArray, signal: signalStatus, name: outputName, CSoutlets: CSoutlets_,AKoutlets: AKoutlets_,JCoutlets: JCoutlets_, streamStatus: streamStatus, STVoutlets: STVoutlets_, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
+              })
           })
         })
       })
@@ -520,16 +570,17 @@ router.post('/start_stream', function (req, res, next) {
   var FBcreds = req.body.FBoutletCredentials
   var STVcreds = req.body.STVoutletCredentials
   var JCcreds = req.body.JCoutletCredentials
-  var AKcreds = req.body.AKoutletCredentials  
+  var AKcreds = req.body.AKoutletCredentials 
+  var CScreds = req.body.CSoutletCredentials  
 
-  if(!YTcreds && !FBcreds && !STVcreds && !JCcreds && !AKcreds){
+  if(!YTcreds && !FBcreds && !STVcreds && !JCcreds && !AKcreds && !CScreds){
     outputMp4()
     signalStatus = "Converting"
     streamStatus = "Converting"
     res.redirect('/streaming/' + outputName)
   }
 
-  if((YTcreds || FBcreds || STVcreds || JCcreds || AKcreds) && !scheduled){
+  if((YTcreds || FBcreds || STVcreds || JCcreds || AKcreds || CScreds) && !scheduled){
     stopwatch.start()
     if(logosInUse){
     makeFormula()
@@ -617,6 +668,20 @@ router.post('/start_stream', function (req, res, next) {
   res.redirect('/streaming/' + outputName)
 }
 
+  // custom
+  if(typeof CScreds === 'object'){
+    CScreds.forEach(function(CSrtmpKey) {
+      let parsed = JSON.parse(CSrtmpKey)
+      streamCS(parsed[0])
+      streamCSDestinations.push(parsed[1])
+    });
+  }
+  if(typeof CScreds === 'string'){
+    let parsed = JSON.parse(CScreds)
+    streamCS(parsed[0])
+    streamCSDestinations.push(parsed[1])
+  }
+
   if (scheduled) {
     let date = new Date(2018, month - 1, day, hour, minute, 0)
     console.log('Scheduled on ' + req.body.hour + ':' + req.body.minute)
@@ -679,6 +744,17 @@ router.post('/start_stream', function (req, res, next) {
       if(typeof STVcreds === 'string'){
         let parsed = JSON.parse(STVcreds)
         streamSTVDestinations.push({name: parsed[0]})
+      }
+      // Custom
+      if(typeof CScreds === 'object'){
+        CScreds.forEach(function(CSrtmp) {
+          let parsed = JSON.parse(CSrtmp)
+          streamCSDestinations.push({name: parsed[0]})
+        });
+      }
+      if(typeof CScreds === 'string'){
+        let parsed = JSON.parse(CScreds)
+        streamCSDestinations.push({name: parsed[0]})
       }
 
     scheduleStream = schedule.scheduleJob(date, function (err) {
@@ -751,6 +827,18 @@ router.post('/start_stream', function (req, res, next) {
           let parsed = JSON.parse(STVcreds)
           streamSTV(parsed[1])
       }
+      // Custom
+      if(typeof CScreds === 'object'){
+        CScreds.forEach(function(CSrtmpKey) {
+          let parsed = JSON.parse(CSrtmpKey)
+          streamCS(parsed[0])
+        });
+      }
+      if(typeof CScreds === 'string'){
+        let parsed = JSON.parse(CScreds)
+        streamCS(parsed[0])
+      }
+
       scheduleStream.cancel()
       scheduled = false
     })
@@ -823,7 +911,12 @@ router.get('/setup_accounts', function (req, res, next) {
             if (err) {
               return res.sendStatus(500);
           }      
-        res.render('accounts', {signal: signalStatus, YToutlets: YToutlets_, AKoutlets: AKoutlets_, JCoutlets: JCoutlets_, FBoutlets: FBoutlets_, STVoutlets: STVoutlets_ })
+            db_accounts.findCSoutlets((err, CSoutlets_) => {      
+              if (err) {
+                return res.sendStatus(500);
+            }      
+        res.render('accounts', {signal: signalStatus, CSoutlets: CSoutlets_, YToutlets: YToutlets_, AKoutlets: AKoutlets_, JCoutlets: JCoutlets_, FBoutlets: FBoutlets_, STVoutlets: STVoutlets_ })
+          })
         })
       }) 
     }) 
@@ -880,6 +973,15 @@ router.post('/setup_accounts/setup_akamai', function (req, res, next) {
   db_accounts.insertAkamaiOutlet(AKoutletName, AKrtmp, AKurl, AKstreamName, AKuserNumber, AKpassword)
   res.redirect('/setup_accounts')
 })
+
+router.post('/setup_accounts/setup_custom', function (req, res, next) {
+  let CSrtmp = req.body.CSRtmp
+  let CSname = req.body.CSname
+
+  db_accounts.insertCustomOutlet(CSname, CSrtmp)
+  res.redirect('/setup_accounts')
+})
+
 // Hls input
 
 router.post('/input', function (req, res, next) {
