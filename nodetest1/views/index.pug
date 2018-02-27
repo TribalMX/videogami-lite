@@ -38,6 +38,7 @@ block content
                 source(src=currentUrl type="application/x-mpegURL")
         p(style="width: 100%; text-align: center") (rtmp sources will not be shown)
         br
+        input(hidden value=collectionName id='collectionName')
         form(action='/input', method='post', id='input')
             div(class="form-row")
                 div(class="col-md-4 mb-3")
@@ -71,14 +72,14 @@ block content
                 form(action='/convert', method='post', id='convertSettings')
                     span(for='input ') Enter your Converted File Name
                     br
-                    input(type='text', value='', name='name', id='streamName', placeholder="Stream name" required)
-                    button(class="btn btn-primary" style="margin-left: 10px" type="submit" id="submitBtn2") convert
+                    input(type='text', value='', name='name', id='convertName', placeholder="Stream name" required)
+                    button(class="btn btn-primary" style="margin-left: 10px" type="button" onclick='convertNameCheck()' id="submitBtn2") convert
     div(class="stepper-content" id="form-step3" style="display: none") 
         h2 Give your stream a name and choose which endpoint you want to stream to
         form(action='/start_stream', method='post', id='streamSettings')
             span(for='input ') Enter your Stream Name
             br
-            input(type='text', value='', onchange="checkNameChange()", name='name', id='streamName', placeholder="Stream name" required)
+            input(type='text', value='', name='name', id='streamName', placeholder="Stream name" required)
             br
             br
             div(id="outlets" style="display: block")
@@ -119,7 +120,7 @@ block content
                 select(class="day" id="day2" hidden value='' name="day")
                 select(class="hour" id="hour2" hidden value='' name="hour")
                 select(class="minute" id="minute2" hidden value='' name="minute")
-            button(class="btn btn-success" type="submit" id="submitBtn2") <i class="fa fa-play" aria-hidden="true"></i> Stream
+            button(class="btn btn-success" type="button" onclick='nameCheck()' id="submitBtn2") <i class="fa fa-play" aria-hidden="true"></i> Stream
     <div class="stepper-actions" style="height: 40px">
         br
         br
@@ -133,7 +134,35 @@ block content
     script(src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous")
     script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous")
     script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous") 
-
+    script.
+        function nameCheck(){
+            let streamNameInput = document.getElementById('streamName').value
+            collectionName = document.getElementById('collectionName').value
+            collectionParsed = JSON.parse(collectionName)
+            for(var i=0; i<collectionParsed.length; i++){
+                console.log(streamNameInput+ " vs " + collectionParsed[i])
+                if(streamNameInput === collectionParsed[i]){
+                    alert('That Stream Name is already being used')
+                    return
+                } 
+            }
+            let form = document.getElementById('streamSettings')
+            form.submit()
+        }
+        function convertNameCheck(){
+            let streamNameInput = document.getElementById('convertName').value
+            collectionName = document.getElementById('collectionName').value
+            collectionParsed = JSON.parse(collectionName)
+            for(var i=0; i<collectionParsed.length; i++){
+                console.log(streamNameInput+ " vs " + collectionParsed[i])
+                if(streamNameInput === collectionParsed[i]){
+                    alert('That Stream Name is already being used')
+                    return
+                } 
+            }
+            let form = document.getElementById('convertSettings')
+            form.submit()
+        }
     script.
         var counter = 1
         function next(){
@@ -154,8 +183,6 @@ block content
             }
             if(counter === 2){
                 counter++
-                var btn = document.getElementById("submitBtn2")
-                btn.click()
                 var element = document.getElementById("step3");
                 element.classList.add("stepper-step-isActive")
                 var oldElement = document.getElementById("step2")
@@ -210,51 +237,13 @@ block content
             document.getElementById("minute2").value = ''
             element.click()
         }
-        function convert(){
-            var element = document.getElementById("next");
-            var outlets = document.getElementById("outlets")
-            outlets.style.display = "none";
-            element.click()
-        }
-    script.
-        let accr = 0
-        let streamName_ = null
 
+    script.
         function checkSchedule(){
             document.getElementById("month2").value = document.getElementById("month").value
             document.getElementById("day2").value = document.getElementById("day").value
             document.getElementById("hour2").value = document.getElementById("hour").value
             document.getElementById("minute2").value = document.getElementById("minute").value
-        }
-
-        function checkNameChange(){
-        document.getElementById("convertName").value = document.getElementById("streamName").value
-        if(streamName){
-            document.getElementById("convertBtn").disabled = false;
-            if (accr > 0){
-                document.getElementById("streamNowBtn").disabled = false;
-                document.getElementById("scheduleStreamBtn").disabled = false;
-            } 
-        }
-        }
-        function clearSchedule(){
-        document.getElementById("month2").value = ''
-        document.getElementById("day2").value = ''
-        document.getElementById("hour2").value = ''
-        document.getElementById("minute2").value = ''
-        let form = document.getElementById("streamSettings")
-        let YTcreds = $('input[name="YToutletCredentials"]:checked').serialize()
-        let FBcreds = $('input[name="FBoutletCredentials"]:checked').serialize()
-        let STVcreds = $('input[name="STVoutletCredentials"]:checked').serialize()
-        let JCcreds = $('input[name="JCoutletCredentials"]:checked').serialize()
-        let streamName = document.getElementById("streamName").value
-        if((YTcreds || FBcreds || STVcreds || JCcreds) && streamName){
-            document.getElementById("streamSettings").addEventListener("click", function () {
-            form.submit();
-            })
-        } else {
-            alert('oops you missed something')
-        }
         }
 
     script.

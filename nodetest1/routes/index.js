@@ -69,7 +69,6 @@ let stopwatch = new Stopwatch()
 
 // stream name
 let outputName = 'stream'
-let displayName = 'displayName'
 let resolution = "1280:720"
 
 // formula for logo input
@@ -454,9 +453,19 @@ router.get('/streaming', function (req, res, next) {
           db_accounts.findAKoutlets((err, AKoutlets_) => {      
             if (err) {
               return res.sendStatus(500);
-          }  
-            res.render('index', { signal: signalStatus, name: outputName, AKoutlets: AKoutlets_,JCoutlets: JCoutlets_, streamStatus: streamStatus, STVoutlets: STVoutlets_, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
+          }
+            db_edit.getCollections((err, collectionNames) => {
+              if (err) {
+                return res.sendStatus(500)
+              } 
+              let nameArray = []
+              for (var i = 0; i < collectionNames.length; i++) {
+                nameArray.push(collectionNames[i].name)
+              }
+              console.log(nameArray)
+            res.render('index', { collectionName: nameArray, signal: signalStatus, name: outputName, AKoutlets: AKoutlets_,JCoutlets: JCoutlets_, streamStatus: streamStatus, STVoutlets: STVoutlets_, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
           })
+        })
       })
     }) 
   })
@@ -467,8 +476,7 @@ router.get('/streaming', function (req, res, next) {
 
 router.post('/start_stream', function (req, res, next) {
   console.log(req.body)
-  displayName = req.body.name
-  outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
+  outputName = req.body.name.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').replace(/,/g, '-').toLowerCase()
   db_label.insertDoc(outputName)
   let scheduled = false
 
@@ -516,6 +524,9 @@ router.post('/start_stream', function (req, res, next) {
 
   if(!YTcreds && !FBcreds && !STVcreds && !JCcreds && !AKcreds){
     outputMp4()
+    signalStatus = "Converting"
+    streamStatus = "Converting"
+    res.redirect('/streaming/' + outputName)
   }
 
   if((YTcreds || FBcreds || STVcreds || JCcreds || AKcreds) && !scheduled){
@@ -752,9 +763,7 @@ router.post('/start_stream', function (req, res, next) {
 router.post('/convert', function (req, res, next) {
   stopwatch.start()
   signalStatus = "Converting"
-  req.params.name = req.body.name
-  displayName = req.body.name
-  outputName = displayName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
+  outputName = req.body.name.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   db_label.insertDoc(outputName)
   if(logosInUse){
     makeFormula()
