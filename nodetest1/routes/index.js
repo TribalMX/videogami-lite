@@ -226,7 +226,7 @@ let streamAK = (AKrtmp) => {
     .output("rtmp://196803:vOfNfOiY77@p.ep21989.i.akamaientrypoint.net/EntryPoint/webremote1_1_4000@21989", function(stdout, stderr) {
       console.log('Convert complete' +stdout)
     })
-    .withVideoBitrate('4k')
+    .withVideoBitrate('2.5k')
     .size("1920x1080")
     proc1.run()
 
@@ -245,7 +245,7 @@ let streamAK = (AKrtmp) => {
     .output("rtmp://196803:vOfNfOiY77@b.ep21989.i.akamaientrypoint.net/EntryPoint/webremote1_1_4000@21989", function(stdout, stderr) {
       console.log('Convert complete' +stdout)
     })
-    .withVideoBitrate('4k')
+    .withVideoBitrate('2.5k')
     .size("1920x1080")
     proc2.run()
 
