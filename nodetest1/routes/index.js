@@ -231,7 +231,7 @@ let streamAK = (AKrtmp) => {
     .on('error', function(err) {
     console.log('Error: ' + err.message);
     })
-    .output("rtmp://196803:vOfNfOiY77@p.ep21989.i.akamaientrypoint.net/EntryPoint/webremote1_1_4000@21989", function(stdout, stderr) {
+    .output("rtmp://196803:vOfNfOiY77@b.ep21989.i.akamaientrypoint.net/EntryPoint/webremote1_1_4000@21989", function(stdout, stderr) {
       console.log('Convert complete' +stdout)
     })
     .withVideoBitrate('4000')
