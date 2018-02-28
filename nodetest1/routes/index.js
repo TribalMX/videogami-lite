@@ -111,6 +111,8 @@ let streamYT = (YTrtmp) => {
 
   console.log("streaming to youtube")
   var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
+    .addOption("-g", "60")
+    .addOption('-keyint_min', "60")
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
@@ -145,6 +147,8 @@ let streamFB = (FBrtmp) => {
   
   console.log("streaming to Facebook")
   var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
+    .addOption("-g", "60")
+    .addOption('-keyint_min', "60")
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
@@ -179,6 +183,8 @@ let streamJC = (JCrtmp) => {
 
   console.log("streaming to Joicaster")
   var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
+    .addOption("-g", "60")
+    .addOption('-keyint_min', "60")
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
@@ -212,6 +218,8 @@ let streamAK = (AKrtmp) => {
 
   console.log("streaming to Akamai")
   var proc1 = new ffmpeg({ source: inputURL, timeout: 0 })
+    .addOption("-g", "60")
+    .addOption('-keyint_min', "60")
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
@@ -223,11 +231,11 @@ let streamAK = (AKrtmp) => {
     .on('error', function(err) {
     console.log('Error: ' + err.message);
     })
-    .output("rtmp://a.rtmp.youtube.com/live2/qq0e-tf5g-eg85-52te", function(stdout, stderr) {
+    .output("rtmp://196803:vOfNfOiY77@p.ep21989.i.akamaientrypoint.net/EntryPoint/webremote1_1_4000@21989", function(stdout, stderr) {
       console.log('Convert complete' +stdout)
     })
     .withVideoBitrate('4000')
-    .size("1920x1080")
+    // .size("1920x1080")
     proc1.run()
 
     // var proc2 = new ffmpeg({ source: inputURL, timeout: 0 })
@@ -288,19 +296,19 @@ let streamAK = (AKrtmp) => {
   //   proc3.run()
     
 
-  // if(logosInUse){
-  //   if(typeof logosInUse === 'string'){
-  //     proc3 = proc3.input('./public/images/' + logosInUse)
-  //   } else {
-  //     for(n in logosInUse){
-  //       proc3 = proc3.input('./public/images/' + logosInUse[n])
-  //     }
-  //   }
-  //     proc3 = proc3.complexFilter(formula)
-  //   } else {
-  //     proc3 = proc3.addOption('-vf', "scale=" +  resolution)
-  //   }
-  //   proc3.run()
+  if(logosInUse){
+    if(typeof logosInUse === 'string'){
+      proc1 = proc1.input('./public/images/' + logosInUse)
+    } else {
+      for(n in logosInUse){
+        proc3 = proc1.input('./public/images/' + logosInUse[n])
+      }
+    }
+      proc1 = proc1.complexFilter(formula)
+    } else {
+      proc1 = proc1.addOption('-vf', "scale=" +  resolution)
+    }
+    proc3.run()
   }
 
   // custom outlet
@@ -308,6 +316,8 @@ let streamCS = (rtmp) => {
 
   console.log("streaming to custom Outlet")
   var proc1 = new ffmpeg({ source: inputURL, timeout: 0 })
+    .addOption("-g", "60")
+    .addOption('-keyint_min', "60")
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
@@ -333,6 +343,8 @@ let streamCS = (rtmp) => {
 let streamSTV = (STVrtmpKey) => {
   console.log("streaming to Facebook")
   var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
+    .addOption("-g", "60")
+    .addOption('-keyint_min', "60")
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
