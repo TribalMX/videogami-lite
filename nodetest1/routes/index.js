@@ -116,6 +116,8 @@ let streamYT = (YTrtmp) => {
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
+    .withVideoBitrate('4000')
+    .withAudioBitrate('128k')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
     })
@@ -214,6 +216,7 @@ let streamJC = (JCrtmp) => {
   }
 
 // Akamai
+
 let streamAK = (AKrtmp) => {
 
   console.log("streaming to Akamai")
@@ -223,7 +226,7 @@ let streamAK = (AKrtmp) => {
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
-
+    .withVideoBitrate('4000')
     .withAudioBitrate('128k')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
@@ -231,12 +234,11 @@ let streamAK = (AKrtmp) => {
     .on('error', function(err) {
     console.log('Error: ' + err.message);
     })
-    .output("rtmp://196803:vOfNfOiY77@b.ep21989.i.akamaientrypoint.net/EntryPoint/webremote1_1_4000@21989", function(stdout, stderr) {
+    .output("rtmp://196803:vOfNfOiY77@p.ep21989.i.akamaientrypoint.net/EntryPoint/webremote1_1_4000@21989", function(stdout, stderr) {
       console.log('Convert complete' +stdout)
     })
-    .withVideoBitrate('4000')
     // .size("1920x1080")
-    proc1.run()
+    // proc1.run()
 
     // var proc2 = new ffmpeg({ source: inputURL, timeout: 0 })
     // .addOption('-vcodec', 'libx264')
@@ -301,14 +303,14 @@ let streamAK = (AKrtmp) => {
       proc1 = proc1.input('./public/images/' + logosInUse)
     } else {
       for(n in logosInUse){
-        proc3 = proc1.input('./public/images/' + logosInUse[n])
+        proc1 = proc1.input('./public/images/' + logosInUse[n])
       }
     }
       proc1 = proc1.complexFilter(formula)
     } else {
       proc1 = proc1.addOption('-vf', "scale=" +  resolution)
     }
-    proc3.run()
+    proc1.run()
   }
 
   // custom outlet
