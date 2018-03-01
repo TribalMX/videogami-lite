@@ -226,7 +226,7 @@ let streamAK = (AKrtmp) => {
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
-    .withVideoBitrate('4000')
+    .withVideoBitrate('3000')
     .withAudioBitrate('128k')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
@@ -234,70 +234,28 @@ let streamAK = (AKrtmp) => {
     .on('error', function(err) {
     console.log('Error: ' + err.message);
     })
-    .output("rtmp://459518:wR0wkA@p.ep535786.i.akamaientrypoint.net/pycpara1_1_4000@535786", function(stdout, stderr) {
+    .output("rtmp://459518:wR0wkA@p.ep535786.i.akamaientrypoint.net/EntryPoint/pycpara1_1_4000@535786", function(stdout, stderr) {
       console.log('Convert complete' +stdout)
     })
-    // .size("1920x1080")
-    // proc1.run()
 
-    // var proc2 = new ffmpeg({ source: inputURL, timeout: 0 })
-    // .addOption('-vcodec', 'libx264')
-    // .addOption('-acodec', 'aac')
-    // .addOption('-f', 'flv')
-
-    // .withAudioBitrate('128k')
-    // .on('start', function(commandLine) {
-    // console.log('Query : ' + commandLine);
-    // })
-    // .on('error', function(err) {
-    // console.log('Error: ' + err.message);
-    // })
-    // .output("rtmp://196803:vOfNfOiY77@b.ep21989.i.akamaientrypoint.net/EntryPoint/webremote1_1_4000@21989", function(stdout, stderr) {
-    //   console.log('Convert complete' +stdout)
-    // })
-    // .withVideoBitrate('4000')
-    // .size("1920x1080")
-    // proc2.run()
-
-  // var proc2 = new ffmpeg({ source: inputURL, timeout: 0 })
-  //   .addOption('-vcodec', 'libx264')
-  //   .addOption('-acodec', 'aac')
-  //   .addOption('-f', 'flv')
-
-  //   .withAudioBitrate('128k')
-  //   .on('start', function(commandLine) {
-  //   console.log('Query : ' + commandLine);
-  //   })
-  //   .on('error', function(err) {
-  //   console.log('Error: ' + err.message);
-  //   })
-  //   .output("rtmp://459272:wR0wkA@p.ep412676.i.akamaientrypoint.net/EntryPoint/cbcsportsevents_2_bitrate@412676", function(stdout, stderr) {
-  //     console.log('Convert complete' +stdout)
-  //   })
-  //   .withVideoBitrate('1.2k')
-  //   .size("852x480")
-  //   proc2.run()
-
-  // var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
-  //   .addOption('-vcodec', 'libx264')
-  //   .addOption('-acodec', 'aac')
-  //   .addOption('-f', 'flv')
-
-  //   .withAudioBitrate('128k')
-  //   .on('start', function(commandLine) {
-  //   console.log('Query : ' + commandLine);
-  //   })
-  //   .on('error', function(err) {
-  //   console.log('Error: ' + err.message);
-  //   })
-  //   .output("rtmp://459272:wR0wkA@p.ep412677.i.akamaientrypoint.net/EntryPoint/cbcsportsevents_3_bitrate@412677", function(stdout, stderr) {
-  //     console.log('Convert complete' +stdout)
-  //   })
-  //   .withVideoBitrate('.7')
-  //   .size("640x360")
-  //   proc3.run()
+    var proc2 = new ffmpeg({ source: inputURL, timeout: 0 })
+    .addOption("-g", "60")
+    .addOption('-keyint_min', "60")
+    .addOption('-vcodec', 'libx264')
+    .addOption('-acodec', 'aac')
+    .addOption('-f', 'flv')
+    .withVideoBitrate('3000')
+    .withAudioBitrate('128k')
+    .on('start', function(commandLine) {
+    console.log('Query : ' + commandLine);
+    })
+    .on('error', function(err) {
+    console.log('Error: ' + err.message);
+    })
+    .output("rtmp://196803:vOfNfOiY77@p.ep21989.i.akamaientrypoint.net/EntryPoint/webremote1_1@21989", function(stdout, stderr) {
+      console.log('Convert complete' +stdout)
+    })
     
-
   if(logosInUse){
     if(typeof logosInUse === 'string'){
       proc1 = proc1.input('./public/images/' + logosInUse)
@@ -311,6 +269,20 @@ let streamAK = (AKrtmp) => {
       proc1 = proc1.addOption('-vf', "scale=" +  resolution)
     }
     proc1.run()
+
+    if(logosInUse){
+      if(typeof logosInUse === 'string'){
+        proc2 = proc2.input('./public/images/' + logosInUse)
+      } else {
+        for(n in logosInUse){
+          proc2 = proc2.input('./public/images/' + logosInUse[n])
+        }
+      }
+        proc2 = proc2.complexFilter(formula)
+      } else {
+        proc2 = proc2.addOption('-vf', "scale=" +  resolution)
+      }
+      proc2.run()
   }
 
   // custom outlet
