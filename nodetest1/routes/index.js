@@ -234,7 +234,7 @@ let streamAK = (AKrtmp) => {
     .on('error', function(err) {
     console.log('Error: ' + err.message);
     })
-    .output("rtmp://196803:vOfNfOiY77@p.ep21989.i.akamaientrypoint.net/EntryPoint/webremote1_1_4000@21989", function(stdout, stderr) {
+    .output("rtmp://459518:wR0wkA@p.ep535786.i.akamaientrypoint.net/EntryPoint/pycpara1_1_4000@535786", function(stdout, stderr) {
       console.log('Convert complete' +stdout)
     })
     // .size("1920x1080")

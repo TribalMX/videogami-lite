@@ -127,8 +127,8 @@ block content
                 select(class="day" id="day2" hidden value='' name="day")
                 select(class="hour" id="hour2" hidden value='' name="hour")
                 select(class="minute" id="minute2" hidden value='' name="minute")
-            button(class="btn btn-success" type="button" onclick='nameCheck()' id="submitBtn2") <i class="fa fa-play" aria-hidden="true"></i> Stream
-            button(hidden class="btn btn-success" type="button" onclick='nameCheck()' id="submitBtn2") <i class="fa fa-play" aria-hidden="true"></i> 
+            button(type="submit" id="submitForm" hidden)
+            button(class="btn btn-success" type="button" onclick='nameCheck()' id="submitBtn3") <i class="fa fa-play" aria-hidden="true"></i> Stream
     <div class="stepper-actions" style="height: 40px">
         br
         br
@@ -154,8 +154,8 @@ block content
                     return
                 } 
             }
-            let form = document.getElementById('streamSettings')
-            form.submit()
+            let button = document.getElementById('submitForm')
+            button.click()
         }
         function convertNameCheck(){
             let streamNameInput = document.getElementById('convertName').value
@@ -265,6 +265,8 @@ block content
         };
 
         function streamFB(pageId, accessToken, FBoutletName){
+            let button = document.getElementById('submitBtn3')
+            button = button.setAttribute('disabled', 'disabled')
         FB.api(
             '/' + pageId + '/live_videos',
             'POST',
@@ -276,10 +278,11 @@ block content
             function(response) {
                 let rtmp = response.stream_url
                 console.log(rtmp)
-                console.log(response)
                 console.log(response.id)
                 let name = JSON.stringify(FBoutletName)
                 document.getElementById(name).value =  JSON.stringify([rtmp, name, response.id])
+                let button2 = document.getElementById('submitBtn3')
+                button2.removeAttribute("disabled")
             }
         );
         }
