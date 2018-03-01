@@ -220,7 +220,7 @@ let streamJC = (JCrtmp) => {
 let streamAK = (AKrtmp) => {
 
   console.log("streaming to Akamai")
-  var proc1 = new ffmpeg({ source: inputURL, timeout: 0 })
+  var proc1 = new ffmpeg({ source: "http://cbcsportshd2-lh.akamaihd.net/i/pycpara1_1@303499/master.m3u8", timeout: 0 })
     .addOption("-g", "60")
     .addOption('-keyint_min', "60")
     .addOption('-vcodec', 'libx264')
@@ -238,7 +238,7 @@ let streamAK = (AKrtmp) => {
       console.log('Convert complete' +stdout)
     })
 
-    var proc2 = new ffmpeg({ source: inputURL, timeout: 0 })
+    var proc2 = new ffmpeg({ source: "http://hdflash_1-lh.akamaihd.net/i/web109_1@364857/master.m3u8", timeout: 0 })
     .addOption("-g", "60")
     .addOption('-keyint_min', "60")
     .addOption('-vcodec', 'libx264')
