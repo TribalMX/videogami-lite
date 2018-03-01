@@ -52,14 +52,14 @@ block content
   div(class="collapse" id="collapseTrim")
       div(class="card card-body")
         h2 Make a trim
-        form(action='/streaming/'+ name + '/trim_start', method='post', id='input')
+        form(action='/streaming/'+ name + '/trim_start', method='post', id='recordInput')
             label(for='startTime') Give your trim a name
             br
-            input(type='text', value='', name='name', id='trimName', placeholder='name' required)
+            input(type='text', value='', name='name', id='trimNameInput', placeholder='name' required)
             button(style="margin-left: 10px" class="btn btn-success" type="submit") <i class="fas fa-stop-circle"></i> Start recording
         form(action='/streaming/'+ name + '/trim_end', method='post', id='input')
             button(class="btn btn-danger" type="submit" id="stopRecordingBtn") Stop recording
-        p Recording: #{inStreamEditName}
+        p(class='div-class' id='currentEditName') Recording: #{inStreamEditName}
   
   div(class="collapse" id="collapseEditedVideos")
             div(class="card card-body")

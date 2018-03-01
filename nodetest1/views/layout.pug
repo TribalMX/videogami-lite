@@ -74,6 +74,17 @@ html
         });  
       });   
     });
+
+    $(function() {
+      $("#recordInput").on("submit",function(e) { 
+        e.preventDefault(); // stop submission
+        let trimInput = document.getElementById('trimNameInput').value
+        $("#currentEditName").html("Recording: " + trimInput)
+        $.post(this.action,$(this).serialize(), {
+        })
+      });   
+    });
+
     $(function() {
         let signals = document.getElementById('signalInput')
         let signalBtn = document.getElementById('signal_')
