@@ -115,6 +115,8 @@ let streamYT = (YTrtmp) => {
     .addOption("-g", "60")
     .addOption('-keyint_min', "60")
     .addOption('-vcodec', 'libx264')
+    .addOption('-bufsize', '3000k')
+    .addOption("-preset", "veryfast")
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
     .withVideoBitrate(bitrate)
@@ -153,6 +155,8 @@ let streamFB = (FBrtmp) => {
     .addOption("-g", "60")
     .addOption('-keyint_min', "60")
     .addOption('-vcodec', 'libx264')
+    .addOption('-bufsize', '3000k')
+    .addOption("-preset", "veryfast")
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
     .withVideoBitrate(bitrate)
@@ -191,6 +195,8 @@ let streamJC = (JCrtmp) => {
     .addOption("-g", "60")
     .addOption('-keyint_min', "60")
     .addOption('-vcodec', 'libx264')
+    .addOption('-bufsize', '3000k')
+    .addOption("-preset", "veryfast")
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
     .withVideoBitrate(bitrate)
@@ -229,6 +235,8 @@ let streamAK = (AKrtmp) => {
     .addOption("-g", "60")
     .addOption('-keyint_min', "60")
     .addOption('-vcodec', 'libx264')
+    .addOption('-bufsize', '3000k')
+    .addOption("-preset", "veryfast")
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
     .withVideoBitrate(bitrate)
@@ -266,6 +274,8 @@ let streamCS = (rtmp) => {
     .addOption("-g", "60")
     .addOption('-keyint_min', "60")
     .addOption('-vcodec', 'libx264')
+    .addOption('-bufsize', '3000k')
+    .addOption("-preset", "veryfast")
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
     .withVideoBitrate(bitrate)
@@ -304,6 +314,8 @@ let streamSTV = (STVrtmpKey) => {
     .addOption("-g", "60")
     .addOption('-keyint_min', "60")
     .addOption('-vcodec', 'libx264')
+    .addOption('-bufsize', '3000k')
+    .addOption("-preset", "veryfast")
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
     .withVideoBitrate(bitrate)
@@ -484,8 +496,25 @@ router.get('/streaming', function (req, res, next) {
                     return res.sendStatus(500);
                 }      
               console.log(nameArray)
-            res.render('index', { collectionName: nameArray, signal: signalStatus, name: outputName, CSoutlets: CSoutlets_,AKoutlets: AKoutlets_,JCoutlets: JCoutlets_, streamStatus: streamStatus, STVoutlets: STVoutlets_, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, streamAKDestinations: streamAKDestinations,
-              streamCSDestinations: streamCSDestinations,scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
+            res.render('index', { 
+              collectionName: nameArray, 
+              signal: signalStatus, 
+              name: outputName, 
+              CSoutlets: CSoutlets_,
+              AKoutlets: AKoutlets_,
+              JCoutlets: JCoutlets_, 
+              streamStatus: streamStatus, 
+              STVoutlets: STVoutlets_, 
+              streamJCDestinations: streamJCDestinations, 
+              streamSTVDestinations: streamSTVDestinations, 
+              streamYTDestinations: streamYTDestinations, 
+              streamFBDestinations: streamFBDestinations, 
+              streamAKDestinations: streamAKDestinations,
+              streamCSDestinations: streamCSDestinations,
+              scheduleStatus: scheduled, 
+              YToutlets: YToutlets_, 
+              FBoutlets: FBoutlets_, 
+              currentUrl: inputURL  })        
               })
           })
         })
@@ -888,7 +917,14 @@ router.get('/setup_accounts', function (req, res, next) {
               if (err) {
                 return res.sendStatus(500);
             }      
-        res.render('accounts', {signal: signalStatus, CSoutlets: CSoutlets_, YToutlets: YToutlets_, AKoutlets: AKoutlets_, JCoutlets: JCoutlets_, FBoutlets: FBoutlets_, STVoutlets: STVoutlets_ })
+        res.render('accounts', {
+          signal: signalStatus, 
+          CSoutlets: CSoutlets_, 
+          YToutlets: YToutlets_, 
+          AKoutlets: AKoutlets_, 
+          JCoutlets: JCoutlets_, 
+          FBoutlets: FBoutlets_, 
+          STVoutlets: STVoutlets_ })
           })
         })
       }) 
@@ -943,7 +979,13 @@ router.post('/setup_accounts/setup_akamai', function (req, res, next) {
   let AKrtmp = "rtmp://"+AKuserNumber+":"+AKpassword+"@"+AKurl.slice(7)+"/"+AKstreamName
   console.log(AKrtmp)
 
-  db_accounts.insertAkamaiOutlet(AKoutletName, AKrtmp, AKurl, AKstreamName, AKuserNumber, AKpassword)
+  db_accounts.insertAkamaiOutlet(
+    AKoutletName, 
+    AKrtmp, 
+    AKurl, 
+    AKstreamName, 
+    AKuserNumber, 
+    AKpassword)
   res.redirect('/setup_accounts')
 })
 
@@ -997,7 +1039,13 @@ router.get('/editing_station/:collection_name', function (req, res, next) {
     db_trims.findTrims((err, trims_) => {
         if (err)
             return res.sendStatus(500);         
-        res.render('editing', {signal: signalStatus, name: collectionName, label: labels, trims: trims_, startTime: labelStartTime, endTime: labelEndTime})
+        res.render('editing', {
+          signal: signalStatus, 
+          name: collectionName, 
+          label: labels, 
+          trims: trims_, 
+          startTime: labelStartTime, 
+          endTime: labelEndTime})
     }) 
   }) },500);
 })
@@ -1030,7 +1078,13 @@ router.get('/editing/:stream_name', function (req, res, next) {
       if (err) {
         return res.sendStatus(500)
       }
-      res.render('editing', {signal: signalStatus, name: editName, label: labels, trims: trims_, startTime: labelStartTime, endTime: labelEndTime})
+      res.render('editing', {
+        signal: signalStatus, 
+        name: editName, 
+        label: labels, 
+        trims: trims_, 
+        startTime: labelStartTime, 
+        endTime: labelEndTime})
     }) 
   })   
   },500);
