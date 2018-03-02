@@ -29,10 +29,14 @@ block content
 
     h3 Select the resolution you want to use
     form(action='/video_settings/change_resolution', method='post', id='resolutionForm')
-        label(for='resolution') change resolution 
+        span(for='resolution') change resolution 
         select(class="resolution" , name="resolution", id="resolution")
+        br
         p current resolution: #{currentResolution}
-        button(class="btn btn-primary" type="submit") Change resolution
+        span(for='resolution') change bitrate
+        input(name="bitrate_" type='text' value=bitrate placeholder='2500')
+        p current resolution: #{bitrate}
+        button(class="btn btn-primary" type="submit") Change resolution / bitrate
     br
     h2 Current logos
         each logos in logo_

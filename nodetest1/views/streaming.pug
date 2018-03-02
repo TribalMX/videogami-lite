@@ -33,7 +33,11 @@ block content
   each destination in streamSTVDestinations
     p #{destination.name}
   p #{streamJCDestinations}
+  p #{streamCSDestinations}
+  p #{streamAKDestinations}
+
   h4(id='timer')
+  button(id="resetTimer" onclick='resetTimer()') Reset Timer
   div(class="btns2" style="text-align: center; display: block" id='stopDiv')
     form(action="/editing/" + name, method='get', id='stop')
       button(class="btn btn-danger" data-toggle="modal" data-target="#confirm-delete" type='button') <i class="fas fa-ban"></i> #{terminate}
@@ -139,7 +143,6 @@ block content
       }
     }
 
-    window.onload = resetTimer()
     if (countDownDate) {
         countDownDate = new Date(countDownDate);
     } else {

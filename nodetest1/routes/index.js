@@ -71,6 +71,7 @@ let stopwatch = new Stopwatch()
 // stream name
 let outputName = 'stream'
 let resolution = "1280:720"
+let bitrate = "2500"
 
 // formula for logo input
 let formula = null
@@ -116,7 +117,7 @@ let streamYT = (YTrtmp) => {
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
-    .withVideoBitrate('4000')
+    .withVideoBitrate(bitrate)
     .withAudioBitrate('128k')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
@@ -154,6 +155,8 @@ let streamFB = (FBrtmp) => {
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
+    .withVideoBitrate(bitrate)
+    .withAudioBitrate('128k')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
     })
@@ -190,6 +193,8 @@ let streamJC = (JCrtmp) => {
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
+    .withVideoBitrate(bitrate)
+    .withAudioBitrate('128k')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
     })
@@ -220,13 +225,13 @@ let streamJC = (JCrtmp) => {
 let streamAK = (AKrtmp) => {
 
   console.log("streaming to Akamai")
-  var proc1 = new ffmpeg({ source: "http://cbcsportshd2-lh.akamaihd.net/i/pycpara1_1@303499/master.m3u8", timeout: 0 })
+  var proc1 = new ffmpeg({ source: inputURL, timeout: 0 })
     .addOption("-g", "60")
     .addOption('-keyint_min', "60")
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
-    .withVideoBitrate('3000')
+    .withVideoBitrate(bitrate)
     .withAudioBitrate('128k')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
@@ -234,25 +239,7 @@ let streamAK = (AKrtmp) => {
     .on('error', function(err) {
     console.log('Error: ' + err.message);
     })
-    .output("rtmp://459518:wR0wkA@p.ep535786.i.akamaientrypoint.net/EntryPoint/pycpara1_1_4000@535786", function(stdout, stderr) {
-      console.log('Convert complete' +stdout)
-    })
-
-    var proc2 = new ffmpeg({ source: "http://hdflash_1-lh.akamaihd.net/i/web109_1@364857/master.m3u8", timeout: 0 })
-    .addOption("-g", "60")
-    .addOption('-keyint_min', "60")
-    .addOption('-vcodec', 'libx264')
-    .addOption('-acodec', 'aac')
-    .addOption('-f', 'flv')
-    .withVideoBitrate('3000')
-    .withAudioBitrate('128k')
-    .on('start', function(commandLine) {
-    console.log('Query : ' + commandLine);
-    })
-    .on('error', function(err) {
-    console.log('Error: ' + err.message);
-    })
-    .output("rtmp://196803:vOfNfOiY77@p.ep21989.i.akamaientrypoint.net/EntryPoint/webremote1_1@21989", function(stdout, stderr) {
+    .output(AKrtmp, function(stdout, stderr) {
       console.log('Convert complete' +stdout)
     })
     
@@ -269,20 +256,6 @@ let streamAK = (AKrtmp) => {
       proc1 = proc1.addOption('-vf', "scale=" +  resolution)
     }
     proc1.run()
-
-    if(logosInUse){
-      if(typeof logosInUse === 'string'){
-        proc2 = proc2.input('./public/images/' + logosInUse)
-      } else {
-        for(n in logosInUse){
-          proc2 = proc2.input('./public/images/' + logosInUse[n])
-        }
-      }
-        proc2 = proc2.complexFilter(formula)
-      } else {
-        proc2 = proc2.addOption('-vf', "scale=" +  resolution)
-      }
-      proc2.run()
   }
 
   // custom outlet
@@ -295,7 +268,7 @@ let streamCS = (rtmp) => {
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
-
+    .withVideoBitrate(bitrate)
     .withAudioBitrate('128k')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
@@ -306,9 +279,20 @@ let streamCS = (rtmp) => {
     .output(rtmp, function(stdout, stderr) {
       console.log('Convert complete' +stdout)
     })
-    .withVideoBitrate('4k')
-    .size("1280x720")
-    proc1.run()  
+
+    if(logosInUse){
+      if(typeof logosInUse === 'string'){
+        proc1 = proc1.input('./public/images/' + logosInUse)
+      } else {
+        for(n in logosInUse){
+          proc1 = proc1.input('./public/images/' + logosInUse[n])
+        }
+      }
+        proc1 = proc1.complexFilter(formula)
+      } else {
+        proc1 = proc1.addOption('-vf', "scale=" +  resolution)
+      }
+      proc1.run()
 
 }
 
@@ -322,6 +306,8 @@ let streamSTV = (STVrtmpKey) => {
     .addOption('-vcodec', 'libx264')
     .addOption('-acodec', 'aac')
     .addOption('-f', 'flv')
+    .withVideoBitrate(bitrate)
+    .withAudioBitrate('128k')
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
     })
@@ -498,7 +484,8 @@ router.get('/streaming', function (req, res, next) {
                     return res.sendStatus(500);
                 }      
               console.log(nameArray)
-            res.render('index', { collectionName: nameArray, signal: signalStatus, name: outputName, CSoutlets: CSoutlets_,AKoutlets: AKoutlets_,JCoutlets: JCoutlets_, streamStatus: streamStatus, STVoutlets: STVoutlets_, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
+            res.render('index', { collectionName: nameArray, signal: signalStatus, name: outputName, CSoutlets: CSoutlets_,AKoutlets: AKoutlets_,JCoutlets: JCoutlets_, streamStatus: streamStatus, STVoutlets: STVoutlets_, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations, streamYTDestinations: streamYTDestinations, streamFBDestinations: streamFBDestinations, streamAKDestinations: streamAKDestinations,
+              streamCSDestinations: streamCSDestinations,scheduleStatus: scheduled, YToutlets: YToutlets_, FBoutlets: FBoutlets_, currentUrl: inputURL  })        
               })
           })
         })
@@ -652,7 +639,6 @@ router.post('/start_stream', function (req, res, next) {
       console.log(">>>>>" + JSON.stringify(streamSTVDestinations))
   }
   res.redirect('/streaming/' + outputName)
-}
 
   // custom
   if(typeof CScreds === 'object'){
@@ -667,6 +653,7 @@ router.post('/start_stream', function (req, res, next) {
     streamCS(parsed[0])
     streamCSDestinations.push(parsed[1])
   }
+}
 
   if (scheduled) {
     let date = new Date(2018, month - 1, day, hour, minute, 0)
@@ -1188,7 +1175,21 @@ router.get('/streaming/:stream_name', function (req, res, next) {
     db_trims.findTrims((err, trims_) => {
       if (err)
           return res.sendStatus(500);         
-      res.render('streaming', {signal: signalStatus, name: outputName, inStreamEditName: inStreamMsg,input: inputURL ,label: labels, trims: trims_, date: streamStatus, terminate: stopSign, streamJCDestinations: streamJCDestinations, streamSTVDestinations: streamSTVDestinations,streamFBDestinations: streamFBDestinations, streamYTDestinations: streamYTDestinations})
+      res.render('streaming', {
+        signal: signalStatus, 
+        name: outputName, 
+        inStreamEditName: inStreamMsg,
+        input: inputURL,
+        label: labels, 
+        trims: trims_, 
+        date: streamStatus, 
+        terminate: stopSign, 
+        streamJCDestinations: streamJCDestinations, 
+        streamSTVDestinations: streamSTVDestinations,
+        streamFBDestinations: streamFBDestinations, 
+        streamYTDestinations: streamYTDestinations, 
+        streamCSDestinations: streamCSDestinations, 
+        streamAKDestinations: streamAKDestinations})
     }) 
   })   
   },1000); 
@@ -1348,7 +1349,7 @@ router.get('/video_settings', function (req, res, next) {
         if (err) {
           return res.sendStatus(500)
         }
-        res.render('video_settings', {signal: signalStatus, currentResolution: resolution, input: inputURL, name: outputName, logo_: logo, logosInUse: logosInUse, logoAltTime: altTime, horizontal: logoHorizontal, height: logoHeight, size: imgScale})
+        res.render('video_settings', {signal: signalStatus, bitrate: bitrate, currentResolution: resolution, input: inputURL, name: outputName, logo_: logo, logosInUse: logosInUse, logoAltTime: altTime, horizontal: logoHorizontal, height: logoHeight, size: imgScale})
       })
     });
   },500);
@@ -1357,7 +1358,8 @@ router.get('/video_settings', function (req, res, next) {
 
 router.post('/video_settings/change_resolution', function (req, res, next) {
   resolution = req.body.resolution
-  console.log(resolution)
+  bitrate = req.body.bitrate_
+  console.log(bitrate)
   res.redirect('/video_settings')
 })
 
