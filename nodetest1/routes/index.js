@@ -111,7 +111,30 @@ let makeFormula = () => {
   }
 }
 
-// youtube
+//  output screenshot
+
+let outputScreenShot = () => {
+  var proc = new ffmpeg({ source: './public/videos/output/' + outputName + '.mp4', timeout: 0 })
+  .seekInput(5.0)
+  .addOption('-vframes', '1')
+  .addOption('-q:v', '2')
+  .on('start', function(commandLine) {
+    console.log('Query : ' + commandLine);
+    })
+  .on('error', function(err) {
+    console.log('Error: ' + err.message);
+  })
+  .output("./public/videos/screenshots/"+ outputName +'.jpg', function(stdout, stderr) {
+  console.log('Convert complete' +stdout)
+  })
+  .on('end', function(stdout, stderr) {
+    console.log('Transcoding succeeded !');
+  });
+  cmd.run("ffmpeg -ss 00:00:05 -i " + './public/videos/output/' + outputName + '.mp4' +" -vframes 1 -q:v 2 ./public/videos/screenshots/"+ outputName +'.jpg"')
+  proc.run()
+} 
+
+// stream command
 let stream = () => {
   dirPath = "./public/videos/cut-videos/" + outputName
   mkdirp(dirPath, function(err) { 
@@ -169,70 +192,6 @@ let stream = () => {
     }
     proc3.run()
   }
-
-
-//  output screenshot
-
-let outputScreenShot = () => {
-  var proc = new ffmpeg({ source: './public/videos/output/' + outputName + '.mp4', timeout: 0 })
-  .seekInput(5.0)
-  .addOption('-vframes', '1')
-  .addOption('-q:v', '2')
-  .on('start', function(commandLine) {
-    console.log('Query : ' + commandLine);
-    })
-  .on('error', function(err) {
-    console.log('Error: ' + err.message);
-  })
-  .output("./public/videos/screenshots/"+ outputName +'.jpg', function(stdout, stderr) {
-  console.log('Convert complete' +stdout)
-  })
-  .on('end', function(stdout, stderr) {
-    console.log('Transcoding succeeded !');
-  });
-  cmd.run("ffmpeg -ss 00:00:05 -i " + './public/videos/output/' + outputName + '.mp4' +" -vframes 1 -q:v 2 ./public/videos/screenshots/"+ outputName +'.jpg"')
-  proc.run()
-} 
-
-//output mp4
-
-let outputMp4 = () => {
-var proc = new ffmpeg({ source: inputURL, timeout: 0 })
-  .addOption('-vcodec', 'libx264')
-  .addOption('-acodec', 'aac')
-  .addOption('-crf', 26)
-  .on('start', function(commandLine) {
-  console.log('Query : ' + commandLine);
-  })
-  .on('error', function(err) {
-    console.log('Error: ' + err.message);
-    outputScreenShot()
-  })
-  .output('./public/videos/output/' + outputName + '.mp4', function(stdout, stderr) {
-  console.log('Convert complete' +stdout)
-})
-  .on('end', function(stdout, stderr) {
-    outputScreenShot()
-    console.log('Transcoding succeeded !');
-  });
-  if(logosInUse){
-    if(typeof logosInUse === 'string'){
-      proc = proc.input('./public/images/' + logosInUse)
-    } else {
-    for(n in logosInUse){
-      proc = proc.input('./public/images/' + logosInUse[n])
-    }
-  }
-      proc = proc.complexFilter(formula)
-    } else {
-      proc = proc.addOption('-vf', "scale=" +  resolution)
-    }
-    proc.run()
-  dirPath = "./public/videos/cut-videos/" + outputName
-  mkdirp(dirPath, function(err) { 
-    console.log('directory made')
-});
-}
 
 // this is for trimming the video with start and end time
 
