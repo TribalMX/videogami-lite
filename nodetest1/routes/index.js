@@ -27,6 +27,7 @@ let streamSTVDestinations = []
 let streamJCDestinations = []
 let streamAKDestinations = []
 let streamCSDestinations = []
+let entryPointsToStream = []
 let scheduledTime = null
 let scheduled = false
 let signalStatus = "offline"
@@ -48,6 +49,9 @@ let stop = () => {
     streamYTDestinations = [];
     streamSTVDestinations = [];
     streamJCDestinations = [];
+    entryPointsToStream = [];
+    streamAKDestinations = [];
+    streamCSDestinations = [];
   }
   stopwatch.stop();
   stopwatch.reset();
@@ -108,30 +112,39 @@ let makeFormula = () => {
 }
 
 // youtube
-let streamYT = (YTrtmp) => {
+let stream = () => {
+  dirPath = "./public/videos/cut-videos/" + outputName
+  mkdirp(dirPath, function(err) { 
+  console.log('directory made')
+  })
 
-  console.log("streaming to youtube")
+  console.log("streaming started")
   var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
-    .addOption("-g", "60")
-    .addOption('-keyint_min', "60")
     .addOption('-vcodec', 'libx264')
     .addOption('-bufsize', '3000k')
     .addOption("-preset", "veryfast")
     .addOption('-acodec', 'aac')
-    .addOption('-f', 'flv')
+    .addOption("-g", "60")
+    .addOption('-keyint_min', "60")
     .withVideoBitrate(bitrate)
     .withAudioBitrate('128k')
+
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
     })
     .on('error', function(err) {
+    outputScreenShot()
     console.log('Error: ' + err.message);
     })
-    .output('rtmp://a.rtmp.youtube.com/live2/' + YTrtmp, function(stdout, stderr) {
+    .output('./public/videos/output/' + outputName + '.mp4', function(stdout, stderr) {
       console.log('Convert complete' +stdout)
     })
+    .addOption('-f', 'mp4')
 
   if(logosInUse){
+    for(n in entryPointsToStream){
+      proc3 = proc3.output(entryPointsToStream[n]).addOption('-f', 'flv').addOption('-vf', "scale=" +  resolution)
+    }
     if(typeof logosInUse === 'string'){
       proc3 = proc3.input('./public/images/' + logosInUse)
     } else {
@@ -141,209 +154,14 @@ let streamYT = (YTrtmp) => {
     }
       proc3 = proc3.complexFilter(formula)
     } else {
-      proc3 = proc3.addOption('-vf', "scale=" +  resolution)
+      for(n in entryPointsToStream){
+        proc3 = proc3.output(entryPointsToStream[n]).addOption('-f', 'flv').addOption('-vf', "scale=" +  resolution)
+      }
     }
     proc3.run()
   }
 
-// Facebook
 
-let streamFB = (FBrtmp) => {
-  
-  console.log("streaming to Facebook")
-  var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
-    .addOption("-g", "60")
-    .addOption('-keyint_min', "60")
-    .addOption('-vcodec', 'libx264')
-    .addOption('-bufsize', '3000k')
-    .addOption("-preset", "veryfast")
-    .addOption('-acodec', 'aac')
-    .addOption('-f', 'flv')
-    .withVideoBitrate(bitrate)
-    .withAudioBitrate('128k')
-    .on('start', function(commandLine) {
-    console.log('Query : ' + commandLine);
-    })
-    .on('error', function(err) {
-    console.log('Error: ' + err.message);
-    })
-    .output(FBrtmp, function(stdout, stderr) {
-      console.log('Convert complete' +stdout)
-    })
-
-    if(logosInUse){
-      if(typeof logosInUse === 'string'){
-        proc3 = proc3.input('./public/images/' + logosInUse)
-      } else {
-        for(n in logosInUse){
-          proc3 = proc3.input('./public/images/' + logosInUse[n])
-        }
-      }
-        proc3 = proc3.complexFilter(formula)
-      } else {
-        proc3 = proc3.addOption('-vf', "scale=" +  resolution)
-      }
-      proc3.run()
-  }
-
-// Joicaster
-
-let streamJC = (JCrtmp) => {
-
-  console.log("streaming to Joicaster")
-  var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
-    .addOption("-g", "60")
-    .addOption('-keyint_min', "60")
-    .addOption('-vcodec', 'libx264')
-    .addOption('-bufsize', '3000k')
-    .addOption("-preset", "veryfast")
-    .addOption('-acodec', 'aac')
-    .addOption('-f', 'flv')
-    .withVideoBitrate(bitrate)
-    .withAudioBitrate('128k')
-    .on('start', function(commandLine) {
-    console.log('Query : ' + commandLine);
-    })
-    .on('error', function(err) {
-    console.log('Error: ' + err.message);
-    })
-    .output('rtmp://ingest-cn-tor.switchboard.zone/live/' + JCrtmp, function(stdout, stderr) {
-      console.log('Convert complete' +stdout)
-    })
-
-    if(logosInUse){
-      if(typeof logosInUse === 'string'){
-        proc3 = proc3.input('./public/images/' + logosInUse)
-      } else {
-        for(n in logosInUse){
-          proc3 = proc3.input('./public/images/' + logosInUse[n])
-        }
-      }
-        proc3 = proc3.complexFilter(formula)
-      } else {
-        proc3 = proc3.addOption('-vf', "scale=" +  resolution)
-      }
-      proc3.run()
-  }
-
-// Akamai
-
-let streamAK = (AKrtmp) => {
-
-  console.log("streaming to Akamai")
-  var proc1 = new ffmpeg({ source: inputURL, timeout: 0 })
-    .addOption("-g", "60")
-    .addOption('-keyint_min', "60")
-    .addOption('-vcodec', 'libx264')
-    .addOption('-bufsize', '3000k')
-    .addOption("-preset", "veryfast")
-    .addOption('-acodec', 'aac')
-    .addOption('-f', 'flv')
-    .withVideoBitrate(bitrate)
-    .withAudioBitrate('128k')
-    .on('start', function(commandLine) {
-    console.log('Query : ' + commandLine);
-    })
-    .on('error', function(err) {
-    console.log('Error: ' + err.message);
-    })
-    .output(AKrtmp, function(stdout, stderr) {
-      console.log('Convert complete' +stdout)
-    })
-    
-  if(logosInUse){
-    if(typeof logosInUse === 'string'){
-      proc1 = proc1.input('./public/images/' + logosInUse)
-    } else {
-      for(n in logosInUse){
-        proc1 = proc1.input('./public/images/' + logosInUse[n])
-      }
-    }
-      proc1 = proc1.complexFilter(formula)
-    } else {
-      proc1 = proc1.addOption('-vf', "scale=" +  resolution)
-    }
-    proc1.run()
-  }
-
-  // custom outlet
-let streamCS = (rtmp) => {
-
-  console.log("streaming to custom Outlet")
-  var proc1 = new ffmpeg({ source: inputURL, timeout: 0 })
-    .addOption("-g", "60")
-    .addOption('-keyint_min', "60")
-    .addOption('-vcodec', 'libx264')
-    .addOption('-bufsize', '3000k')
-    .addOption("-preset", "veryfast")
-    .addOption('-acodec', 'aac')
-    .addOption('-f', 'flv')
-    .withVideoBitrate(bitrate)
-    .withAudioBitrate('128k')
-    .on('start', function(commandLine) {
-    console.log('Query : ' + commandLine);
-    })
-    .on('error', function(err) {
-    console.log('Error: ' + err.message);
-    })
-    .output(rtmp, function(stdout, stderr) {
-      console.log('Convert complete' +stdout)
-    })
-
-    if(logosInUse){
-      if(typeof logosInUse === 'string'){
-        proc1 = proc1.input('./public/images/' + logosInUse)
-      } else {
-        for(n in logosInUse){
-          proc1 = proc1.input('./public/images/' + logosInUse[n])
-        }
-      }
-        proc1 = proc1.complexFilter(formula)
-      } else {
-        proc1 = proc1.addOption('-vf', "scale=" +  resolution)
-      }
-      proc1.run()
-
-}
-
-// stream Snappy TV
-
-let streamSTV = (STVrtmpKey) => {
-  console.log("streaming to Facebook")
-  var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
-    .addOption("-g", "60")
-    .addOption('-keyint_min', "60")
-    .addOption('-vcodec', 'libx264')
-    .addOption('-bufsize', '3000k')
-    .addOption("-preset", "veryfast")
-    .addOption('-acodec', 'aac')
-    .addOption('-f', 'flv')
-    .withVideoBitrate(bitrate)
-    .withAudioBitrate('128k')
-    .on('start', function(commandLine) {
-    console.log('Query : ' + commandLine);
-    })
-    .on('error', function(err) {
-    console.log('Error: ' + err.message);
-    })
-    .output(STVrtmpKey, function(stdout, stderr) {
-      console.log('Convert complete' +stdout)
-    })
-
-    if(logosInUse){
-      if(typeof logosInUse === 'string'){
-        proc3 = proc3.input('./public/images/' + logosInUse)
-      } else {
-        for(n in logosInUse){
-          proc3 = proc3.input('./public/images/' + logosInUse[n])
-        }
-      }
-        proc3 = proc3.complexFilter(formula)
-      } else {
-        proc3 = proc3.addOption('-vf', "scale=" +  resolution)
-      }
-      proc3.run()
-  }
 //  output screenshot
 
 let outputScreenShot = () => {
@@ -445,7 +263,7 @@ let inStreamEdit = () => {
     console.log('Query : ' + commandLine);
     })
     .on('error', function(err) {
-    console.log('Error: ' + err.message);
+    console.log('InError: ' + err.message);
     })
     .saveToFile('./public/videos/cut-videos/' + outputName + '/' + trimName + '.mp4', function(stdout, stderr) {
     console.log('Convert complete' +stdout);
@@ -587,7 +405,7 @@ router.post('/start_stream', function (req, res, next) {
     if(logosInUse){
     makeFormula()
     }
-    outputMp4()
+    // outputMp4()
     streamStatus = "Live"
     signalStatus = "Live"
 
@@ -595,13 +413,13 @@ router.post('/start_stream', function (req, res, next) {
   if(typeof YTcreds === 'object'){
     YTcreds.forEach(function(YTrtmpKey) {
       let parsed = JSON.parse(YTrtmpKey)
-      streamYT(parsed[0])
+      entryPointsToStream.push('rtmp://a.rtmp.youtube.com/live2/' + parsed[0])
       streamYTDestinations.push(parsed[1])
     });
   }
   if(typeof YTcreds === 'string'){
     let parsed = JSON.parse(YTcreds)
-    streamYT(parsed[0])
+    entryPointsToStream.push('rtmp://a.rtmp.youtube.com/live2/' + parsed[0])
     streamYTDestinations.push(parsed[1])
   }
 
@@ -609,13 +427,13 @@ router.post('/start_stream', function (req, res, next) {
     if(typeof AKcreds === 'object'){
       AKcreds.forEach(function(AKrtmp) {
         let parsed = JSON.parse(AKrtmp)
-        streamAK(parsed[0])
+        entryPointsToStream.push(parsed[0])
         streamAKDestinations.push(parsed[1])
       });
     }
     if(typeof AKcreds === 'string'){
       let parsed = JSON.parse(AKcreds)
-      streamAK(parsed[0])
+      entryPointsToStream.push(parsed[0])
       streamAKDestinations.push(parsed[1])
     }
 
@@ -624,13 +442,13 @@ router.post('/start_stream', function (req, res, next) {
       // console.log(YTcreds)
       JCcreds.forEach(function(JCrtmpKey) {
         let parsed = JSON.parse(JCrtmpKey)
-        streamJC(parsed[0])
+        entryPointsToStream.push('rtmp://ingest-cn-tor.switchboard.zone/live/' + parsed[0])
         streamJCDestinations.push(parsed[1])
       });
     }
     if(typeof JCcreds === 'string'){
       let parsed = JSON.parse(JCcreds)
-      streamJC(parsed[0])
+      entryPointsToStream.push('rtmp://ingest-cn-tor.switchboard.zone/live/' + parsed[0])
       streamJCDestinations.push(parsed[1])
     }
   // Facebook
@@ -638,7 +456,7 @@ router.post('/start_stream', function (req, res, next) {
   if(typeof FBcreds === 'object'){
     FBcreds.forEach(function(FBrtmpKey) {
       let parsed = JSON.parse(FBrtmpKey)
-      streamFB(parsed[0])
+      entryPointsToStream.push(parsed[0])
       slicedNamed = parsed[1].slice(1,-1)
       streamFBDestinations.push({name: slicedNamed, id: parsed[2]})
       console.log(">>>>>" + JSON.stringify(streamFBDestinations))
@@ -646,7 +464,7 @@ router.post('/start_stream', function (req, res, next) {
   }
   if(typeof FBcreds === 'string'){
       let parsed = JSON.parse(FBcreds)
-      streamFB(parsed[0])
+      entryPointsToStream.push(parsed[0])
       slicedNamed = parsed[1].slice(1,-1)
       streamFBDestinations.push({name: slicedNamed, id: parsed[2]})
       console.log(">>>>>" + JSON.stringify(streamFBDestinations))
@@ -656,14 +474,14 @@ router.post('/start_stream', function (req, res, next) {
   if(typeof STVcreds === 'object'){
     STVcreds.forEach(function(STVrtmp) {
       let parsed = JSON.parse(STVrtmp)
-      streamSTV(parsed[1])
+      entryPointsToStream.push(parsed[1])
       streamSTVDestinations.push({name: parsed[0]})
       console.log(">>>>>" + JSON.stringify(streamSTVDestinations))
     });
   }
   if(typeof STVcreds === 'string'){
       let parsed = JSON.parse(STVcreds)
-      streamSTV(parsed[1])
+      entryPointsToStream.push(parsed[1])
       streamSTVDestinations.push({name: parsed[0]})
       console.log(">>>>>" + JSON.stringify(streamSTVDestinations))
   }
@@ -673,15 +491,16 @@ router.post('/start_stream', function (req, res, next) {
   if(typeof CScreds === 'object'){
     CScreds.forEach(function(CSrtmpKey) {
       let parsed = JSON.parse(CSrtmpKey)
-      streamCS(parsed[0])
+      entryPointsToStream.push(parsed[0])
       streamCSDestinations.push(parsed[1])
     });
   }
   if(typeof CScreds === 'string'){
     let parsed = JSON.parse(CScreds)
-    streamCS(parsed[0])
+    entryPointsToStream.push(parsed[0])
     streamCSDestinations.push(parsed[1])
   }
+  stream()
 }
 
   if (scheduled) {
@@ -694,45 +513,53 @@ router.post('/start_stream', function (req, res, next) {
     if(typeof YTcreds === 'object'){
         YTcreds.forEach(function(YTrtmpKey) {
           let parsed = JSON.parse(YTrtmpKey)
+          entryPointsToStream.push('rtmp://a.rtmp.youtube.com/live2/' + parsed[0])
           streamYTDestinations.push(parsed[1])
         });
       }
       if(typeof YTcreds === 'string'){
         let parsed = JSON.parse(YTcreds)
+        entryPointsToStream.push('rtmp://a.rtmp.youtube.com/live2/' + parsed[0])
         streamYTDestinations.push(parsed[1])
       }
       // Akamai
       if(typeof AKcreds === 'object'){
         AKcreds.forEach(function(AKrtmp) {
           let parsed = JSON.parse(AKrtmp)
+          entryPointsToStream.push(parsed[0])
           streamAKDestinations.push(parsed[1])
         });
       }
       if(typeof AKcreds === 'string'){
         let parsed = JSON.parse(AKcreds)
+        entryPointsToStream.push(parsed[0])
         streamAKDestinations.push(parsed[1])
       }
       // Joicaster
       if(typeof JCcreds === 'object'){
         JCcreds.forEach(function(JCrtmpKey) {
           let parsed = JSON.parse(JCrtmpKey)
+          entryPointsToStream.push('rtmp://ingest-cn-tor.switchboard.zone/live/' + parsed[0])
           streamJCDestinations.push(parsed[1])
         });
       }
       if(typeof JCcreds === 'string'){
         let parsed = JSON.parse(JCcreds)
+        entryPointsToStream.push('rtmp://ingest-cn-tor.switchboard.zone/live/' + parsed[0])
         streamJCDestinations.push(parsed[1])
       }
       // Facebook
       if(typeof FBcreds === 'object'){
         FBcreds.forEach(function(FBrtmpKey) {
           let parsed = JSON.parse(FBrtmpKey)
+          entryPointsToStream.push(parsed[0])
           slicedNamed = parsed[1].slice(1,-1)
           streamFBDestinations.push({name: slicedNamed, id: parsed[2]})
         });
       }
       if(typeof FBcreds === 'string'){
         let parsed = JSON.parse(FBcreds)
+        entryPointsToStream.push(parsed[0])
         slicedNamed = parsed[1].slice(1,-1)
         streamFBDestinations.push({name: slicedNamed, id: parsed[2]})
       }
@@ -740,22 +567,26 @@ router.post('/start_stream', function (req, res, next) {
       if(typeof STVcreds === 'object'){
         STVcreds.forEach(function(STVrtmp) {
           let parsed = JSON.parse(STVrtmp)
+          entryPointsToStream.push(parsed[1])
           streamSTVDestinations.push({name: parsed[0]})
         });
       }
       if(typeof STVcreds === 'string'){
         let parsed = JSON.parse(STVcreds)
+        entryPointsToStream.push(parsed[1])
         streamSTVDestinations.push({name: parsed[0]})
       }
       // Custom
       if(typeof CScreds === 'object'){
         CScreds.forEach(function(CSrtmp) {
           let parsed = JSON.parse(CSrtmp)
+          entryPointsToStream.push(parsed[0])
           streamCSDestinations.push({name: parsed[0]})
         });
       }
       if(typeof CScreds === 'string'){
         let parsed = JSON.parse(CScreds)
+        entryPointsToStream.push(parsed[0])
         streamCSDestinations.push({name: parsed[0]})
       }
 
@@ -769,78 +600,7 @@ router.post('/start_stream', function (req, res, next) {
       }
       console.log('stream started')
       outputMp4()
-      // Youtube
-      if(typeof YTcreds === 'object'){
-        YTcreds.forEach(function(YTrtmpKey) {
-          let parsed = JSON.parse(YTrtmpKey)
-          streamYT(parsed[0])
-        });
-      }
-      if(typeof YTcreds === 'string'){
-        let parsed = JSON.parse(YTcreds)
-        streamYT(parsed[0])
-      }
-      // Akamai
-      if(typeof AKcreds === 'object'){
-        AKcreds.forEach(function(AKrtmpKey) {
-          let parsed = JSON.parse(AKrtmpKey)
-          streamAK(parsed[0])
-          streamAKDestinations.push(parsed[1])
-        });
-      }
-      if(typeof AKcreds === 'string'){
-        let parsed = JSON.parse(AKcreds)
-        streamAK(parsed[0])
-        streamAKDestinations.push(parsed[1])
-      }
-      // Joicaster
-      if(typeof JCcreds === 'object'){
-        // console.log(YTcreds)
-        JCcreds.forEach(function(JCrtmpKey) {
-          let parsed = JSON.parse(JCrtmpKey)
-          streamJC(parsed[0])
-          streamJCDestinations.push(parsed[1])
-        });
-      }
-      if(typeof JCcreds === 'string'){
-        let parsed = JSON.parse(JCcreds)
-        streamJC(parsed[0])
-        streamJCDestinations.push(parsed[1])
-      }
-      // Facebook
-      if(typeof FBcreds === 'object'){
-        FBcreds.forEach(function(FBrtmpKey) {
-          let parsed = JSON.parse(FBrtmpKey)
-          streamFB(parsed[0])
-        });
-      }
-      if(typeof FBcreds === 'string'){
-        let parsed = JSON.parse(FBcreds)
-        streamFB(parsed[0])
-      }
-      //Snappy TV
-      if(typeof STVcreds === 'object'){
-        STVcreds.forEach(function(STVrtmp) {
-          let parsed = JSON.parse(STVrtmp)
-          streamSTV(parsed[1])
-        });
-      }
-      if(typeof STVcreds === 'string'){
-          let parsed = JSON.parse(STVcreds)
-          streamSTV(parsed[1])
-      }
-      // Custom
-      if(typeof CScreds === 'object'){
-        CScreds.forEach(function(CSrtmpKey) {
-          let parsed = JSON.parse(CSrtmpKey)
-          streamCS(parsed[0])
-        });
-      }
-      if(typeof CScreds === 'string'){
-        let parsed = JSON.parse(CScreds)
-        streamCS(parsed[0])
-      }
-
+      stream()
       scheduleStream.cancel()
       scheduled = false
     })
