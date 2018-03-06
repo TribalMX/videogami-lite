@@ -120,15 +120,6 @@ let stream = () => {
 
   console.log("streaming started")
   var proc3 = new ffmpeg({ source: inputURL, timeout: 0 })
-    .addOption('-vcodec', 'libx264')
-    .addOption('-bufsize', '3000k')
-    .addOption("-preset", "veryfast")
-    .addOption('-acodec', 'aac')
-    .addOption("-g", "60")
-    .addOption('-keyint_min', "60")
-    .withVideoBitrate(bitrate)
-    .withAudioBitrate('128k')
-
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
     })
@@ -139,11 +130,19 @@ let stream = () => {
     .output('./public/videos/output/' + outputName + '.mp4', function(stdout, stderr) {
       console.log('Convert complete' +stdout)
     })
-    .addOption('-f', 'mp4')
 
   if(logosInUse){
     for(n in entryPointsToStream){
-      proc3 = proc3.output(entryPointsToStream[n]).addOption('-f', 'flv').addOption('-vf', "scale=" +  resolution)
+      proc3 = proc3.output(entryPointsToStream[n])
+      .addOption('-f', 'flv')
+      .addOption('-vcodec', 'libx264')
+      .addOption('-bufsize', '3000k')
+      .addOption("-preset", "veryfast")
+      .addOption('-acodec', 'aac')
+      .addOption("-g", "60")
+      .addOption('-keyint_min', "60")
+      .withVideoBitrate(bitrate)
+      .withAudioBitrate('128k')
     }
     if(typeof logosInUse === 'string'){
       proc3 = proc3.input('./public/images/' + logosInUse)
@@ -155,7 +154,17 @@ let stream = () => {
       proc3 = proc3.complexFilter(formula)
     } else {
       for(n in entryPointsToStream){
-        proc3 = proc3.output(entryPointsToStream[n]).addOption('-f', 'flv').addOption('-vf', "scale=" +  resolution)
+        proc3 = proc3.output(entryPointsToStream[n])
+        .addOption('-f', 'flv')
+        .addOption('-vf', "scale=" +  resolution)
+        .addOption('-vcodec', 'libx264')
+        .addOption('-bufsize', '3000k')
+        .addOption("-preset", "veryfast")
+        .addOption('-acodec', 'aac')
+        .addOption("-g", "60")
+        .addOption('-keyint_min', "60")
+        .withVideoBitrate(bitrate)
+        .withAudioBitrate('128k')
       }
     }
     proc3.run()

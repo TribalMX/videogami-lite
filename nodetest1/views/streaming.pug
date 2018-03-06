@@ -32,6 +32,10 @@ block content
   p #{streamYTDestinations}
   each destination in streamSTVDestinations
     p #{destination.name}
+  each destination in streamCSDestinations
+    p #{destination.name}
+  each destination in streamAKDestinations
+    p #{destination.name}
 
   h4(id='timer')
   button(id="resetTimer" onclick='resetTimer()') Reset Timer
