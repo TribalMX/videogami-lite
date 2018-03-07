@@ -28,8 +28,7 @@ const getCollections = (db, cb) => {
   const removeCollection_ = function (db, callback) {
 
     // Get the documents collection
-    // const collection = db.collection(documentName)
-    // Insert some documents
+
     db.collection(documentName).drop(function(err, delOK) {
       if (err) throw err;
       if (delOK) console.log("Collection deleted");

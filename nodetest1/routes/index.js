@@ -146,9 +146,11 @@ let stream = () => {
     .on('start', function(commandLine) {
     console.log('Query : ' + commandLine);
     })
-    .on('error', function(err) {
+    .on('error', function(err, stdout, stderr) {
     outputScreenShot()
     console.log('Error: ' + err.message);
+    console.log("ffmpeg stdout:\n" + stdout);
+    console.log("ffmpeg stderr:\n" + stderr);
     })
     .output('./public/videos/output/' + outputName + '.mp4', function(stdout, stderr) {
       console.log('Convert complete' +stdout)
