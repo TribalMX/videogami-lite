@@ -91,10 +91,9 @@ block content
     script.
         $(function(){
             var $select = $(".resolution");
-            $select.append($('<option></option>').val('').html('-'))
+                $select.append($('<option></option>').val("1280x720").html("720p"))
                 $select.append($('<option></option>').val("640x360").html("360p"))
                 $select.append($('<option></option>').val("854x480").html("480p"))
-                $select.append($('<option></option>').val("1280x720").html("720p"))
                 $select.append($('<option></option>').val("1920x1080").html("1080p"))
         });
     
