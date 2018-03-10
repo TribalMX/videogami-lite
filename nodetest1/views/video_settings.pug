@@ -37,50 +37,65 @@ block content
         input(name="bitrate_" type='text' value=bitrate placeholder='2500')
         p current resolution: #{bitrate}
         button(class="btn btn-primary" type="submit") Change resolution / bitrate
-    br
-    h2 Current logos
-        each logos in logo_
-            h4 #{(JSON.stringify(logos)).substr(1).slice(0, -1).replace(/['"]+/g, '')}
-            img.image(src=("/images/" + (JSON.stringify(logos)).substr(1).slice(9, -1).replace(/['"]+/g, '')) alt="logo" height="42" width="42")
-            form(action='/video_settings/delete_logo', method='post', id='deleteLogoForm')
-                input(type="hidden", name='logoName', value=JSON.stringify(logos) ,id='logoDeleteInput')
-                button(class="btn btn-danger" type="submit") <i class="fa fa-trash" aria-hidden="true"></i> delete
-    br
-    br
-    h2 Choose the logos to use
-    form(action='/video_settings/use_logos', method='post', id='useLogoForm')
-        each logos in logo_
-            span(for='logoUse')  #{JSON.stringify(logos.logo).slice(2, -1)}   
-            input(type="checkbox", name="logo", value=JSON.stringify(logos.logo).slice(2, -1) ,id='logoUse')
-            br
-        span(for='logoUse')  Don't use logos   
-        input(type="checkbox", name="noLogo", value="none" ,id='logoUse') 
-    p Currently in use: (#{logosInUse})
-    button(class="btn btn-primary" type="button" id="useLogoFormBtn" onclick="useFormSubmit()") submit
 
-    h2 Upload Logo
-    form(id='uploadForm', action='/video_settings/upload', method='post', encType="multipart/form-data")
-        input(type='file', value='', name='logoUpload', id='logoUpform')
+    h3 Choose an overlay to use
+    form(action='/video_settings/use_overlay' method='post' id='resolutionForm')
+        span(for='englishOverlay') English Overlay
+        input(type="checkbox" name="englishOverlay" value="English Overlay" id='englishOverlay')
+        br 
+        span(for='frenchOverlay') French Overlay
+        input(type="checkbox" name="frenchOverlay" value="French Overlay" id='frenchOverlay') 
         br
-        button(class="btn btn-primary" type="submit") <i class="fa fa-plus" aria-hidden="true"></i>  Add Logo
+        span(for='noOverlay')  Don't use overlays
+        input(type="checkbox" name="noOverlay" value="No overlay" id='noOverlay')
+        br 
+        button(class="btn btn-primary" type="submit" id="useOverlayFormBtn") submit
+    current current: #{currentOverlay}
 
-    h2 Logo size
-    form(action='/video_settings/imgScale', method='post', id='imgScaleForm')
-        span(for='logoSize') Adust size (higher - the larger) 
-        input(type='text', value='', name='logoSize', id='logoSize', placeholder='40:40')
-        p current: #{size}
-        br
-        button(class="btn btn-primary" type="submit") submit
+    //- br
+    //- h2 Current logos
+    //-     each logos in logo_
+    //-         h4 #{(JSON.stringify(logos)).substr(1).slice(0, -1).replace(/['"]+/g, '')}
+    //-         img.image(src=("/images/" + (JSON.stringify(logos)).substr(1).slice(9, -1).replace(/['"]+/g, '')) alt="logo" height="42" width="42")
+    //-         form(action='/video_settings/delete_logo', method='post', id='deleteLogoForm')
+    //-             input(type="hidden", name='logoName', value=JSON.stringify(logos) ,id='logoDeleteInput')
+    //-             button(class="btn btn-danger" type="submit") <i class="fa fa-trash" aria-hidden="true"></i> delete
+    //- br
+    //- br
+    //- h2 Choose the logos to use
+    //- form(action='/video_settings/use_logos', method='post', id='useLogoForm')
+    //-     each logos in logo_
+    //-         span(for='logoUse')  #{JSON.stringify(logos.logo).slice(2, -1)}   
+    //-         input(type="checkbox", name="logo", value=JSON.stringify(logos.logo).slice(2, -1) ,id='logoUse')
+    //-         br
+    //-     span(for='logoUse')  Don't use logos   
+    //-     input(type="checkbox", name="noLogo", value="none" ,id='logoUse') 
+    //- p Currently in use: (#{logosInUse})
+    //- button(class="btn btn-primary" type="button" id="useLogoFormBtn" onclick="useFormSubmit()") submit
 
-    h2 Logo alternation time
-    form(action='/video_settings/logo_time', method='post', id='logoAltForm')
-        span(for='altTime') Time between alternation 
-        input(type='text', value='', name='time', id='altTime', placeholder='10')
-        br
-        p current alternation time: #{logoAltTime}
-        button(class="btn btn-primary" type='submit') Submit
+    //- h2 Upload Logo
+    //- form(id='uploadForm', action='/video_settings/upload', method='post', encType="multipart/form-data")
+    //-     input(type='file', value='', name='logoUpload', id='logoUpform')
+    //-     br
+    //-     button(class="btn btn-primary" type="submit") <i class="fa fa-plus" aria-hidden="true"></i>  Add Logo
 
-    br
+    //- h2 Logo size
+    //- form(action='/video_settings/imgScale', method='post', id='imgScaleForm')
+    //-     span(for='logoSize') Adust size (higher - the larger) 
+    //-     input(type='text', value='', name='logoSize', id='logoSize', placeholder='40:40')
+    //-     p current: #{size}
+    //-     br
+    //-     button(class="btn btn-primary" type="submit") submit
+
+    //- h2 Logo alternation time
+    //- form(action='/video_settings/logo_time', method='post', id='logoAltForm')
+    //-     span(for='altTime') Time between alternation 
+    //-     input(type='text', value='', name='time', id='altTime', placeholder='10')
+    //-     br
+    //-     p current alternation time: #{logoAltTime}
+    //-     button(class="btn btn-primary" type='submit') Submit
+
+    //- br
 
     script.
         function useFormSubmit(){

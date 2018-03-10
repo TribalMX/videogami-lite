@@ -30,9 +30,14 @@ block content
   each destination in streamFBDestinations
         a(href='https://www.facebook.com/913878858767085/videos/' + JSON.stringify(destination.id).slice(1, -1)) #{JSON.stringify(destination.name).slice(1, -1)} 
   p #{streamYTDestinations}
-  p #{streamSTVDestinations}
-  p #{streamCSDestinations}
-  p #{streamAKDestinations}
+  each destination in streamJCDestinations
+    p YT: #{destination}
+  each destination in streamSTVDestinations
+    p STV: #{destination}
+  each destination in streamCSDestinations
+    p Custom: #{destination}
+  each destination in streamAKDestinations
+    p Akamai: #{destination}
 
   h4(id='timer')
   button(id="resetTimer" onclick='resetTimer()') Reset Timer
@@ -91,6 +96,7 @@ block content
           form(action='/streaming/' + name + '/add_label', method='post', id='insertLabelForm')
             label(for='insertLabel ') Add label
             input(type='text', value='', name='label', id='insertLabel')
+            input(hidden value='' name="time" id='time')
             button(class="btn btn-primary" type="submit" ) Add label
         input(hidden value=date id="dateInput")
 
@@ -164,6 +170,7 @@ block content
         var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
         // Output the result in an element with id="demo"
+        document.getElementById("time").value = days + "d " + hours + "h " + minutes + "m " + seconds + "s "
         document.getElementById("timer").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
     }, 1000);
     
