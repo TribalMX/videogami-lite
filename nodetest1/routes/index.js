@@ -15,7 +15,6 @@ const Stopwatch = require('timer-stopwatch')
 const fileUpload = require('express-fileupload')
 const cmd = require('node-cmd')
 const mkdirp = require('mkdirp')
-const fs = require('fs')
 var ffmpeg = require('fluent-ffmpeg')
 
 // stream status
@@ -83,7 +82,6 @@ let listOfLogos = ''
 
 let makeFormula = () => {
   let L = logosInUse.length
-  let location = logoHorizontal + ':' + logoHeight
   let scale = imgScale
 
   let accr = altTime * 2
@@ -136,8 +134,11 @@ let outputScreenShot = () => {
 
 // stream command
 let stream = () => {
-  dirPath = './public/videos/cut-videos/' + outputName
+  let dirPath = './public/videos/cut-videos/' + outputName
   mkdirp(dirPath, function (err) {
+    if (err) {
+      console.log(err)
+    }
     console.log('directory made')
   })
 
@@ -167,8 +168,8 @@ let stream = () => {
         .addOption('-g', '60')
         .addOption('-keyint_min', '60')
         .addOption('-qscale', '5')
-        .addOption('-minrate', '2500')
-        .addOption('-maxrate', '4000')
+        .addOption('-minrate', '2500k')
+        .addOption('-maxrate', '4000k')
         .withAudioBitrate('128k')
     }
     if (typeof logosInUse === 'string') {
@@ -197,6 +198,46 @@ let stream = () => {
   }
   proc3.run()
 }
+
+// output mp4
+
+let outputMp4 = () => {
+  var proc = new ffmpeg({ source: inputURL, timeout: 0 })
+    .addOption('-vcodec', 'libx264')
+    .addOption('-acodec', 'aac')
+    .addOption('-crf', 26)
+    .on('start', function (commandLine) {
+      console.log('Query : ' + commandLine)
+    })
+    .on('error', function (err) {
+      console.log('Error: ' + err.message)
+      outputScreenShot()
+    })
+    .output('./public/videos/output/' + outputName + '.mp4', function (stdout, stderr) {
+      console.log('Convert complete' + stdout)
+    })
+    .on('end', function (stdout, stderr) {
+      outputScreenShot()
+      console.log('Transcoding succeeded !')
+    })
+    if (logosInUse) {
+    if (typeof logosInUse === 'string') {
+      proc = proc.input('./public/images/' + logosInUse)
+    } else {
+      for (n in logosInUse) {
+        proc = proc.input('./public/images/' + logosInUse[n])
+      }
+    }
+    proc = proc.complexFilter(formula)
+  } else {
+    proc = proc.addOption('-vf', 'scale=' + resolution)
+  }
+  proc.run()
+  dirPath = './public/videos/cut-videos/' + outputName
+  mkdirp(dirPath, function (err) {
+    console.log('directory made')
+  })
+  }
 
 // this is for trimming the video with start and end time
 
@@ -242,6 +283,7 @@ let inStreamEdit = () => {
     .saveToFile('./public/videos/cut-videos/' + outputName + '/' + trimName + '.mp4', function (stdout, stderr) {
       console.log('Convert complete' + stdout)
     })
+  proc2.run()
 }
 
 let killTrim = () => {
@@ -367,7 +409,6 @@ router.post('/start_stream', function (req, res, next) {
   var CScreds = req.body.CSoutletCredentials
 
   if (!YTcreds && !FBcreds && !STVcreds && !JCcreds && !AKcreds && !CScreds) {
-    outputMp4()
     signalStatus = 'Converting'
     streamStatus = 'Converting'
     res.redirect('/streaming/' + outputName)
@@ -430,7 +471,7 @@ router.post('/start_stream', function (req, res, next) {
       FBcreds.forEach(function (FBrtmpKey) {
         let parsed = JSON.parse(FBrtmpKey)
         entryPointsToStream.push(parsed[0])
-        slicedNamed = parsed[1].slice(1, -1)
+        let slicedNamed = parsed[1].slice(1, -1)
         streamFBDestinations.push({name: slicedNamed, id: parsed[2]})
         console.log('>>>>>' + JSON.stringify(streamFBDestinations))
       })
@@ -438,7 +479,7 @@ router.post('/start_stream', function (req, res, next) {
     if (typeof FBcreds === 'string') {
       let parsed = JSON.parse(FBcreds)
       entryPointsToStream.push(parsed[0])
-      slicedNamed = parsed[1].slice(1, -1)
+      let slicedNamed = parsed[1].slice(1, -1)
       streamFBDestinations.push({name: slicedNamed, id: parsed[2]})
       console.log('>>>>>' + JSON.stringify(streamFBDestinations))
     }
@@ -526,14 +567,14 @@ router.post('/start_stream', function (req, res, next) {
       FBcreds.forEach(function (FBrtmpKey) {
         let parsed = JSON.parse(FBrtmpKey)
         entryPointsToStream.push(parsed[0])
-        slicedNamed = parsed[1].slice(1, -1)
+        let slicedNamed = parsed[1].slice(1, -1)
         streamFBDestinations.push({name: slicedNamed, id: parsed[2]})
       })
     }
     if (typeof FBcreds === 'string') {
       let parsed = JSON.parse(FBcreds)
       entryPointsToStream.push(parsed[0])
-      slicedNamed = parsed[1].slice(1, -1)
+      let slicedNamed = parsed[1].slice(1, -1)
       streamFBDestinations.push({name: slicedNamed, id: parsed[2]})
     }
     // Snappy TV
@@ -572,7 +613,6 @@ router.post('/start_stream', function (req, res, next) {
         console.log(err)
       }
       console.log('stream started')
-      outputMp4()
       stream()
       scheduleStream.cancel()
       scheduled = false
@@ -591,7 +631,6 @@ router.post('/convert', function (req, res, next) {
   if (logosInUse) {
     makeFormula()
   }
-  outputMp4()
   streamStatus = 'Converting'
   let stopSign = null
   if (scheduled) {
@@ -677,14 +716,14 @@ router.post('/setup_accounts/remove_outlet', function (req, res, next) {
 })
 
 router.post('/setup_accounts/setup_youtube', function (req, res, next) {
-  YTrtmpKey = req.body.YTRtmpKey
+  let YTrtmpKey = req.body.YTRtmpKey
   let YTstreamName = req.body.YTname
   db_accounts.insertYoutubeOutlet(YTstreamName, YTrtmpKey)
   res.redirect('/setup_accounts')
 })
 
 router.post('/setup_accounts/setup_joicaster', function (req, res, next) {
-  JCrtmpKey = req.body.JCRtmpKey
+  let JCrtmpKey = req.body.JCRtmpKey
   let JCstreamName = req.body.JCname
   db_accounts.insertJoicasterOutlet(JCstreamName, JCrtmpKey)
   res.redirect('/setup_accounts')
@@ -753,6 +792,9 @@ router.get('/stop', function (req, res, next) {
 router.get('/editing_station', function (req, res, next) {
   setTimeout(function () {
     db_label.findLabels((err, labels) => {
+      if (err) {
+        console.log(err)
+      }
       db_edit.getCollections((err, collectionNames) => {
         if (err) {
           return res.sendStatus(500)
@@ -847,7 +889,7 @@ router.get('/editing_station/:stream_name', function (req, res, next) {
 
 router.post('/editing/:stream_name/trim', function (req, res, next) {
   startTime = req.body.startTime
-  endTimeInput = req.body.endTime
+  let endTimeInput = req.body.endTime
   trimName = req.body.cutName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
 
   let cutDurationHour = parseInt(endTimeInput.slice(0, -6))
@@ -1000,11 +1042,14 @@ router.post('/streaming/:stream_name/add_label', function (req, res, next) {
   }
   console.log('the elapsed time: ' + hours + ':' + minutes + ':' + seconds)
   let overallTime = hours + ':' + minutes + ':' + seconds
-  labelName = req.body.label
+  let labelName = req.body.label
   db_label.insertLabel(labelName, overallTime)
 
   setTimeout(function () {
     db_label.findLabels((err, labels) => {
+      if (err) {
+        console.log(err)
+      }
       db_label.findLabels((err, labels) => {
         if (err) {
           return res.sendStatus(500)
@@ -1033,6 +1078,8 @@ router.get('/labels/refresh', function (req, res, next) {
 router.get('/streaming/:stream_name/refresh', function (req, res, next) {
   res.redirect('/streaming/' + outputName)
 })
+
+let inStreamEditStartTime = null
 
 router.post('/streaming/:stream_name/trim_start', function (req, res, next) {
   let time = stopwatch.ms / 1000
@@ -1079,7 +1126,7 @@ router.post('/streaming/:stream_name/trim_end', function (req, res, next) {
     hours = '0' + hours
   }
   console.log('the elapsed time: ' + hours + ':' + minutes + ':' + seconds)
-  inStreamEditEndTime = hours + ':' + minutes + ':' + seconds
+  let inStreamEditEndTime = hours + ':' + minutes + ':' + seconds
   db_trims.insertTrim(trimName, inStreamEditStartTime, inStreamEditEndTime)
   killTrim()
   inStreamMsg = 'Not recording'
@@ -1130,6 +1177,9 @@ router.post('/video_settings/imgScale', function (req, res, next) {
 router.get('/video_settings', function (req, res, next) {
   setTimeout(function () {
     db_label.findLabels((err, labels) => {
+      if (err) {
+        console.log(err)
+      }
       db_logo.findLogos((err, logo) => {
         if (err) {
           return res.sendStatus(500)
