@@ -237,7 +237,7 @@ let inStreamEdit = () => {
 
 let killTrim = () => {
   console.log('kill "$(pgrep -f ' + trimName + '.mp4)"')
-  cmd.run('kill "$(pgrep -f ' + trimName + '.mp4)"')
+  cmd.run('/bin/kill "$(/usr/bin/pgrep ' + trimName + '.mp4)"')
   trimName = null
 }
 
