@@ -224,7 +224,7 @@ let inStreamEdit = () => {
     // .withSize('640x360')
     .addOption('-vf', 'scale=' + resolution)
     .on('start', function (commandLine) {
-      console.log('Query : ' + commandLine)
+      console.log('Query =) : ' + commandLine)
     })
     .on('error', function (err) {
       console.log('InError: ' + err.message)
@@ -232,12 +232,12 @@ let inStreamEdit = () => {
     .saveToFile('./public/videos/cut-videos/' + outputName + '/' + trimName + '.mp4', function (stdout, stderr) {
       console.log('Convert complete' + stdout)
     })
-  proc2.run()
 }
 
 let killTrim = () => {
   console.log('kill "$(pgrep -f ' + trimName + '.mp4)"')
-  cmd.run('/bin/kill "$(/usr/bin/pgrep ' + trimName + '.mp4)"')
+  // cmd.run('kill "$(pgrep -f ' + trimName + '.mp4)"')
+  cmd.get('kill "$(pgrep -f ' + trimName + '.mp4)"',(err,data,std)=>{console.log('err',err);console.log('out',data);console.log('stderr',std);})
   trimName = null
 }
 
