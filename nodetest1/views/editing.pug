@@ -40,9 +40,7 @@ block content
         h2(class="page-label" style="text-align: center") What would you like to do?
         br
         div(class="btns2" style="text-align: center")
-            button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseLabel") <i class="fa fa-plus" aria-hidden="true"></i> add labels
-            button(class="btn btn-primary" data-toggle="collapse" href="#collapseTrim" type="submit") <i class="fas fa-cut"></i>  Make a trim
-            button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseEditedVideos") <i class="fas fa-file-video"></i> Edited Videos
+            button(class="btn btn-primary" type="submit" data-toggle="collapse" href="#collapseLabel") <i class="fa fa-plus" aria-hidden="true"></i> Labels
         div(class="collapse" id="collapseLabel")
             div(class="card card-body")
                 h2 Labels
@@ -63,24 +61,25 @@ block content
                     input(style='padding-right: 10px' type='text', value='', name='newLabel', id='editinglabelTime', placeholder="Label Name")
                     input(type='text', value='', name='newLabelTime', id='editinglabelTime', placeholder="00:01:00")
                     button(class="btn btn-primary" type="submit") <i class="fa fa-plus" aria-hidden="true"></i> Add Label
-        div(class="collapse" id="collapseTrim")
-            div(class="card card-body")
-                h2 Trim your video
-                form(action='/editing/'+ name + '/trim', method='post', id='input')
-                    span(for='startTime') Start time 
-                    input(type='text', value=startTime, name='startTime', id='startTime', placeholder="00:01:00")
-                    span(for='endTime') End Time 
-                    input(type='text', value=endTime, name='endTime', id='endTime', placeholder="00:02:15")
-                    span(for='endTime') cut name 
-                    input(type='text', value='', name='cutName', id='cutName', placeholder="cut1")
-                    button(class="btn btn-primary" type="submit") <i class="fas fa-cut"></i> Trim
-        div(class="collapse" id="collapseEditedVideos")
-            div(class="card card-body")
-                h2 Your edited videos
-                    h4 Download #{name}
-                    form(action='/editing/'+ name +'/downloadWhole', method='post', id='wholeStreamForm') 
-                            input(type='hidden', value=''+ name +'', name='wholeStream', id='wholeStream')
-                            button(class="btn btn-primary" type="submit") <i class="fa fa-download" aria-hidden="true"></i> Download whole stream
+                    input(hidden value=trims id='trimsValue')
+        div(class="card card-body")
+            h2 Trim your video
+            form(action='/editing/'+ name + '/trim', method='post', id='trimVideo')
+                span(for='startTime') Start time 
+                input(type='text', value=startTime, name='startTime', id='trimStartTime', placeholder="00:01:00")
+                span(for='endTime') End Time 
+                input(type='text', value=endTime, name='endTime', id='trimEndTime', placeholder="00:02:15")
+                span(for='endTime') cut name 
+                input(type='text', value='', name='cutName', id='cutName', placeholder="cut1")
+                button(class="btn btn-primary" type="submit") <i class="fas fa-cut"></i> Trim
+
+        div(class="card card-body")
+            h2 Your edited videos
+                h4 Download #{name}
+                form(action='/editing/'+ name +'/downloadWhole', method='post', id='wholeStreamForm') 
+                        input(type='hidden', value=''+ name +'', name='wholeStream', id='wholeStream')
+                        button(class="btn btn-primary" type="submit") <i class="fa fa-download" aria-hidden="true"></i> Download whole stream
+                div(id='editedVideos')
                     each video in trims
                         h4 Trim: #{JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')}
                         li Start Time: #{JSON.stringify(video.Video_trim.startTime).replace(/['"]+/g, '')}
@@ -99,15 +98,30 @@ block content
                             button(class="btn btn-primary" onclick="getName("+JSON.stringify(video._id)+")" data-toggle="modal" data-target="#confirm-delete" type="button") <i class="fa fa-trash" aria-hidden="true"></i> Delete
         
     script.
-        $(window).scroll(function() {
-            sessionStorage.scrollTop = $(this).scrollTop();
+        $(function() {
+            let trims_ = document.getElementById('trimsValue').value
+            console.log(">@>@>@>>@" + trims_)
+            $("#trimVideo").on("submit",function(e) { 
+                e.preventDefault(); // stop submission
+                $("#editedVideos").append(                      
+                    '<video style="width=640; height=264" controls="controls" preload="auto" data-setup="{}">\
+                     <source src="/videos/cut-videos/moo/cut1.mp4" type="video/mp4">\
+                     </video>\
+                     <br/>\
+                     <form action="/editing/moo/downloadTrim", method="post", id="input">\ 
+                            <input type="hidden", value="cut1", name='trimName'>\
+                            <input type="submit" value="Submit"> \
+                     </form>\
+                     '
+                    )
+                $.post(this.action,$(this).serialize(), function(){
+                })
             });
-
-        $(document).ready(function() {
-            if (sessionStorage.scrollTop != "undefined") {
-                $(window).scrollTop(sessionStorage.scrollTop);
             }
-        });
+        );
+
+        
+
     script.
         let name = null
         function getName(trimName){

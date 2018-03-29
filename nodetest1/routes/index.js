@@ -27,7 +27,7 @@ let streamJCDestinations = []
 let streamAKDestinations = []
 let streamCSDestinations = []
 let entryPointsToStream = []
-let overlayStatus = 'No overlay'
+let overlay = []
 let scheduledTime = null
 let scheduled = false
 let signalStatus = 'offline'
@@ -52,22 +52,18 @@ let stop = () => {
     entryPointsToStream = []
     streamAKDestinations = []
     streamCSDestinations = []
+    complexFilter = ''
   }
   stopwatch.stop()
   stopwatch.reset()
   cmd.run('killall ffmpeg')
+  setTimeout(function () {
+    outputScreenShot()
+  }, 1500)
 }
 
 // input urls
-let inputURL = 'https://d2zihajmogu5jn.cloudfront.net/bipbop-advanced/bipbop_16x9_variant.m3u8'
-
-// logo settings
-
-// let logoHeight = 10
-// let logoHorizontal = 580
-// let imgScale = '40:40'
-// let altTime = 10
-// let logosInUse = 0
+let inputURL = 'http://184.72.239.149/vod/smil:BigBuckBunny.smil/playlist.m3u8'
 
 // stopwatch
 let stopwatch = new Stopwatch()
@@ -102,8 +98,49 @@ let outputScreenShot = () => {
   proc.run()
 }
 
-let frenchOverlay = false
-let englishOverlay = false
+let outputMp4 = () => {
+  let mp4Command = null
+  if (overlay.length === 0) {
+    mp4Command = 'ffmpeg -y \
+    -re -i ' + inputURL + ' \
+    -c:a aac -b:a 128k \
+    -c:v libx264 -b:v 2500k -bufsize 9000k -maxrate 4000k \
+    -preset ultrafast -g 60 -keyint_min 60 \
+    -x264-params keyint=60:keyint-min=60:vbv-maxrate=3000:vbv-bufsize=9000 \
+    -f mp4 ./public/videos/output/' + outputName + '.mp4'
+  } else {
+    mp4Command = 'ffmpeg -y \
+    -re -i ' + inputURL + ' \
+    ' + complexFilter + '\
+    " -map [outv' + overlay.length + '] -map 0:1 \
+    -c:a aac -b:a 128k \
+    -c:v libx264 -b:v 2500k -bufsize 9000k -maxrate 4000k \
+    -preset ultrafast -g 60 -keyint_min 60 \
+    -x264-params keyint=60:keyint-min=60:vbv-maxrate=3000:vbv-bufsize=9000 \
+    -f mp4 ./public/videos/output/' + outputName + '.mp4'
+  }
+  console.log(mp4Command)
+  cmd.run(mp4Command)
+}
+
+let complexFilter = ''
+
+let makeCommand = () => {
+  for (var i = 0; i < overlay.length; i++) {
+    complexFilter = complexFilter + ' -i ./public/overlays/' + overlay[i]
+  }
+
+  complexFilter = complexFilter + ' -filter_complex '
+
+  for (var n = 0; n < overlay.length; n++) {
+    if (n === 0) {
+      complexFilter = complexFilter + '"[0:v][1:v]overlay=eof_action=pass[outv1];'
+    } else {
+      complexFilter = complexFilter + '[outv' + n + '][' + (n + 1) + ':v]overlay=eof_action=pass[outv' + (n + 1) + '];'
+    }
+  }
+  complexFilter = complexFilter.slice(0, -1)
+}
 
 // stream command
 let stream = () => {
@@ -114,78 +151,37 @@ let stream = () => {
     }
     console.log('directory made')
   })
-
-  console.log('streaming started')
-  var proc3 = new ffmpeg(inputURL).native()
-    .on('start', function (commandLine) {
-      console.log('Query : ' + commandLine)
-    })
-    .on('error', function (err, stdout, stderr) {
-      outputScreenShot()
-      console.log('Error: ' + err.message)
-      console.log('ffmpeg stdout:\n' + stdout)
-      console.log('ffmpeg stderr:\n' + stderr)
-    })
-
-  if (englishOverlay || frenchOverlay) {
-    if (frenchOverlay) {
-      proc3 = proc3.input('./public/overlays/overlays-french.mov')
-      proc3 = proc3.input('ads-overlay-english.mov')
-      proc3 = proc3.complexFilter('[1:v]scale=-1:720[olay1];[2:v]scale=-1:720[olay2];[0:v][olay1]overlay=eof_action=pass[outv1];[outv1][olay2]overlay=eof_action=pass[outv2]')
-    } else if (englishOverlay) {
-      proc3 = proc3.input('./public/overlays/overlays-english.mov')
-      proc3 = proc3.input('ads-overlay-english.mov')
-      proc3 = proc3.complexFilter('[1:v]scale=-1:720[olay1];[2:v]scale=-1:720[olay2];[0:v][olay1]overlay=eof_action=pass[outv1];[outv1][olay2]overlay=eof_action=pass[outv2]')
-    }
+  makeCommand()
+  if (entryPointsToStream.length === 0) {
+  } else if (overlay.length === 0) {
     for (let n in entryPointsToStream) {
-      proc3 = proc3.output(entryPointsToStream[n])
-        .addOption('-f', 'flv')
-        .addOption('-vcodec', 'libx264')
-        .addOption('-bufsize', '4000k')
-        .addOption('-acodec', 'aac')
-        .addOption('-g', '60')
-        .addOption('-keyint_min', '60')
-        .addOption('-maxrate', '4000k')
-        .addOption('-map', '[outv]')
-        .addOption('-map', '0:1')
-        .withAudioBitrate('128k')
+      let ffmpegCommand = 'ffmpeg -y \
+      -re -i ' + inputURL + ' \
+      -c:a aac -b:a 128k \
+      -c:v libx264 -b:v 2500k -bufsize 9000k -maxrate 4000k \
+      -preset ultrafast -g 60 -keyint_min 60 \
+      -x264-params keyint=60:keyint-min=60:vbv-maxrate=3000:vbv-bufsize=9000 \
+      -f flv ' + entryPointsToStream[n]
+      console.log('Query: ' + ffmpegCommand)
+      cmd.run(ffmpegCommand)
     }
-
-    proc3 = proc3.output('./public/videos/output/' + outputName + '.mp4', function (stdout, stderr) {
-      console.log('Convert complete' + stdout)
-        .addOption('-f', 'flv')
-        .addOption('-vcodec', 'libx264')
-        .addOption('-bufsize', '4000k')
-        .addOption('-acodec', 'aac')
-        .addOption('-g', '60')
-        .addOption('-keyint_min', '60')
-        .addOption('-maxrate', '4000k')
-        .addOption('-map', '[outv]')
-        .addOption('-map', '0:1')
-        .withAudioBitrate('128k')
-    })
   } else {
     for (let n in entryPointsToStream) {
-      proc3 = proc3.output(entryPointsToStream[n])
-        .addOption('-f', 'flv')
-        .addOption('-vcodec', 'libx264')
-        .addOption('-bufsize', '4000k')
-        .addOption('-acodec', 'aac')
-        .addOption('-g', '60')
-        .addOption('-keyint_min', '60')
-        .addOption('-maxrate', '4000k')
-        .withAudioBitrate('128k')
+      let ffmpegCommand = 'ffmpeg -y \
+      -re -i ' + inputURL + ' \
+      ' + complexFilter + '\
+      " -map [outv' + overlay.length + '] -map 0:1 \
+      -c:a aac -b:a 128k \
+      -c:v libx264 -b:v 2500k -bufsize 9000k -maxrate 4000k \
+      -preset ultrafast -g 60 -keyint_min 60 \
+      -x264-params keyint=60:keyint-min=60:vbv-maxrate=3000:vbv-bufsize=9000 \
+      -f flv ' + entryPointsToStream[n]
+
+      console.log('Query: ' + ffmpegCommand)
+      cmd.run(ffmpegCommand)
     }
-
-    proc3 = proc3.output('./public/videos/output/' + outputName + '.mp4', function (stdout, stderr) {
-      console.log('Convert complete' + stdout)
-        .addOption('-f', 'mp4')
-        .addOption('-vcodec', 'copy')
-        .addOption('-acodec', 'copy')
-    })
   }
-
-  proc3.run()
+  outputMp4()
 }
 
 // this is for trimming the video with start and end time
@@ -214,6 +210,29 @@ let edit = () => {
   proc2.run()
 }
 
+// logo stuff
+
+router.post('/video_settings/upload', function (req, res) {
+  let logo = req.files.logoUpload
+  console.log(req.files.logoUpload) // the uploaded file object
+  logo.mv('./public/overlays/' + logo.name, function (err) {
+    if (err) { return res.status(500).send(err) }
+    db_logo.insertLogo(logo.name)
+    res.redirect('/video_settings')
+  })
+})
+
+router.post('/video_settings/delete_logo', function (req, res, next) {
+  let logoObj = req.body.logoName
+  let logoObjParsed = JSON.parse(logoObj)
+  let logoString = logoObjParsed.logo
+  console.log(logoString)
+  db_logo.deleteLogo(logoString)
+  setTimeout(function () {
+    res.redirect('/video_settings')
+  }, 1000)
+})
+
 // instream edit
 let inStreamEdit = () => {
   var proc2 = new ffmpeg({ source: inputURL, timeout: 0 })
@@ -237,7 +256,7 @@ let inStreamEdit = () => {
 let killTrim = () => {
   console.log('kill "$(pgrep -f ' + trimName + '.mp4)"')
   // cmd.run('kill "$(pgrep -f ' + trimName + '.mp4)"')
-  cmd.get('kill "$(pgrep -f ' + trimName + '.mp4)"',(err,data,std)=>{console.log('err',err);console.log('out',data);console.log('stderr',std);})
+  cmd.run('for a in $(pgrep -f ' + trimName + '.mp4); do kill $a; done', (err, data, std) => { console.log('err', err); console.log('out', data); console.log('stderr', std) })
   trimName = null
 }
 
@@ -561,7 +580,7 @@ router.post('/start_stream', function (req, res, next) {
       if (err) {
         console.log(err)
       }
-      console.log('stream started')
+      console.log('scheduled stream started')
       stream()
       scheduleStream.cancel()
       scheduled = false
@@ -577,7 +596,7 @@ router.post('/convert', function (req, res, next) {
   signalStatus = 'Converting'
   outputName = req.body.name.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
   db_label.insertDoc(outputName)
-  stream()
+  outputMp4()
   streamStatus = 'Converting'
   let stopSign = null
   if (scheduled) {
@@ -1066,60 +1085,22 @@ router.post('/streaming/:stream_name/trim_end', function (req, res, next) {
   res.redirect('/streaming/' + outputName)
 })
 
-// logo stuff
-
-// router.post('/video_settings/upload', function (req, res) {
-//   let logo = req.files.logoUpload
-//   console.log(req.files.logoUpload) // the uploaded file object
-//   logo.mv('./public/images/' + logo.name, function (err) {
-//     if (err) { return res.status(500).send(err) }
-//     db_logo.insertLogo(logo.name)
-//     res.redirect('/video_settings')
-//   })
-// })
-
-// router.post('/video_settings/delete_logo', function (req, res, next) {
-//   let logoObj = req.body.logoName
-//   let logoObjParsed = JSON.parse(logoObj)
-//   let logoString = logoObjParsed.logo
-//   console.log(logoString)
-//   db_logo.deleteLogo(logoString)
-//   res.redirect('/video_settings')
-// })
-
-// router.post('/video_settings/use_logos', function (req, res, next) {
-//   logosInUse = req.body.logo
-//   if (req.body.noLogo) {
-//     logosInUse = 0
+// router.post('/video_settings/use_overlay', function (req, res, next) {
+//   if (req.body.englishOverlay) {
+//     englishOverlay = req.body.englishOverlay
+//     overlayStatus = englishOverlay
+//   }
+//   if (req.body.frenchOverlay) {
+//     frenchOverlay = req.body.frenchOverlay
+//     overlayStatus = frenchOverlay
+//   }
+//   if (req.body.noOverlay) {
+//     englishOverlay = null
+//     frenchOverlay = null
+//     overlayStatus = 'No overlay'
 //   }
 //   res.redirect('/video_settings')
 // })
-
-// router.post('/video_settings/logo_time', function (req, res, next) {
-//   altTime = req.body.time
-//   res.redirect('/video_settings')
-// })
-
-// router.post('/video_settings/imgScale', function (req, res, next) {
-//   imgScale = req.body.logoSize
-//   res.redirect('/video_settings')
-// })
-router.post('/video_settings/use_overlay', function (req, res, next) {
-  if (req.body.englishOverlay) {
-    englishOverlay = req.body.englishOverlay
-    overlayStatus = englishOverlay
-  }
-  if (req.body.frenchOverlay) {
-    frenchOverlay = req.body.frenchOverlay
-    overlayStatus = frenchOverlay
-  }
-  if (req.body.noOverlay) {
-    englishOverlay = null
-    frenchOverlay = null
-    overlayStatus = 'No overlay'
-  }
-  res.redirect('/video_settings')
-})
 
 // video settings
 
@@ -1133,13 +1114,7 @@ router.get('/video_settings', function (req, res, next) {
         if (err) {
           return res.sendStatus(500)
         }
-        db_logo.findLogos((err, logo) => {
-          if (err) {
-            return res.sendStatus(500)
-          }
-          res.render('video_settings', {currentOverlay: overlayStatus, signal: signalStatus, bitrate: bitrate, currentResolution: resolution, input: inputURL, name: outputName, logo_: logo})
-          // logosInUse: logosInUse, logoAltTime: altTime, horizontal: logoHorizontal, height: logoHeight, size: imgScale
-        })
+        res.render('video_settings', {currentOverlay: overlay, signal: signalStatus, bitrate: bitrate, currentResolution: resolution, input: inputURL, name: outputName, logo_: logo})
       })
     }, 500)
   })
@@ -1152,6 +1127,14 @@ router.post('/video_settings/change_resolution', function (req, res, next) {
   res.redirect('/video_settings')
 })
 
+router.post('/video_settings/use_logos', function (req, res, next) {
+  overlay = req.body.logo
+  if (req.body.noLogo) {
+    overlay = 0
+  }
+  res.redirect('/video_settings')
+})
+
 router.get('/', function (req, res, next) {
   res.render('frontpage', {signal: signalStatus})
 })
@@ -1159,10 +1142,5 @@ router.get('/', function (req, res, next) {
 router.get('/goToStreamingPage', function (req, res, next) {
   res.redirect('/streaming/' + outputName)
 })
-
-// router.get('/test', function (req, res, next) {
-//   outputScreenShot()
-//   res.redirect('/streaming')
-// })
 
 module.exports = router

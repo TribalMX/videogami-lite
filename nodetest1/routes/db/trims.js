@@ -1,9 +1,7 @@
 const MongoClient = require('mongodb').MongoClient
 const assert = require('assert')
-const routerVariable = require('../index.js')
-const fs = require('fs');
-var mongodb = require('mongodb');
-
+const fs = require('fs')
+var mongodb = require('mongodb')
 
 // Connection URL
 const url = 'mongodb://localhost:27017'
@@ -16,59 +14,58 @@ let trimToDelete = null
 let trimIdToDelete = null
 
 const insertTrim_ = function (db, callback, trimName, startTime, endTime) {
+  // Get the documents collection
+  const collection = db.collection(documentName)
+  // Insert some documents
+  collection.insertOne(
 
-    // Get the documents collection
-    const collection = db.collection(documentName)
-    // Insert some documents
-    collection.insertOne(
-  
-      {Video_trim:{trimName: trimName, startTime: startTime, endTime: endTime}},
-      function (err, result) {
-        assert.equal(err, null)
-        assert.equal(1, result.result.n)
-        assert.equal(1, result.ops.length)
-        console.log('Inserted a document into the collection')
-        callback(result)
-      })
-  }
+    {Video_trim: {trimName: trimName, startTime: startTime, endTime: endTime}},
+    function (err, result) {
+      assert.equal(err, null)
+      assert.equal(1, result.result.n)
+      assert.equal(1, result.ops.length)
+      console.log('Inserted a document into the collection')
+      callback(result)
+    })
+}
 
-  const findTrims = (db, cb) => {
-    // Get the documents collection
-    const collection = db.collection(documentName);
-  
-    // Find some documents
-    collection.find({"Video_trim": { $exists: true } }, { label: 0 }).toArray((err, docs) => {
-      // An error occurred we need to return that to the given 
-      // callback function
-      if (err) {
-        return cb(err);
-      }
-  
-      assert.equal(err, null);
-      // console.log("Found the following trims");
-      // console.log(docs)
-      return cb(null, docs);
-    });
-  }
+const findTrims = (db, cb) => {
+  // Get the documents collection
+  const collection = db.collection(documentName)
 
-  const deleteTrim = function (db, callback) {
-    // Get the documents collection
-    const collection = db.collection(documentName)
-    // Insert some documents
-    collection.deleteOne({_id: new mongodb.ObjectID(trimIdToDelete.toString())}, function(err, result) {
-        assert.equal(err, null);
-        assert.equal(1, result.result.n);
-        console.log("Removed the document");
-        callback(result);
-      });
-      fs.unlink(".public/videos/cut-videos/" + documentName + "/" + trimToDelete + ".mp4", (err) => {
-        if (err) {
-            console.log("failed to delete local image:"+err);
-        } else {
-            console.log('successfully deleted local image');                                
-        }
-      });    
-  }
+  // Find some documents
+  collection.find({'Video_trim': { $exists: true } }, { label: 0 }).toArray((err, docs) => {
+    // An error occurred we need to return that to the given
+    // callback function
+    if (err) {
+      return cb(err)
+    }
+
+    assert.equal(err, null)
+    // console.log("Found the following trims");
+    // console.log(docs)
+    return cb(null, docs)
+  })
+}
+
+const deleteTrim = function (db, callback) {
+  // Get the documents collection
+  const collection = db.collection(documentName)
+  // Insert some documents
+  collection.deleteOne({_id: new mongodb.ObjectID(trimIdToDelete.toString())}, function (err, result) {
+    assert.equal(err, null)
+    assert.equal(1, result.result.n)
+    console.log('Removed the document')
+    callback(result)
+  })
+  fs.unlink('./public/videos/cut-videos/' + documentName + '/' + trimToDelete + '.mp4', (err) => {
+    if (err) {
+      console.log('failed to delete local image:' + err)
+    } else {
+      console.log('successfully deleted local image')
+    }
+  })
+}
 
 module.exports = {
   // Use connect method to connect to the server insert document
@@ -116,5 +113,5 @@ module.exports = {
     deleteTrim(db, function (trimToDelete) {
       client.close()
     })
-  }) 
+  })
 }
