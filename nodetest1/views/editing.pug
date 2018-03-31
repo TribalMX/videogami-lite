@@ -14,7 +14,7 @@ block content
             To view this video please enable JavaScript, and consider upgrading to a web browser that
             a(href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video)
 
-        p(style="padding-left: 70px") large files may take more time to process (refresh after a minute if the video doesn't properly load)
+    p(id="videoWarning") large files may take more time to process (refresh after a minute if the video doesn't properly load)
         script(src="http://vjs.zencdn.net/6.6.3/video.js")
 
     //- alert
@@ -84,43 +84,50 @@ block content
                         h4 Trim: #{JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')}
                         li Start Time: #{JSON.stringify(video.Video_trim.startTime).replace(/['"]+/g, '')}
                         li End Time: #{JSON.stringify(video.Video_trim.endTime).replace(/['"]+/g, '')}
-                        video(id="my-video" class="video-js" controls preload="auto" width="640" height="264" data-setup="{}")
+                        video(width="640" height="264"  controls="controls")
                             source(src="/videos/cut-videos/" + name + "/"+ JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '') + ".mp4" type='video/mp4')
                             p(class="vjs-no-js")
                             To view this video please enable JavaScript, and consider upgrading to a web browser that
                             a(href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video)
-                        form(action='/editing/'+ name +'/downloadTrim', method='post', id='input') 
-                            input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='trimName', id='trimName')
-                            button(class="btn btn-primary" type="submit") <i class="fa fa-download" aria-hidden="true"></i> Download
                         form(action='/editing/'+ name +'/deleteTrim', method='post', id=JSON.stringify(video._id).replace(/['"]+/g, '')) 
                             input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='deleteTrim', id='deleteTrim')
                             input(type='hidden', value=(JSON.stringify(video._id).replace(/['"]+/g, '')), name='deleteTrimId', id='deleteTrimId')
                             button(class="btn btn-primary" onclick="getName("+JSON.stringify(video._id)+")" data-toggle="modal" data-target="#confirm-delete" type="button") <i class="fa fa-trash" aria-hidden="true"></i> Delete
-        
+            input(type='hidden', value=name, name='deleteTrim', id='outletName')
     script.
         $(function() {
-            let trims_ = document.getElementById('trimsValue').value
-            console.log(">@>@>@>>@" + trims_)
             $("#trimVideo").on("submit",function(e) { 
+                let startTime = document.getElementById('trimStartTime').value
+                let endTime = document.getElementById('trimEndTime').value
+                let cutName = document.getElementById('cutName').value
+                let streamName = document.getElementById('outletName').value
+                let trimToDelete = { "trimName" : cutName, "startTime" : startTime, "endTime" : endTime }
                 e.preventDefault(); // stop submission
-                $("#editedVideos").append(                      
-                    '<video style="width=640; height=264" controls="controls" preload="auto" data-setup="{}">\
-                     <source src="/videos/cut-videos/moo/cut1.mp4" type="video/mp4">\
+                $.post(this.action,$(this).serialize(), function(){
+                $("#editedVideos").append(
+                    '<div id="' + cutName + '"\
+                    <h4> Trim: ' + cutName + ' </h4>\
+                    <li> Start Time: ' + startTime + ' </li>\
+                    <li> End Time: ' + endTime + ' </li>\
+                    <video width="640" height="264" controls="controls">\
+                     <source src="/videos/cut-videos/' + streamName + '/' + cutName + '.mp4" type="video/mp4">\
                      </video>\
                      <br/>\
-                     <form action="/editing/moo/downloadTrim", method="post", id="input">\ 
-                            <input type="hidden", value="cut1", name='trimName'>\
-                            <input type="submit" value="Submit"> \
-                     </form>\
+                    <form value='+cutName+' action="/editing/' + cutName + '/deleteTrimByName", method="post", id="' + cutName + 'Form">\
+                    <input type="hidden", value=' + JSON.stringify(trimToDelete) + ', name="deleteTrim", id="deleteTrim" >\
+                    <input type="hidden", value=' + streamName + ', name="stream_name", id="streamName" >\
+                    <input type="hidden", value=' + cutName + ', name="cut_name", id="cutName" >\
+                    <button class="btn btn-primary" type="submit" form="' + cutName + 'Form" ><i class="fa fa-trash" aria-hidden="true"></i> Delete</button>\
+                    </form>\
+                    </div>\
                      '
                     )
-                $.post(this.action,$(this).serialize(), function(){
-                })
+                document.getElementById('trimStartTime').value = ''
+                document.getElementById('trimEndTime').value = ''
+                document.getElementById('cutName').value = ''
+                })   
             });
-            }
-        );
-
-        
+        });
 
     script.
         let name = null

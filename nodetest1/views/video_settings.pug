@@ -23,9 +23,9 @@ block content
     br
     h1 Live signal checker
     div(class="videoDiv")
-        video(id="my_video_1" class="video-js vjs-default-skin" controls preload="auto" width="640" height="268" data-setup='{}')
+        video(id="my-video" class="video-js vjs-default-skin" controls preload="auto" width="640" height="268" data-setup='{}')
             source(src=input type="application/x-mpegURL")
-        p(style="margin-left: 200px") (rtmp sources will not be shown)
+        p(id='videoWarning') (rtmp sources will not be shown)
     h2 Current overlays
         each logos in logo_
             h4 #{(JSON.stringify(logos)).substr(1).slice(7, -1).replace(/['"]+/g, '')}

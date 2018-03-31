@@ -12,6 +12,7 @@ const dbName = 'videogami'
 let documentName = 'stream'
 let trimToDelete = null
 let trimIdToDelete = null
+let trimNameToDelete = null
 
 const insertTrim_ = function (db, callback, trimName, startTime, endTime) {
   // Get the documents collection
@@ -67,6 +68,26 @@ const deleteTrim = function (db, callback) {
   })
 }
 
+const deleteTrimByName = function (db, callback) {
+  // Get the documents collection
+  const collection = db.collection(documentName)
+
+  console.log('>>>>>' + trimNameToDelete)
+  collection.deleteOne({Video_trim: JSON.parse(trimNameToDelete)}, function (err, result) {
+    assert.equal(err, null)
+    assert.equal(1, result.result.n)
+    console.log('Removed the document')
+    callback(result)
+  })
+  fs.unlink('./public/videos/cut-videos/' + documentName + '/' + JSON.parse(trimNameToDelete).trimName + '.mp4', (err) => {
+    if (err) {
+      console.log('failed to delete local image:' + err)
+    } else {
+      console.log('successfully deleted local image')
+    }
+  })
+}
+
 module.exports = {
   // Use connect method to connect to the server insert document
   locateDoc: (docName) => MongoClient.connect(url, function (err, client) {
@@ -111,6 +132,17 @@ module.exports = {
     const db = client.db(dbName)
 
     deleteTrim(db, function (trimToDelete) {
+      client.close()
+    })
+  }),
+  deleteTrimByName: (TrimToDelete_) => MongoClient.connect(url, function (err, client) {
+    trimNameToDelete = TrimToDelete_
+    assert.equal(null, err)
+    // console.log('Connected successfully to server')
+
+    const db = client.db(dbName)
+
+    deleteTrimByName(db, function (trimToDelete) {
       client.close()
     })
   })

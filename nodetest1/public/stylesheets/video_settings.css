@@ -2,9 +2,12 @@ h1{
     text-align: center;
 }
 
-#my_video_1{
-    padding-left: 25%;
+#my-video{
+    display: block;
+    margin: 0 auto;
 }
-.videoDiv{
-    margin-left: 25%;
+
+#videoWarning{
+    text-align: center
 }
+

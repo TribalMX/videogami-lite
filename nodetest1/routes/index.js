@@ -326,6 +326,7 @@ router.get('/streaming', function (req, res, next) {
   })
 })
 
+
 // stream settings
 
 router.post('/start_stream', function (req, res, next) {
@@ -380,6 +381,7 @@ router.post('/start_stream', function (req, res, next) {
     signalStatus = 'Converting'
     streamStatus = 'Converting'
     stream()
+    stopwatch.start()
     res.redirect('/streaming/' + outputName)
   }
 
@@ -944,6 +946,21 @@ router.post('/editing/:stream_name/deleteTrim', function (req, res, next) {
   res.redirect('/editing_station/' + req.params.stream_name)
 })
 
+router.post('/editing/:cutName/deleteTrimByName', function (req, res, next) {
+  let trimToDelete = req.body.deleteTrim.slice(0, -1)
+  let sessionName = req.body.stream_name
+  console.log(sessionName.slice(0, -1))
+  db_trims.deleteTrimByName(trimToDelete)
+  res.redirect('/editing_station/' + sessionName.slice(0, -1))
+})
+
+router.post('/streaming/:cutName/deleteTrimByName', function (req, res, next) {
+  let trimToDelete = req.body.deleteTrim.slice(0, -1)
+  console.log(trimToDelete)
+  db_trims.deleteTrimByName(trimToDelete)
+  res.redirect('/streaming/' + outputName)
+})
+
 router.post('/editing/:stream_name/downloadTrim', function (req, res, next) {
   let trimName = req.body.trimName
   var file = './public/videos/cut-videos/' + req.params.stream_name + '/' + trimName + '.mp4'
@@ -1078,30 +1095,17 @@ router.post('/streaming/:stream_name/trim_end', function (req, res, next) {
     hours = '0' + hours
   }
   console.log('the elapsed time: ' + hours + ':' + minutes + ':' + seconds)
-  let inStreamEditEndTime = hours + ':' + minutes + ':' + seconds
+  inStreamEditEndTime = hours + ':' + minutes + ':' + seconds
   db_trims.insertTrim(trimName, inStreamEditStartTime, inStreamEditEndTime)
   killTrim()
   inStreamMsg = 'Not recording'
   res.redirect('/streaming/' + outputName)
 })
 
-// router.post('/video_settings/use_overlay', function (req, res, next) {
-//   if (req.body.englishOverlay) {
-//     englishOverlay = req.body.englishOverlay
-//     overlayStatus = englishOverlay
-//   }
-//   if (req.body.frenchOverlay) {
-//     frenchOverlay = req.body.frenchOverlay
-//     overlayStatus = frenchOverlay
-//   }
-//   if (req.body.noOverlay) {
-//     englishOverlay = null
-//     frenchOverlay = null
-//     overlayStatus = 'No overlay'
-//   }
-//   res.redirect('/video_settings')
-// })
-
+router.get('/streaming/:stream_name/getTime', function (req, res, next) {
+  let streamTimes = {startTime: inStreamEditStartTime, endTime: inStreamEditEndTime}
+  res.send(streamTimes)
+})
 // video settings
 
 router.get('/video_settings', function (req, res, next) {
