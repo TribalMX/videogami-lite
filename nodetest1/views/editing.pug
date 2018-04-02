@@ -182,7 +182,7 @@ block content
         }
         function labelEnd(end){
             let endTime = end[1]+":"+end[2]+":"+end[3]
-            document.getElementById("trimEndTime").value = endTime.slice(0,-1)
+            document.getElementById("trimEndTime").value = endTime
         }
         function asyncLabelStart(start){
             document.getElementById("trimStartTime").value = start
@@ -232,8 +232,12 @@ block content
             let label = document.getElementById('editinglabelName').value
             let time = document.getElementById('editinglabelTime').value
 
+            document.getElementById('editinglabelName').value = ''
+            document.getElementById('editinglabelTime').value = ''
+
             document.getElementById('dummyEditingLabelTime').value = time
             document.getElementById('dummyEditingLabelName').value = label
+            
             $("#listOfLabels").append(
                    '<div id='+label.replace(/\s+/g, '-')+"Div"+'>\
                     <h4> '+label+": "+time+'</h4>\
