@@ -60,32 +60,8 @@ html
 
   body
     block content
+    
   script.
-    $(function() {
-      $("#insertLabelForm").on("submit",function(e) { 
-        e.preventDefault(); // stop submission
-         
-        $.post(this.action,$(this).serialize(),function(data) {
-          $("#labels").html(""); 
-          $.each(data,function(label) { // loop over result         
-            $("#labels").append(data[label].label + '<br/>');
-            document.getElementById("insertLabel").value = ""
-          });  
-        });  
-      });   
-    });
-
-    $(function() {
-      $("#recordInput").on("submit",function(e) { 
-        e.preventDefault(); // stop submission
-        let trimInput = document.getElementById('trimNameInput').value
-        $("#currentEditName").html("Recording: " + trimInput)
-        $.post(this.action,$(this).serialize(), {
-        })
-      });   
-    });
-
-
     $(function() {
         let signals = document.getElementById('signalInput')
         let signalBtn = document.getElementById('signal_')

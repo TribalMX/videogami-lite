@@ -326,7 +326,6 @@ router.get('/streaming', function (req, res, next) {
   })
 })
 
-
 // stream settings
 
 router.post('/start_stream', function (req, res, next) {
@@ -916,7 +915,6 @@ router.post('/editing/:stream_name/addLabel', function (req, res, next) {
   let newLabel = req.body.newLabel
   let newLabelTime = req.body.newLabelTime
   db_label.insertLabel(newLabel, newLabelTime)
-  console.log(req.params.stream_name)
   res.redirect('/editing_station/' + req.params.stream_name)
 })
 
@@ -947,13 +945,21 @@ router.post('/editing/:stream_name/deleteTrim', function (req, res, next) {
 })
 
 router.post('/editing/:cutName/deleteTrimByName', function (req, res, next) {
-  let trimToDelete = req.body.deleteTrim.slice(0, -1)
+  let trimToDelete = req.body.deleteTrim
   let sessionName = req.body.stream_name
-  console.log(sessionName.slice(0, -1))
+  console.log(sessionName)
   db_trims.deleteTrimByName(trimToDelete)
-  res.redirect('/editing_station/' + sessionName.slice(0, -1))
+  res.redirect('/editing_station/' + sessionName)
 })
-
+router.post('/editing/:cutName/deleteLabelByName', function (req, res, next) {
+  let labelName = req.body.newLabel
+  let labelTime = req.body.newLabelTime
+  let labelObject = labelName + ': ' + labelTime
+  let sessionName = req.body.stream_name
+  console.log(">>>>" + labelObject)
+  db_label.deleteLabelByName(labelObject)
+  res.redirect('/editing_station/' + sessionName)
+})
 router.post('/streaming/:cutName/deleteTrimByName', function (req, res, next) {
   let trimToDelete = req.body.deleteTrim.slice(0, -1)
   console.log(trimToDelete)
@@ -1010,9 +1016,30 @@ router.get('/streaming/:stream_name', function (req, res, next) {
 })
 
 router.post('/streaming/:stream_name/add_label', function (req, res, next) {
-  let overallTime = req.body.time
   let labelName = req.body.label
-  db_label.insertLabel(labelName, overallTime)
+
+  let time = stopwatch.ms / 1000
+  let hours = Math.floor(time / 3600)
+  let minutes = Math.floor(time / 60)
+  if (minutes > 60) {
+    minutes = minutes - 60
+  }
+  if (hours > 0) {
+    minutes = minutes - hours * 60
+  }
+  let seconds = Math.floor(time - minutes * 60)
+  if (seconds < 10) {
+    seconds = '0' + seconds
+  }
+  if (minutes < 10) {
+    minutes = '0' + minutes
+  }
+  if (hours < 10) {
+    hours = '0' + hours
+  }
+  console.log('the elapsed time: ' + hours + ':' + minutes + ':' + seconds)
+  let newLabelTime = hours + ':' + minutes + ':' + seconds
+  db_label.insertLabel(labelName, newLabelTime)
 
   setTimeout(function () {
     db_label.findLabels((err, labels) => {

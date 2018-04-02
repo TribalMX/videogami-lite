@@ -39,8 +39,6 @@ block content
   each destination in streamAKDestinations
     p Akamai: #{destination}
 
-  h4(id='timer')
-  button(id="resetTimer" onclick='resetTimer()') Reset Timer
   div(class="btns2" style="text-align: center; display: block" id='stopDiv')
     form(action="/editing/" + name, method='get', id='stop')
       button(class="btn btn-danger" data-toggle="modal" data-target="#confirm-delete" type='button') <i class="fas fa-ban"></i> #{terminate}
@@ -61,10 +59,10 @@ block content
         br
         h2 Add a label 
         form(action='/streaming/' + name + '/add_label', method='post', id='insertLabelForm')
-        label(for='insertLabel ') Add label
-        input(type='text', value='', name='label', id='insertLabel')
-        input(hidden value='' name="time" id='time')
-        button(class="btn btn-primary" type="submit" ) Add label
+            label(for='insertLabel ') Add label
+            input(type='text', value='', name='label', id='insertLabel')
+            input(hidden value='' name="time" id='time')
+            button(class="btn btn-primary" type="submit" ) Add label
     input(hidden value=date id="dateInput")
   div(class="card card-body")
     h2 Make a trim
@@ -78,24 +76,77 @@ block content
     div(id='currentEditName')
         p Recording: #{inStreamEditName}
   div(class="card card-body")
-    div(id="editedVideos")
-        h2 Your edited videos
+    h2 Your edited videos
+        h4 Download #{name}
+        form(action='/editing/'+ name +'/downloadWhole', method='post', id='wholeStreamForm') 
+                input(type='hidden', value=''+ name +'', name='wholeStream', id='wholeStream')
+                button(class="btn btn-primary" type="submit") <i class="fa fa-download" aria-hidden="true"></i> Download whole stream
+        div(id='editedVideos')
             each video in trims
-                h4 Trim: #{JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')}
-                li Start Time: #{JSON.stringify(video.Video_trim.startTime).replace(/['"]+/g, '')}
-                li End Time: #{JSON.stringify(video.Video_trim.endTime).replace(/['"]+/g, '')}
-                video(width="640" height="264"  controls="controls")
-                    source(src="/videos/cut-videos/" + name + "/"+ JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '') + ".mp4" type='video/mp4')
-                    p(class="vjs-no-js")
-                    To view this video please enable JavaScript, and consider upgrading to a web browser that
-                    a(href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video)
-                form(action='/streaming/'+ name +'/deleteTrim', method='post', id=JSON.stringify(video._id).replace(/['"]+/g, '')) 
-                    input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='deleteTrim', id='deleteTrim')
-                    input(type='hidden', value=(JSON.stringify(video._id).replace(/['"]+/g, '')), name='deleteTrimId', id='deleteTrimId')
-                    button(class="btn btn-primary" data-toggle="modal" type="submit") <i class="fa fa-trash" aria-hidden="true"></i> Delete
-  
+                div(id=video.Video_trim.trimName+'Div')
+                    h4 Trim: #{JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')}
+                    li Start Time: #{JSON.stringify(video.Video_trim.startTime).replace(/['"]+/g, '')}
+                    li End Time: #{JSON.stringify(video.Video_trim.endTime).replace(/['"]+/g, '')}
+                    video(width="640" height="264"  controls="controls")
+                        source(src="/videos/cut-videos/" + name + "/"+ JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '') + ".mp4" type='video/mp4')
+                        p(class="vjs-no-js")
+                        To view this video please enable JavaScript, and consider upgrading to a web browser that
+                        a(href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video)
+                    form(action='/editing/'+ name +'/deleteTrim', method='post', id=JSON.stringify(video._id).replace(/['"]+/g, '')) 
+                        input(type='hidden', value=(JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')), name='deleteTrim', id='deleteTrim')
+                        input(type='hidden', value=(JSON.stringify(video._id).replace(/['"]+/g, '')), name='deleteTrimId', id='deleteTrimId')
+                        button(class="btn btn-primary" onclick="deleteTrimAsyncById("+JSON.stringify(video._id)+",'"+JSON.stringify(video.Video_trim.trimName).replace(/['"]+/g, '')+"')" type="button") <i class="fa fa-trash" aria-hidden="true"></i> Delete
+  form(action='/editing/'+ name +'/deleteTrimByName', method='post', id="dummyForm") 
+    input(type='hidden', value='', name='cut_name', id='dummyCutName')
+    input(type='hidden', value='', name='stream_name', id='dummyStreamName')
+    input(type='hidden', value='', name='deleteTrim', id='dummyTrimToDelete')
+    button(type='submit' id='dummyBtn' hidden)
+  form(action='/editing/'+ name +'/deleteTrim', method='post', id="dummyFormById") 
+    input(type='hidden', value='', name='deleteTrim', id='dummyDeleteTrim')
+    input(type='hidden', value='', name='deleteTrimId', id='dummyDeleteTrimId')
+    button(type='submit' id='dummyBtnById' hidden) <i class="fa fa-trash" aria-hidden="true"></i> Delete
     input(type='hidden', value=name, id='streamName')
+    
+    script.
+        $(function() {  
+            $("#dummyForm").on("submit",function(e) { 
+                e.preventDefault(); // stop submission
+                $.post(this.action,$(this).serialize(), function(){
+                })
+            })  
+        })
+    script.
+        $(function() {  
+            $("#dummyFormById").on("submit",function(e) { 
+                e.preventDefault(); // stop submission
+                $.post(this.action,$(this).serialize(), function(){
+                })
+            })  
+        })
+    script.
+        $(function() {
+            $("#insertLabelForm").on("submit",function(e) { 
+                e.preventDefault(); // stop submission
+                
+                $.post(this.action,$(this).serialize(),function(data) {
+                $("#labels").html(""); 
+                $.each(data,function(label) { // loop over result         
+                    $("#labels").append(data[label].label + '<br/>');
+                    document.getElementById("insertLabel").value = ""
+                });  
+                });  
+            });   
+        });
 
+        $(function() {
+            $("#recordInput").on("submit",function(e) { 
+                e.preventDefault(); // stop submission
+                let trimInput = document.getElementById('trimNameInput').value
+                $("#currentEditName").html("Recording: " + trimInput)
+                $.post(this.action,$(this).serialize(), {
+                })
+            });   
+        });
     script.
         $(function() {
             $("#stopRecording").on("submit",function(e) { 
@@ -112,8 +163,9 @@ block content
                         let endTime = streamTimes.endTime                    
                         let trimToDelete = { "trimName" : cutName, "startTime" : startTime, "endTime" : endTime }
                         console.log(trimToDelete)
-                        $("#editedVideos").append(                      
-                            '<h4> Trim: ' + cutName + ' </h4>\
+                        $("#editedVideos").append(
+                            '<div id="' + cutName + 'Div">\
+                            <h4> Trim: ' + cutName + ' </h4>\
                             <li> Start Time: ' + startTime + ' </li>\
                             <li> End Time: ' + endTime + ' </li>\
                             <video width="640" height="264" controls="controls">\
@@ -123,8 +175,9 @@ block content
                             <form action="/streaming/' + cutName + '/deleteTrimByName", method="post", id="' + cutName + '">\
                             <input type="hidden", value=' + JSON.stringify(trimToDelete) + ', name="deleteTrim", id="deleteTrim" >\
                             <input type="hidden", value=' + streamName + ', name="stream_name" >\
-                            <button class="btn btn-primary" type="submit" form="' + cutName + '" ><i class="fa fa-trash" aria-hidden="true"></i> Delete</button>\
+                            <button class="btn btn-primary" onclick=deleteTrimAsync("'+ cutName +'","'+ streamName +'",'+ JSON.stringify(trimToDelete) +') type="button" form="' + cutName + '" ><i class="fa fa-trash" aria-hidden="true"></i> Delete</button>\
                             </form>\
+                            </div>\
                                 '
                         )
                     })                    
@@ -132,6 +185,26 @@ block content
             });
             }
         );
+    script.
+        function deleteTrimAsync(cutName, streamName, trimToDelete){
+            let div = document.getElementById(cutName+'Div') 
+            div.style.display = "none"
+            console.log(">>>>>" + cutName, streamName, trimToDelete)
+            document.getElementById('dummyCutName').value = cutName
+            document.getElementById('dummyStreamName').value = streamName
+            document.getElementById('dummyTrimToDelete').value = JSON.stringify(trimToDelete)
+            let form = document.getElementById('dummyBtn')
+            form.click()
+        }
+        function deleteTrimAsyncById(id, trimName){
+            let div = document.getElementById(trimName+'Div') 
+            div.style.display = "none"
+            console.log(id + trimName)
+            document.getElementById('dummyDeleteTrimId').value = id
+            document.getElementById('dummyDeleteTrim').value = trimName
+            let form = document.getElementById('dummyBtnById')
+            form.click()
+        }
     script.
         $.get({ url: '/labels/refresh', 
                 success: function(data){
@@ -168,42 +241,42 @@ block content
         form = document.getElementById('stop')
         form.submit()
         }
-        //- timer
+        //- //- timer
 
-        var countDownDate = localStorage.getItem('startDate');
-        let counter = 0
-        let resetTimer = function(){
-        counter = + 1
-        if(counter === 1){
-            countDownDate = new Date(); localStorage.setItem('startDate', countDownDate);
-        }
-        }
+        //- var countDownDate = localStorage.getItem('startDate');
+        //- let counter = 0
+        //- let resetTimer = function(){
+        //- counter = + 1
+        //- if(counter === 1){
+        //-     countDownDate = new Date(); localStorage.setItem('startDate', countDownDate);
+        //- }
+        //- }
 
-        if (countDownDate) {
-            countDownDate = new Date(countDownDate);
-        } else {
-            countDownDate = new Date();
-            localStorage.setItem('startDate', countDownDate);
-        }
+        //- if (countDownDate) {
+        //-     countDownDate = new Date(countDownDate);
+        //- } else {
+        //-     countDownDate = new Date();
+        //-     localStorage.setItem('startDate', countDownDate);
+        //- }
 
-        // Update the count down every 1 second
-        var x = setInterval(function() {
+        //- // Update the count down every 1 second
+        //- var x = setInterval(function() {
 
-            // Get todays date and time
-            var now = new Date().getTime();
+        //-     // Get todays date and time
+        //-     var now = new Date().getTime();
 
-            // Find the distance between now an the count down date
-            var distance = now - countDownDate.getTime();
+        //-     // Find the distance between now an the count down date
+        //-     var distance = now - countDownDate.getTime();
 
-            // Time calculations for days, hours, minutes and seconds
-            var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        //-     // Time calculations for days, hours, minutes and seconds
+        //-     var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        //-     var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        //-     var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        //-     var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-            // Output the result in an element with id="demo"
-            document.getElementById("time").value = days + "d " + hours + "h " + minutes + "m " + seconds + "s "
-            document.getElementById("timer").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
-        }, 1000);
+        //-     // Output the result in an element with id="demo"
+        //-     document.getElementById("time").value = days + "d " + hours + "h " + minutes + "m " + seconds + "s "
+        //-     document.getElementById("timer").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+        //- }, 1000);
         
 
