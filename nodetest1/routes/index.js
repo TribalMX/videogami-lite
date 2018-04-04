@@ -593,6 +593,13 @@ router.post('/start_stream', function (req, res, next) {
 // convert to mp4 only
 
 router.post('/convert', function (req, res, next) {
+  let dirPath = './public/videos/cut-videos/' + outputName
+  mkdirp(dirPath, function (err) {
+    if (err) {
+      console.log(err)
+    }
+    console.log('directory made')
+  })
   stopwatch.start()
   signalStatus = 'Converting'
   outputName = req.body.name.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
