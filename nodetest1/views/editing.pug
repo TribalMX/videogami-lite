@@ -102,7 +102,9 @@ block content
                 let cutName = document.getElementById('cutName').value
                 let streamName = document.getElementById('outletName').value
                 let trimToDelete = { "trimName" : cutName, "startTime" : startTime, "endTime" : endTime }
-                 
+                document.getElementById('trimStartTime').value = ''
+                document.getElementById('trimEndTime').value = ''
+                document.getElementById('cutName').value = ''
                 e.preventDefault(); // stop submission
                 $.post(this.action,$(this).serialize(), function(){                 
                 $("#editedVideos").append(
@@ -123,9 +125,6 @@ block content
                     </div>\
                      '
                     )
-                document.getElementById('trimStartTime').value = ''
-                document.getElementById('trimEndTime').value = ''
-                document.getElementById('cutName').value = ''
                 })   
             });
         });
