@@ -28,7 +28,7 @@ block content
   h4 Scheduled Stream Time: #{date}
   h4 Streaming to:
   each destination in streamFBDestinations
-        a(href='https://www.facebook.com/913878858767085/videos/' + JSON.stringify(destination.id).slice(1, -1)) #{JSON.stringify(destination.name).slice(1, -1)} 
+        p #{JSON.stringify(destination.name).slice(1, -1)} 
   p #{streamYTDestinations}
   each destination in streamJCDestinations
     p YT: #{destination}

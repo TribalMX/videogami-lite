@@ -449,6 +449,7 @@ router.post('/start_stream', function (req, res, next) {
       let parsed = JSON.parse(FBcreds)
       entryPointsToStream.push(parsed[0])
       let slicedNamed = parsed[1].slice(1, -1)
+      console.log(slicedNamed, parsed[2])
       streamFBDestinations.push({name: slicedNamed, id: parsed[2]})
       console.log('>>>>>' + JSON.stringify(streamFBDestinations))
     }
@@ -862,10 +863,10 @@ router.get('/editing_station/:stream_name', function (req, res, next) {
 })
 
 router.post('/editing/:stream_name/trim', function (req, res, next) {
-  startTime = req.body.startTime
-  let endTimeInput = req.body.endTime
+  startTime = req.body.manualTrimStartTime
+  let endTimeInput = req.body.manualTrimEndTime
   trimName = req.body.cutName.toString().replace(/\s+/g, '-').replace(/'/g, '').replace(/"/g, '').toLowerCase()
-
+  console.log(startTime + ">>>" +endTimeInput + ">>>" + trimName)
   let cutDurationHour = parseInt(endTimeInput.slice(0, -6))
   let cutDurationMinute = parseInt(endTimeInput.slice(3, -3))
   let cutDurationSeconds = parseInt(endTimeInput.slice(6))
@@ -894,6 +895,7 @@ router.post('/editing/:stream_name/trim', function (req, res, next) {
     return hours + ':' + minutes + ':' + seconds
   }
   duration = inputDuration.toHHMMSS()
+  console.log(trimName, startTime, endTimeInput)
   db_trims.insertTrim(trimName, startTime, endTimeInput)
   editOutputName = req.params.stream_name
   edit()

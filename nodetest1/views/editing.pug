@@ -42,9 +42,9 @@ block content
             h2 Trim your video
             form(action='/editing/'+ name + '/trim', method='post', id='trimVideo')
                 span(for='startTime') Start time 
-                input(type='text', value='', name='startTime', id='trimStartTime', placeholder="00:01:00")
+                input(type='text', value='', name='manualTrimStartTime', id='trimStartTime', placeholder="00:01:00")
                 span(for='endTime') End Time 
-                input(type='text', value='', name='endTime', id='trimEndTime', placeholder="00:02:15")
+                input(type='text', value='', name='manualTrimEndTime', id='trimEndTime', placeholder="00:02:15")
                 span(for='endTime') cut name 
                 input(type='text', value='', name='cutName', id='cutName', placeholder="cut1")
                 button(class="btn btn-primary" type="submit") <i class="fas fa-cut"></i> Trim
@@ -102,9 +102,6 @@ block content
                 let cutName = document.getElementById('cutName').value
                 let streamName = document.getElementById('outletName').value
                 let trimToDelete = { "trimName" : cutName, "startTime" : startTime, "endTime" : endTime }
-                document.getElementById('trimStartTime').value = ''
-                document.getElementById('trimEndTime').value = ''
-                document.getElementById('cutName').value = ''
                 e.preventDefault(); // stop submission
                 $.post(this.action,$(this).serialize(), function(){                 
                 $("#editedVideos").append(
@@ -125,7 +122,10 @@ block content
                     </div>\
                      '
                     )
-                })   
+                })
+                document.getElementById('trimStartTime').value = ''
+                document.getElementById('trimEndTime').value = ''
+                document.getElementById('cutName').value = ''   
             });
         });
     script.

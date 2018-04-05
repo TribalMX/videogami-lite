@@ -36,7 +36,7 @@ const insertLabel = function (db, callback) {
   // Insert some documents
   collection.insertOne(
 
-    {label: labelName + ': ' + time.slice(0, -1)},
+    {label: labelName + ': ' + time},
     function (err, result) {
       assert.equal(err, null)
       assert.equal(1, result.result.n)
